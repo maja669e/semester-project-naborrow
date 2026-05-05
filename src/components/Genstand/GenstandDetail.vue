@@ -2,9 +2,12 @@
 // Kalder DELETE genstande API for at slette en genstand
 import { deleteItem } from '@/services/itemservice.js'
 import { updateItem } from '@/services/itemservice.js'
+//Henter vores toggle komponent
+import ToggleButton from '../ToggleButton.vue'
 export default {
     name: 'GenstandDetail',
     components: {
+        ToggleButton
     },
     data() {
         return {
@@ -134,10 +137,11 @@ export default {
         image: this.image,
         rawImage: this.imagePath,
         imageBase64: null,
-        imagePreview: null
+        imagePreview: null,
+        isActive: this.status === 'Tilgængelig' ? 1 : 0,
     }
 },
-//Gemmer vore redigeringer og sender opdateret data til backend
+//Gemmer vores redigeringer og sender opdateret data til backend
 async saveEdit() {
     try {
         const payload = {
@@ -146,6 +150,7 @@ async saveEdit() {
             Brand: this.editedItem.brand,
             Condition: this.editedItem.condition,
             MaxRentPeriodDays: this.editedItem.maxDays,
+            IsActive: this.editedItem.isActive
         }
 
         if (this.editedItem.imageBase64 || this.editedItem.rawImage) {
@@ -175,6 +180,7 @@ async saveEdit() {
 
         this.$emit('itemUpdated', {
             ...this.editedItem,
+            status: this.editedItem.isActive ? 'Tilgængelig' : 'Inaktiv',
             image: this.editedItem.imageBase64 || this.editedItem.rawImage || this.image
         })
 
@@ -218,24 +224,19 @@ async handleImageUpload(event) {
           <nav class="header-knapper" aria-label="Rediger eller slet genstand">
     <!-- Rediger / Gem -->
     <button v-if="!isEditing" class="rediger-knap" @click="startEdit">
-        ✏️ Rediger
+         <v-icon start icon="mdi-pencil" />Rediger
     </button>
 
- <!--    <button v-else class="rediger-knap" @click="saveEdit">
-        💾 Gem
-    </button> -->
 
     <!-- Annuller -->
   <button v-if="isEditing" class="slet-knap" @click="isEditing = false">
-        ❌ Annuller
+        X
     </button> 
 
-    <!-- Slet-knap - åbner sletning dialogen -->
-   <!--  <button v-if="!isEditing" class="slet-knap" @click="åbenSletDialog">
-        🗑️ Slet
-    </button> -->
 </nav>
         </header>
+
+        <ToggleButton v-if="isEditing" v-model="editedItem.isActive" />
 
       <!-- Stort billede med status tag i hjørnet -->
 <figure class="detalje-billede-wrapper">
@@ -250,20 +251,20 @@ async handleImageUpload(event) {
 
   <!-- EDIT MODE -->
 <div v-else class="detalje-image-edit">
-
-    <!-- file picker instead of URL -->
-    <input
-        type="file"
-        accept="image/*"
-        @change="handleImageUpload"
-    />
-
     <!-- preview -->
     <img
          v-if="editedItem.imageBase64 || image"
         :src="editedItem.imageBase64 || image"
         class="detalje-billede"
     />
+    <br>
+         <!-- file picker instead of URL -->
+    <input
+        type="file"
+        accept="image/*"
+        @change="handleImageUpload"
+    />
+    
 </div>
 
     <!-- Status tag oven på billedet i nederste højre hjørne -->
@@ -273,6 +274,7 @@ async handleImageUpload(event) {
     </span>
 
 </figure>
+
 
        <!-- Genstandens informationer -->
 <section class="detalje-info">
@@ -468,12 +470,12 @@ async handleImageUpload(event) {
 
     <!-- Delete button -->
     <button class="edit-delete" @click="åbenSletDialog">
-        🗑️ Slet genstand
+         <v-icon>mdi-trash-can</v-icon>Slet genstand
     </button>
 
     <!-- Save button -->
     <button class="edit-save" @click="saveEdit">
-        Gem ændringer
+         <v-icon>mdi-check</v-icon>Gem ændringer
     </button>
 
 </section>
