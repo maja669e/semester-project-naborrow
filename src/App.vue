@@ -4,7 +4,7 @@ import MyItems from "@/components/MyItems.vue";
 import AddDetails from "@/components/AddDetails.vue";
 import PageOne from "@/components/PageOne.vue";
 import ConfirmItemScreen from "./components/ConfirmItemScreen.vue";
-import GenstandPage from "./components/Genstand/GenstandPage.vue";
+import GenstandPage from "./components/Genstand/ItemOverviewView.vue";
 import Stepper from "@/components/Stepper.vue";
 
 export default {

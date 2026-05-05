@@ -1,6 +1,6 @@
 <script>
-import GenstandCard from './GenstandCard.vue'
-import GenstandDetail from './GenstandDetail.vue'
+import GenstandCard from './ItemCard.vue'
+import GenstandDetail from './ItemDetailView.vue'
 import GenstandFilter from './GenstandFilter.vue'
 import { getAllItems } from '@/services/itemservice.js'
 
