@@ -1,6 +1,6 @@
 <script>
 export default {
-    name: 'GenstandFilter',
+    name: 'ItemFilter',
     props: {
         // Det aktive filter - sendes ind fra forælderen
         activeFilter: {

@@ -1,15 +1,15 @@
 <script>
-import GenstandCard from './ItemCard.vue'
-import GenstandDetail from './ItemDetailView.vue'
-import GenstandFilter from './GenstandFilter.vue'
+import ItemCard from './ItemCard.vue'
+import ItemDetail from './ItemDetailView.vue'
+import ItemFilter from './ItemFilterTabs.vue'
 import { getAllItems } from '@/services/itemservice.js'
 
 export default {
-    name: 'GenstandPage',
+    name: 'ItemOverviewView',
     components: {
-        GenstandCard,
-        GenstandDetail,
-        GenstandFilter
+        ItemCard,
+        ItemDetail,
+        ItemFilter
     },
     data() {
         return {
@@ -121,7 +121,7 @@ export default {
         </output>
 
         <!-- Vis detaljesiden når en genstand er valgt -->
-        <GenstandDetail
+        <ItemDetail
             v-if="selectedItem"
             :id="selectedItem.id"
             :title="selectedItem.title"
@@ -148,7 +148,7 @@ export default {
             <h1 class="page-title">Dine genstande</h1>
 
             <!-- Filter tabs - activeFilter opdateres når brugeren klikker -->
-            <GenstandFilter
+            <ItemFilter
                 :activeFilter="activeFilter"
                 @filterChanged="activeFilter = $event"
             />
@@ -163,7 +163,7 @@ export default {
             <!-- Liste af filtrerede kort -->
             <ul v-else class="card-list">
                 <li v-for="item in filteredItems" :key="item.id">
-                    <GenstandCard
+                    <ItemCard
                         :id="item.id"
                         :title="item.title"
                         :category="item.category"

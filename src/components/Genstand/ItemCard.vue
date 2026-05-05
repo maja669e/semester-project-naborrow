@@ -1,6 +1,6 @@
 <script>
 export default {
-    name: 'GenstandCard',
+    name: 'ItemCard',
     components: {
     },
     data() {
