@@ -5,7 +5,7 @@ import { updateItem } from '@/services/itemservice.js'
 //Henter vores toggle komponent
 import ToggleButton from '../ToggleButton.vue'
 export default {
-    name: 'ItemDetailView',
+    name: 'ItemDetail',
     components: {
         ToggleButton
     },

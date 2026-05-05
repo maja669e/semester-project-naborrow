@@ -4,8 +4,9 @@ import MyItems from "@/components/MyItems.vue";
 import AddDetails from "@/components/AddDetails.vue";
 import PageOne from "@/components/PageOne.vue";
 import ConfirmItemScreen from "./components/ConfirmItemScreen.vue";
-import GenstandPage from "./components/Genstand/ItemOverviewView.vue";
+import ItemOverviewView from "./components/Genstand/ItemOverviewView.vue";
 import Stepper from "@/components/Stepper.vue";
+
 
 export default {
   components: {
@@ -14,7 +15,7 @@ export default {
     AddDetails,
     PageOne,
     ConfirmItemScreen,
-    GenstandPage,
+    ItemOverviewView,
     Stepper,
   },
   data() {
@@ -39,7 +40,7 @@ export default {
       this.currentPage = "home";
     },
     goToItems() {
-      this.currentPage = "genstandPage";
+      this.currentPage = "itemOverview";
     },
     goToPageOne() {
       this.currentPage = "pageOne";
@@ -69,8 +70,8 @@ handleSaveDetails(details) {
       this.currentPage = "confirmItem";
       this.currentStep = 3;
     },
-    goToGenstandPage() {
-      this.currentPage = "genstandPage";
+    goToItemOverview() {
+      this.currentPage = "itemOverview";
     },
   },
 };
@@ -109,11 +110,11 @@ handleSaveDetails(details) {
   :item="itemDetails"
   @goBack="currentPage = 'addDetails'"
   @createItem="goToItems"
-  @goToGenstandPage="goToGenstandPage"
+  @goToItemOverview="goToItemOverview"
 />
 
-      <GenstandPage
-        v-if="currentPage === 'genstandPage'"
+      <item-overview-view
+        v-if="currentPage === 'itemOverview'"
         @go-to-page-one="goToPageOne"
       />
     </v-main>
