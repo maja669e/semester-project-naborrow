@@ -17,7 +17,15 @@ export default {
             sletter: false,
             //Siden opdateres om du er i redigeringstilstand eller ej
             isEditing: false, 
-            editedItem: {} 
+            editedItem: {}, 
+            errors: {
+             image: null,
+             category: null,
+             title: null,
+             condition: null,
+             maxDays: null,
+             accessories: null
+      }
         }
     },
     props: {
@@ -143,6 +151,7 @@ export default {
 },
 //Gemmer vores redigeringer og sender opdateret data til backend
 async saveEdit() {
+     if (!this.validate()) return;
     try {
         const payload = {
             ItemName: this.editedItem.title,
@@ -204,7 +213,56 @@ async handleImageUpload(event) {
 }
 
     reader.readAsDataURL(file)
-}
+},
+
+//Fejlhåndtering for redigering - tjekker at alle felter er udfyldt korrekt og viser fejlbeskeder hvis ikke
+  validate() {
+  let valid = true;
+
+  // Images
+  if (this.editedItem.image.length === 0) {
+    this.errors.image = "Tilføj mindst ét billede";
+    valid = false;
+  } else {
+    this.errors.image = "";
+  }
+
+  // Category
+  if (!this.editedItem.category) {
+    this.errors.category = "Udfyld kategori";
+    valid = false;
+  } else {
+    this.errors.category = "";
+  }
+
+  // Item name
+  if (!this.editedItem.title.trim()) {
+    this.errors.title = "Indtast et navn på din genstand";
+    valid = false;
+  } else {
+    this.errors.title = "";
+  }
+
+   // Condition
+  if (!this.editedItem.condition.trim()) {
+    this.errors.condition = "Udfyld stand på din genstand";
+    valid = false;
+  } else {
+    this.errors.condition = "";
+  }
+
+    // Max days
+    if (!this.editedItem.maxDays || this.editedItem.maxDays <= 0) {       
+    this.errors.maxDays = "Indtast en gyldig låneperiode";
+    valid = false;
+    } else {
+    this.errors.maxDays = "";
+    }
+      
+  return valid;
+},
+
+
     },
     watch: {
     },
@@ -289,6 +347,7 @@ async handleImageUpload(event) {
       rounded="xl"
       color="var(--color-primary)"
       hide-details="auto"
+      :error-messages="errors.title ? [errors.title] : []"
     />
 
     <!-- Kategori, mærke og stand på samme linje -->
@@ -308,6 +367,8 @@ async handleImageUpload(event) {
           rounded="xl"
           color="var(--color-primary)"
           hide-details="auto"
+          :error-messages="errors.category ? [errors.category] : []"
+          
         />
         <v-text-field
           class="detalje-input"
@@ -326,6 +387,7 @@ async handleImageUpload(event) {
           rounded="xl"
           color="var(--color-primary)"
           hide-details="auto"
+         :error-messages="errors.condition ? [errors.condition] : []"
         />
         <v-text-field
           class="detalje-input"
@@ -361,6 +423,7 @@ async handleImageUpload(event) {
                   rounded="xl"
                   color="var(--color-primary)"
                   hide-details="auto"
+                  :error-messages="errors.maxDays ? [errors.maxDays] : []"
                 />
 
                 <span class="detalje-boks-enhed">dage</span>

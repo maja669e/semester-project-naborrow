@@ -344,7 +344,7 @@ export default {
 }
 
 .error-text {
-  color: red;
+  color: #B00020;
   font-size: 14px;
   margin-top: 4px;
 }

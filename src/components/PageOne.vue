@@ -15,7 +15,7 @@ export default {
   },
   data() {
     return {
-     categories: [],
+    categories: [],
     selectedCategory: null,
     customCategory: "",
     uploadedImages: [],
@@ -75,12 +75,12 @@ export default {
       this.$emit("go-to-items");
     },
 
-     validate() {
+  validate() {
   let valid = true;
 
   // Images
   if (this.uploadedImages.length === 0) {
-    this.errors.uploadedImages = "Tilføj mindst ét billede";
+    this.errors.uploadedImages = "Tilføj mindst ét billede*";
     valid = false;
   } else {
     this.errors.uploadedImages = "";
@@ -88,7 +88,7 @@ export default {
 
   // Category
   if (!this.selectedCategory) {
-    this.errors.selectedCategory = "Vælg en kategori";
+    this.errors.selectedCategory = "Vælg en kategori*";
     valid = false;
   } else {
     this.errors.selectedCategory = "";
@@ -96,7 +96,7 @@ export default {
 
   // Custom category
   if (this.selectedCategory === "Andet" && this.customCategory.trim() === "") {
-    this.errors.customCategory = "Indtast en kategori";
+    this.errors.customCategory = "Indtast en kategori*";
     valid = false;
   } else {
     this.errors.customCategory = "";
@@ -104,7 +104,7 @@ export default {
 
   // Item name
   if (!this.itemName.trim()) {
-    this.errors.itemName = "Indtast et navn på din genstand";
+    this.errors.itemName = "Indtast et navn på din genstand*";
     valid = false;
   } else {
     this.errors.itemName = "";
@@ -201,9 +201,7 @@ export default {
           @change="handleFiles"
         />
       </v-card>
-<div v-if="errors.uploadedImages" class="error-text">
-  {{ errors.uploadedImages }}
-</div>
+
       <!-- Preview uploaded images -->
       <div class="uploaded-images mt-4" v-if="uploadedImages.length">
         <v-img
@@ -213,17 +211,20 @@ export default {
           max-width="150"
           class="mr-4 mb-4"
           rounded
+          :error-messages="errors.uploadedImages ? [errors.uploadedImages] : []"
         />
       </div>
+
+      <div v-if="errors.uploadedImages" class="error-text">
+  {{ errors.uploadedImages }}
+</div> 
     </div>
 
     <!-- Category selection -->
     <div>
       <h3>Kategori*</h3>
-       <div v-if="errors.selectedCategory" class="error-text">
-         {{ errors.selectedCategory }}
-        </div>
-        <v-btn-toggle v-model="selectedCategory"
+      
+  <v-btn-toggle v-model="selectedCategory"
   class="category-toggle d-flex flex-wrap ga-2"
   mandatory>
     <v-btn
@@ -232,10 +233,14 @@ export default {
         :value="category.CategoryName"
         rounded="xl"
         variant="#eeece8"
+        :error-messages="errors.selectedCategory ? [errors.selectedCategory] : []"
     >
         {{ category.CategoryName }}
     </v-btn>
 </v-btn-toggle>
+<div v-if="errors.selectedCategory" class="error-text">
+         {{ errors.selectedCategory }}
+        </div> 
 
       <!--
       <v-btn-toggle
@@ -268,13 +273,10 @@ export default {
       />
       <div v-if="errors.customCategory" class="error-text">
   {{ errors.customCategory }}
-</div>
+</div> 
      
 
       <h3>Navn på genstand*</h3>
-      <div v-if="errors.itemName" class="error-text">
-  {{ errors.itemName }}
-</div>
       <v-text-field
         v-model="itemName"
         label="Hvad er det for en genstand?"
@@ -282,7 +284,9 @@ export default {
         color="var(--color-primary)"
         variant="outlined"
         rounded="xl"
+        :error-messages="errors.itemName ? [errors.itemName] : []"
       />
+
 
       <h3>Mærke</h3>
       <v-text-field
@@ -392,7 +396,7 @@ export default {
 }
 
 .error-text {
-  color: red;
+  color: #B00020;
   font-size: 14px;
   margin-top: 4px;
 }
