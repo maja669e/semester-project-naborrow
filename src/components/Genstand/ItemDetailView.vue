@@ -5,7 +5,7 @@ import { updateItem } from '@/services/itemservice.js'
 //Henter vores toggle komponent
 import ToggleButton from '../ToggleButton.vue'
 export default {
-    name: 'GenstandDetail',
+    name: 'ItemDetailView',
     components: {
         ToggleButton
     },
@@ -229,9 +229,9 @@ async handleImageUpload(event) {
 
 
     <!-- Annuller -->
-  <button v-if="isEditing" class="slet-knap" @click="isEditing = false">
+<!--   <button v-if="isEditing" class="slet-knap" @click="isEditing = false">
         X
-    </button> 
+    </button>  -->
 
 </nav>
         </header>

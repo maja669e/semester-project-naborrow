@@ -1,15 +1,15 @@
 <script>
 import GenstandCard from './ItemCard.vue'
 import GenstandDetail from './ItemDetailView.vue'
-import GenstandFilter from './GenstandFilter.vue'
+import ItemFilterTabs from './ItemFilterTabs.vue'
 import { getAllItems } from '@/services/itemservice.js'
 
 export default {
-    name: 'GenstandPage',
+    name: 'ItemOverviewView',
     components: {
         GenstandCard,
         GenstandDetail,
-        GenstandFilter
+        ItemFilterTabs
     },
     data() {
         return {
