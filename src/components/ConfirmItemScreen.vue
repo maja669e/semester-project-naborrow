@@ -96,7 +96,7 @@ export default {
         }
 
         // Succes - gå til genstand siden
-        this.$emit("goToGenstandPage");
+       this.$emit("item-created");
 
       } catch (err) {
         this.error = "Noget gik galt. Prøv igen.";

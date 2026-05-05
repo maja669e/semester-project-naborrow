@@ -156,6 +156,7 @@ async saveEdit() {
         const payload = {
             ItemName: this.editedItem.title,
             CategoryName: this.editedItem.category,
+            //CategoryID: this.editedItem.category,
             Brand: this.editedItem.brand,
             Condition: this.editedItem.condition,
             MaxRentPeriodDays: this.editedItem.maxDays,

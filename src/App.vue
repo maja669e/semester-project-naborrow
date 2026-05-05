@@ -109,8 +109,7 @@ handleSaveDetails(details) {
   :currentStep="currentStep"
   :item="itemDetails"
   @goBack="currentPage = 'addDetails'"
-  @createItem="goToItems"
-  @goToItemOverview="goToItemOverview"
+  @item-created="goToItemOverview"
 />
 
       <item-overview-view
