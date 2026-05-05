@@ -1,0 +1,82 @@
+/**
+ * src/styles/settings.scss
+ *
+ * Configures SASS variables and Vuetify overwrites
+ */
+
+// https://vuetifyjs.com/features/sass-variables/`
+// @use 'vuetify/settings' with (
+//   $color-pack: false
+// );
+
+// ─────────────────────────────────────────────
+// Globale CSS variabler - Låne App design system
+// Brug disse i alle komponenter i stedet for hardkodede værdier
+// ─────────────────────────────────────────────
+
+:root {
+    /* ── Baggrunde ── */
+    --color-bg: #f5f3ef;
+    --color-surface: #ffffff;
+    --color-image-bg: #eae8e4;
+
+    /* ── Brand farver ── */
+    --color-primary: #546a41;
+    --color-primary-dark: #3d4f2e;
+
+    /* ── Tekst farver ── */
+    --color-neutral: #2d2b2a;
+    --color-secondary: #6b6763;
+
+    /* ── Accent ── */
+    --color-accent: #d98359;
+
+    /* ── Borders ── */
+    --color-border: #d5d2ce;
+    --color-input-border: #6b6763;
+
+    /* ── Status - Tilgængelig ── */
+    --color-tilgaengelig-bg: #e8f0e3;
+    --color-tilgaengelig-text: #2d4a1e;
+    --color-tilgaengelig-dot: #3d6b27;
+
+    /* ── Status - Udlånt ── */
+    --color-udlaant-bg: #f7e8d8;
+    --color-udlaant-text: #7a3810;
+    --color-udlaant-dot: #a84f1a;
+
+    /* ── Status - Inaktiv ── */
+    --color-inaktiv-bg: #eceae8;
+    --color-inaktiv-text: #3a3836;
+    --color-inaktiv-dot: #5a5855;
+
+    /* ── Border radius ── */
+    --radius-sm: 4px;
+    --radius-md: 8px;
+    --radius-lg: 12px;
+    --radius-full: 9999px;
+
+    /* ── Spacing ── */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-12: 48px;
+
+    /* ── Fonte ── */
+    --font-display: 'Newsreader', Georgia, serif;
+    --font-body: 'Manrope', system-ui, sans-serif;
+
+    /* ── Skriftstørrelser ── */
+    --text-h1: 28px;
+    --text-h2: 22px;
+    --text-h3: 18px;
+    --text-body: 16px;
+    --text-label: 14px;
+    --text-meta: 12px;
+
+    /* ── Touch targets - minimum størrelse for tilgængelighed ── */
+    --touch-target: 44px;
+}
