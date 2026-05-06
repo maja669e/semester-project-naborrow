@@ -136,6 +136,8 @@ handleSaveDetails(details) {
 
       <SuccessDialog
         v-model="showSuccess"
+        title="Oprettet!"
+        message="Din genstand er nu oprettet og klar"
         @back-to-overview="handleSuccessBack"
       />
 
