@@ -14,11 +14,11 @@ export default {
         },
         title: {
             type: String,
-            default: 'Oprettet!'
+            required: true
         },
         message: {
             type: String,
-            default: 'Din genstand er nu oprettet og klar'
+            required: true
         },
         autoCloseDuration: {
             type: Number,
