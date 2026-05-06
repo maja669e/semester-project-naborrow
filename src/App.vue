@@ -4,6 +4,7 @@ import MyItems from "@/components/MyItems.vue";
 import AddDetails from "@/components/AddDetails.vue";
 import PageOne from "@/components/PageOne.vue";
 import ConfirmItemScreen from "./components/ConfirmItemScreen.vue";
+import SuccessDialog from "./components/SuccessDialog.vue";
 import ItemOverviewView from "./components/Genstand/ItemOverviewView.vue";
 import Stepper from "@/components/Stepper.vue";
 
@@ -15,6 +16,7 @@ export default {
     AddDetails,
     PageOne,
     ConfirmItemScreen,
+    SuccessDialog,
     ItemOverviewView,
     Stepper,
   },
@@ -22,6 +24,9 @@ export default {
     return {
       currentPage: "home",
       currentStep: 1,
+      showSuccess: false,
+      itemsReloadKey: 0,
+      selectedItemId: null,
       itemDetails: {
   name: "",
   brand: "",
@@ -73,6 +78,23 @@ handleSaveDetails(details) {
     goToItemOverview() {
       this.currentPage = "itemOverview";
     },
+    onItemCreated(newId) {
+      // navigate to overview then show success dialog and request reload
+      this.currentPage = 'itemOverview'
+      // Pass the created id so the overview can scroll/highlight the new card.
+      // It will not open the detail view anymore.
+      this.selectedItemId = newId
+      // increment key so ItemOverviewView can refetch
+      this.itemsReloadKey += 1
+      // show dialog overlay on overview
+      this.showSuccess = true
+    },
+    handleSuccessBack() {
+      this.showSuccess = false
+      this.currentPage = 'itemOverview'
+      // clear selected id after navigating
+      this.selectedItemId = null
+    }
   },
 };
 </script>
@@ -104,16 +126,23 @@ handleSaveDetails(details) {
         @save-details="handleSaveDetails"
         @go-to-confirm-item="goToConfirmItem"
       />
-<ConfirmItemScreen
-  v-if="currentPage === 'confirmItem'"
-  :currentStep="currentStep"
-  :item="itemDetails"
-  @goBack="currentPage = 'addDetails'"
-  @item-created="goToItemOverview"
-/>
+      <ConfirmItemScreen
+        v-if="currentPage === 'confirmItem'"
+        :currentStep="currentStep"
+        :item="itemDetails"
+        @goBack="currentPage = 'addDetails'"
+        @item-created="onItemCreated"
+      />
+
+      <SuccessDialog
+        v-model="showSuccess"
+        @back-to-overview="handleSuccessBack"
+      />
 
       <item-overview-view
         v-if="currentPage === 'itemOverview'"
+        :reloadKey="itemsReloadKey"
+        :selectItemId="selectedItemId"
         @go-to-page-one="goToPageOne"
       />
     </v-main>

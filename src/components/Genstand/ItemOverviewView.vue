@@ -18,6 +18,8 @@ export default {
             items: [],
             loading: false,
             error: null,
+            highlightedItemId: null,
+            highlightTimer: null,
             // Tekst i bekræftelsesdialogen ved sletning
             sletBesked: '',
             // Styrer visningen af sletningsbekræftelsen
@@ -25,6 +27,14 @@ export default {
         }
     },
     props: {
+        reloadKey: {
+            type: Number,
+            default: 0
+        },
+        selectItemId: {
+            type: [Number, String],
+            default: null
+        }
     },
     computed: {
         // Filtrerer genstande baseret på aktivt filter
@@ -63,12 +73,31 @@ export default {
                     activeLoans: 0,
                     rating: null
                 }))
+                // Hvis parent sender et nyt id, scroll til kortet i oversigten og flash kortet kortvarigt
+                if (this.selectItemId) {
+                    this.flashAndScrollToItem(this.selectItemId)
+                }
             } catch (err) {
                 this.error = 'Kunne ikke hente genstande. Prøv igen.'
                 console.error('Fejl ved hentning af genstande:', err)
             } finally {
                 this.loading = false
             }
+        },
+        flashAndScrollToItem(itemId) {
+            this.highlightedItemId = String(itemId)
+
+            this.$nextTick(() => {
+                const element = document.getElementById(`item-${itemId}`)
+                if (element) {
+                    element.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                }
+            })
+
+            clearTimeout(this.highlightTimer)
+            this.highlightTimer = setTimeout(() => {
+                this.highlightedItemId = null
+            }, 2200)
         },
         visDetaljer(id) {
             this.selectedItem = this.items.find(item => item.id === id)
@@ -103,8 +132,24 @@ export default {
     },
 
     watch: {
+        // Når parent ændrer reloadKey (f.eks. efter opret), hent listen igen
+        reloadKey(newVal, oldVal) {
+            if (newVal !== oldVal) {
+                this.fetchItems()
+            }
+        }
+        ,
+        selectItemId(newVal, oldVal) {
+            if (!newVal) return
+            if (newVal !== oldVal) {
+                this.flashAndScrollToItem(newVal)
+            }
+        }
     },
-    emits: []
+    emits: [],
+    beforeUnmount() {
+        clearTimeout(this.highlightTimer)
+    }
 }
 </script>
 
@@ -162,7 +207,12 @@ export default {
 
             <!-- Liste af filtrerede kort -->
             <ul v-else class="card-list">
-                <li v-for="item in filteredItems" :key="item.id">
+                <li
+                    v-for="item in filteredItems"
+                    :key="item.id"
+                    :id="`item-${item.id}`"
+                    :class="{ 'card-list__item--flash': String(highlightedItemId) === String(item.id) }"
+                >
                     <ItemCard
                         :id="item.id"
                         :title="item.title"
@@ -228,6 +278,36 @@ export default {
     list-style: none;
     padding: 0;
     margin: 0;
+}
+
+.card-list__item--flash {
+    border-radius: var(--radius-lg);
+    animation: item-flash 2.2s ease-out 1;
+}
+
+@keyframes item-flash {
+    0% {
+        filter: brightness(1);
+        transform: scale(1);
+    }
+    20% {
+        filter: brightness(1.08);
+        transform: scale(1.01);
+    }
+    65% {
+        filter: brightness(1.03);
+        transform: scale(1);
+    }
+    100% {
+        filter: brightness(1);
+        transform: scale(1);
+    }
+}
+
+.card-list__item--highlighted {
+    border-radius: var(--radius-lg);
+    box-shadow: 0 0 0 2px var(--color-primary);
+    transition: box-shadow 0.25s ease;
 }
 
 /* Besked når ingen genstande matcher filteret */
