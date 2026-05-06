@@ -4,7 +4,7 @@ import { createItem, createAccessory } from "../services/itemservice.js";
 
 export default {
   name: "ConfirmItemScreen",
-  emits: ["goBack", "createItem", "goToGenstandPage"],
+  emits: ["goBack", "createItem", "goToGenstandPage", "item-created"],
   components: {
     Stepper,
   },
@@ -85,18 +85,22 @@ export default {
         const newItem = await createItem(itemPayload);
         const newItemId = newItem.ItemID;
 
-        // Opret tilbehør hvis der er nogle
+        // Opret tilbehør hvis der er nogle - fortsæt selvom et enkelt tilbehør fejler
         if (this.item.extras?.length > 0) {
           for (const extra of this.item.extras) {
-            await createAccessory({
-              ItemID: newItemId,
-              AccessoryName: extra,
-            });
+            try {
+              await createAccessory({
+                ItemID: newItemId,
+                AccessoryName: extra,
+              });
+            } catch (accErr) {
+              // accessory creation failed for this item — continue with others
+            }
           }
         }
 
-        // Succes - gå til genstand siden
-       this.$emit("item-created");
+        // Succes - emit new item id so parent can show it
+        this.$emit("item-created", newItemId);
 
       } catch (err) {
         this.error = "Noget gik galt. Prøv igen.";
