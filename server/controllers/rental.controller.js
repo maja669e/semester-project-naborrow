@@ -3,6 +3,8 @@ const db = require("../models");
 const Rental = db.rentals;
 const RentalRequest = db.rentalRequests;
 
+
+
 // OPRET en ny udlejning (kun hvis RentalRequest eksisterer og er godkendt)
 exports.create = async (req, res) => {
     try {
