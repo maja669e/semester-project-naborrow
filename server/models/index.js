@@ -25,6 +25,8 @@ db.categories = require("./category.model.js")(sequelize, Sequelize);
 db.rentalRequests = require("./rentalRequest.model.js")(sequelize, Sequelize);
 db.rentals = require("./rental.model.js")(sequelize, Sequelize);
 db.ratings = require("./rating.model.js")(sequelize, Sequelize);
+db.users = require("./user.model.js")(sequelize, Sequelize);
+db.messages = require("./message.model.js")(sequelize, Sequelize);
 
 
 
@@ -85,6 +87,34 @@ db.items.hasMany(db.rentalRequests, {
 db.rentalRequests.belongsTo(db.items, {
   foreignKey: "ItemID",
   as: "item"   // 🔥 IMPORTANT for include()
+});
+
+// Message -> Rental (én besked hører til ét lån, et lån kan have mange beskeder)
+db.messages.belongsTo(db.rentals, {
+  foreignKey: "RentalID",
+  as: "rental"
+});
+db.rentals.hasMany(db.messages, {
+  foreignKey: "RentalID",
+  as: "messages"
+});
+
+// Message -> User (én besked har én afsender og én modtager, en bruger kan sende og modtage mange beskeder)
+db.messages.belongsTo(db.users, {
+  foreignKey: "SenderUserID",
+  as: "sender"
+});
+db.users.hasMany(db.messages, {
+  foreignKey: "SenderUserID",
+  as: "sentMessages"
+});
+db.messages.belongsTo(db.users, {
+  foreignKey: "ReceiverUserID",
+  as: "receiver"
+});
+db.users.hasMany(db.messages, {
+  foreignKey: "ReceiverUserID",
+  as: "receivedMessages"
 });
 
 // User -> RentalRequests
