@@ -27,6 +27,9 @@ db.rentals = require("./rental.model.js")(sequelize, Sequelize);
 db.ratings = require("./rating.model.js")(sequelize, Sequelize);
 db.communities = require("./community.model.js")(sequelize, Sequelize);
 db.addresses = require("./address.model.js")(sequelize, Sequelize);
+db.users = require("./user.model.js")(sequelize, Sequelize);
+db.messages = require("./message.model.js")(sequelize, Sequelize);
+
 
 
 
@@ -41,18 +44,39 @@ db.rentalRequests.hasOne(db.rentals, {
   as: "rental"
 });
 
+// Community -> Addresses
+db.communities.hasMany(db.addresses, {
+  foreignKey: "CommunityID",
+  as: "addresses"
+});
+
+db.addresses.belongsTo(db.communities, {
+  foreignKey: "CommunityID",
+  as: "community"
+});
+
 //User -> Rating (én rating hører til én bruger, en bruger kan have mange ratings)
-/* db.users.hasMany(db.ratings, {
+ db.users.hasMany(db.ratings, {
   foreignKey: "RaterUserID",
   as: "ratings"
 });
- */
+ 
 //Rating -> User (én rating hører til én bruger)
-/* db.ratings.belongsTo(db.users, {
+db.ratings.belongsTo(db.users, {
   foreignKey: "RaterUserID",
   as: "rater"
 });
- */
+ 
+// Rental -> Ratings
+db.rentals.hasMany(db.ratings, {
+  foreignKey: "RentalID",
+  as: "ratings"
+});
+
+db.ratings.belongsTo(db.rentals, {
+  foreignKey: "RentalID",
+  as: "rental"
+});
 
 // Item -> ItemImages
 db.items.hasMany(db.itemImages, {
@@ -89,14 +113,42 @@ db.rentalRequests.belongsTo(db.items, {
   as: "item"   // 🔥 IMPORTANT for include()
 });
 
+// Message -> Rental (én besked hører til ét lån, et lån kan have mange beskeder)
+db.messages.belongsTo(db.rentals, {
+  foreignKey: "RentalID",
+  as: "rental"
+});
+db.rentals.hasMany(db.messages, {
+  foreignKey: "RentalID",
+  as: "messages"
+});
+
+// Message -> User (én besked har én afsender og én modtager, en bruger kan sende og modtage mange beskeder)
+db.messages.belongsTo(db.users, {
+  foreignKey: "SenderUserID",
+  as: "sender"
+});
+db.users.hasMany(db.messages, {
+  foreignKey: "SenderUserID",
+  as: "sentMessages"
+});
+db.messages.belongsTo(db.users, {
+  foreignKey: "ReceiverUserID",
+  as: "receiver"
+});
+db.users.hasMany(db.messages, {
+  foreignKey: "ReceiverUserID",
+  as: "receivedMessages"
+});
+
 // User -> RentalRequests
-/*db.users.hasMany(db.rentalRequests, {
+db.users.hasMany(db.rentalRequests, {
   foreignKey: "RenterUserID"
 });
 db.rentalRequests.belongsTo(db.users, {
   foreignKey: "RenterUserID",
   as: "renter"
-});*/
+});
 
 
 module.exports = db;
