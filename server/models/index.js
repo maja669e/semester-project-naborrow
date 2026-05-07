@@ -118,13 +118,13 @@ db.users.hasMany(db.messages, {
 });
 
 // User -> RentalRequests
-/*db.users.hasMany(db.rentalRequests, {
+db.users.hasMany(db.rentalRequests, {
   foreignKey: "RenterUserID"
 });
 db.rentalRequests.belongsTo(db.users, {
   foreignKey: "RenterUserID",
   as: "renter"
-});*/
+});
 
 
 module.exports = db;
