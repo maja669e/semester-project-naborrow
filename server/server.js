@@ -69,6 +69,8 @@ require("./routes/itemAccessory.routes")(app);
 require("./routes/rentalRequest.routes")(app);
 require("./routes/rental.routes.js")(app);
 require("./routes/rating.routes.js")(app);
+require("./routes/community.routes.js")(app);
+require("./routes/addresses.routes.js")(app);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

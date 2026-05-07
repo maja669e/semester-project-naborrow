@@ -25,6 +25,8 @@ db.categories = require("./category.model.js")(sequelize, Sequelize);
 db.rentalRequests = require("./rentalRequest.model.js")(sequelize, Sequelize);
 db.rentals = require("./rental.model.js")(sequelize, Sequelize);
 db.ratings = require("./rating.model.js")(sequelize, Sequelize);
+db.communities = require("./community.model.js")(sequelize, Sequelize);
+db.addresses = require("./address.model.js")(sequelize, Sequelize);
 
 
 
@@ -40,17 +42,17 @@ db.rentalRequests.hasOne(db.rentals, {
 });
 
 //User -> Rating (én rating hører til én bruger, en bruger kan have mange ratings)
-db.users.hasMany(db.ratings, {
+/* db.users.hasMany(db.ratings, {
   foreignKey: "RaterUserID",
   as: "ratings"
 });
-
+ */
 //Rating -> User (én rating hører til én bruger)
-db.ratings.belongsTo(db.users, {
+/* db.ratings.belongsTo(db.users, {
   foreignKey: "RaterUserID",
   as: "rater"
 });
-
+ */
 
 // Item -> ItemImages
 db.items.hasMany(db.itemImages, {
