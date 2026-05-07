@@ -55,7 +55,7 @@ db.sequelize.authenticate()
   });
 
 // Sync database
-db.sequelize.sync({ alter: true })
+db.sequelize.sync()
   .then(() => {
     console.log("Synced db.");
   })
@@ -67,6 +67,7 @@ require("./routes/item.routes.js")(app);
 require("./routes/category.routes")(app);
 require("./routes/itemAccessory.routes")(app);
 require("./routes/rentalRequest.routes")(app);
+require("./routes/rental.routes.js")(app);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {

@@ -23,6 +23,17 @@ db.itemImages = require("./itemImage.model.js")(sequelize, Sequelize);
 db.itemAccessories = require("./itemAccessory.model.js")(sequelize, Sequelize);
 db.categories = require("./category.model.js")(sequelize, Sequelize);
 db.rentalRequests = require("./rentalRequest.model.js")(sequelize, Sequelize);
+db.rentals = require("./rental.model.js")(sequelize, Sequelize);
+
+// Rental -> RentalRequest (én udlejning hører til én forespørgsel)
+db.rentals.belongsTo(db.rentalRequests, {
+  foreignKey: "RequestID",
+  as: "rentalRequest"
+});
+db.rentalRequests.hasOne(db.rentals, {
+  foreignKey: "RequestID",
+  as: "rental"
+});
 
 
 // Item -> ItemImages
