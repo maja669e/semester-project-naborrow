@@ -4,38 +4,56 @@
 -- MySQL syntax
 -- ============================================
 
-CREATE DATABASE IF NOT EXISTS låneApp;
-USE LåneApp;
+CREATE DATABASE IF NOT EXISTS LaaneApp;
+USE LaaneApp;
 
 -- ============================================
 -- TABEL: Community
+-- Et fællesskab dækker et husnummerinterval på én vej
 -- ============================================
 CREATE TABLE Community (
-    CommunityID     INT             NOT NULL AUTO_INCREMENT,
-    CommunityName   VARCHAR(255)    NOT NULL,
-    StreetAddress   VARCHAR(255)    NOT NULL,
-    PostalCode      VARCHAR(10)     NOT NULL,
-    City            VARCHAR(100)    NOT NULL,
+    CommunityID         INT             NOT NULL AUTO_INCREMENT,
+    CommunityName       VARCHAR(255)    NOT NULL,
+    StreetName          VARCHAR(255)    NOT NULL,
+    StreetNumberFrom    INT             NOT NULL,
+    StreetNumberTo      INT             NOT NULL,
+    PostalCode          VARCHAR(10)     NOT NULL,
+    City                VARCHAR(100)    NOT NULL,
     PRIMARY KEY (CommunityID)
 );
 
 -- ============================================
+-- TABEL: Address
+-- Et community kan have flere husnumre
+-- ============================================
+CREATE TABLE Address (
+    AddressID       INT             NOT NULL AUTO_INCREMENT,
+    CommunityID     INT             NOT NULL,
+    StreetNumber    VARCHAR(10)     NOT NULL,
+    PRIMARY KEY (AddressID),
+    FOREIGN KEY (CommunityID) REFERENCES Community(CommunityID)
+);
+
+-- ============================================
 -- TABEL: User
+-- ApartmentNumber er NULL for huse og rækkehuse
+-- Role: 'user' (default) eller 'admin'
 -- ============================================
 CREATE TABLE User (
     UserID          INT             NOT NULL AUTO_INCREMENT,
-    CommunityID     INT             NOT NULL,
+    AddressID       INT             NOT NULL,
     FirstName       VARCHAR(100)    NOT NULL,
     LastName        VARCHAR(100)    NOT NULL,
     Username        VARCHAR(100)    NOT NULL,
     Email           VARCHAR(150)    NOT NULL,
     PhoneNumber     VARCHAR(20),
-    ApartmentNumber VARCHAR(20)     NOT NULL,
+    ApartmentNumber VARCHAR(20),
     Password        VARCHAR(255)    NOT NULL,
     DateOfBirth     DATE            NOT NULL,
+    Role            VARCHAR(20)     NOT NULL DEFAULT 'user',
     PRIMARY KEY (UserID),
     UNIQUE (Email),
-    FOREIGN KEY (CommunityID) REFERENCES Community(CommunityID)
+    FOREIGN KEY (AddressID) REFERENCES Address(AddressID)
 );
 
 -- ============================================
@@ -50,7 +68,7 @@ CREATE TABLE Category (
 -- ============================================
 -- TABEL: Item
 -- Condition er et reserveret ord i MySQL - bruger backticks
--- Picture kolonne er fjernet - billeder haandteres via ItemImage
+-- Billeder håndteres via ItemImage tabellen
 -- ============================================
 CREATE TABLE Item (
     ItemID              INT             NOT NULL AUTO_INCREMENT,
@@ -63,8 +81,8 @@ CREATE TABLE Item (
     IsActive            BOOLEAN         NOT NULL DEFAULT TRUE,
     CreatedAt           DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (ItemID),
-    FOREIGN KEY (UserID)     REFERENCES User(UserID),
-    FOREIGN KEY (CategoryID) REFERENCES Category(CategoryID)
+    FOREIGN KEY (UserID)        REFERENCES User(UserID),
+    FOREIGN KEY (CategoryID)    REFERENCES Category(CategoryID)
 );
 
 -- ============================================
@@ -74,7 +92,7 @@ CREATE TABLE Item (
 CREATE TABLE ItemImage (
     ImageID         INT             NOT NULL AUTO_INCREMENT,
     ItemID          INT             NOT NULL,
-    ImageURL        VARCHAR(255)    NOT NULL,
+    ImageURL        LONGTEXT	    NOT NULL,
     IsPrimary       BOOLEAN         NOT NULL DEFAULT FALSE,
     PRIMARY KEY (ImageID),
     FOREIGN KEY (ItemID) REFERENCES Item(ItemID) ON DELETE CASCADE
@@ -92,16 +110,62 @@ CREATE TABLE ItemAccessory (
 );
 
 -- ============================================
--- TABEL: Rental
+-- TABEL: RentalRequest
+-- En bruger sender en låneanmodning på en genstand
 -- ============================================
-CREATE TABLE Rental (
-    RentalID        INT             NOT NULL AUTO_INCREMENT,
+CREATE TABLE RentalRequest (
+    RentalRequestID INT             NOT NULL AUTO_INCREMENT,
     ItemID          INT             NOT NULL,
     RenterUserID    INT             NOT NULL,
     StartDate       DATE            NOT NULL,
     EndDate         DATE            NOT NULL,
     Status          VARCHAR(50)     NOT NULL DEFAULT 'pending',
-    PRIMARY KEY (RentalID),
+    PRIMARY KEY (RentalRequestID),
     FOREIGN KEY (ItemID)        REFERENCES Item(ItemID) ON DELETE CASCADE,
     FOREIGN KEY (RenterUserID)  REFERENCES User(UserID)
+);
+
+-- ============================================
+-- TABEL: Rental
+-- Oprettes når en RentalRequest godkendes
+-- ============================================
+CREATE TABLE Rental (
+    RentalID        INT             NOT NULL AUTO_INCREMENT,
+    RequestID       INT             NOT NULL,
+    Status          VARCHAR(50)     NOT NULL,
+    PRIMARY KEY (RentalID),
+    FOREIGN KEY (RequestID) REFERENCES RentalRequest(RentalRequestID)
+);
+
+-- ============================================
+-- TABEL: Message
+-- Beskeder tilknyttet et aktivt lån
+-- ============================================
+CREATE TABLE Message (
+    MessageID       INT             NOT NULL AUTO_INCREMENT,
+    SenderUserID    INT             NOT NULL,
+    ReceiverUserID  INT             NOT NULL,
+    RentalID        INT             NOT NULL,
+    MessageText     VARCHAR(1000)   NOT NULL,
+    SentAt          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    IsRead          BOOLEAN         NOT NULL DEFAULT FALSE,
+    EditedAt        DATETIME        NULL,
+    PRIMARY KEY (MessageID),
+    FOREIGN KEY (SenderUserID)      REFERENCES User(UserID),
+    FOREIGN KEY (ReceiverUserID)    REFERENCES User(UserID),
+    FOREIGN KEY (RentalID)          REFERENCES Rental(RentalID)
+);
+
+-- ============================================
+-- TABEL: Rating
+-- En bruger kan give en bedømmelse efter et afsluttet lån
+-- ============================================
+CREATE TABLE Rating (
+    RatingID        INT             NOT NULL AUTO_INCREMENT,
+    RentalID        INT             NOT NULL,
+    RaterUserID     INT             NOT NULL,
+    Rating          INT             NOT NULL,
+    PRIMARY KEY (RatingID),
+    FOREIGN KEY (RentalID)      REFERENCES Rental(RentalID),
+    FOREIGN KEY (RaterUserID)   REFERENCES User(UserID)
 );
