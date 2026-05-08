@@ -4,10 +4,12 @@ import { deleteItem } from '@/services/itemservice.js'
 import { updateItem } from '@/services/itemservice.js'
 //Henter vores toggle komponent
 import ToggleButton from '../ToggleButton.vue'
+import ConfirmDialog from '../ConfirmDialog.vue'
 export default {
     name: 'ItemDetail',
     components: {
-        ToggleButton
+        ToggleButton,
+        ConfirmDialog
     },
     data() {
         return {
@@ -485,49 +487,16 @@ async handleImageUpload(event) {
                 <span class="detalje-stat-label">Vurdering</span>
             </div>
         </section>
-        <!-- Sletning bekræftelse dialog - vises når visSletter er true -->
-        <transition name="slet-fade">
-            <aside
-                v-if="visSletter"
-                class="slet-dialog"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="slet-dialog-titel"
-            >
-            <article class="slet-dialog-indhold">
-                <!--- Titel med genstandens navn -->
-                <h2 id="slet-dialog-titel" class="slet-dialog-titel">
-                    Slet {{ title }}?
-                </h2>
-                <!--- Bekræftelse besked -->
-                <p class="slet-dialog-tekst">
-                    Denne handling kan ikke fortrydes og genstanden vil blive fjernet permanent.
-                </p>
-                <!--- knapper der annullere eller sletter-->
-                <footer class="slet-dialog-knapper">
-                    <v-btn
-                        variant="text"
-                        @click="annullerSlet"
-                        :disabled="sletter"
-                    >
-                        Annuller
-                    </v-btn>
-                    <!-- Slet - Vuetify error farve (rød), og bruger vores styling -->
-                    <!-- :loading="sletter" viser automatisk en spinner mens backend svarer -->
-                    <v-btn
-                        color="error"
-                        variant="tonal"
-                        @click="sletGenstand"
-                        :disabled="sletter"
-                        :loading="sletter"
-                    >
-                        Slet genstand
-                    </v-btn>
-                </footer>
-
-            </article>
-            </aside>
-        </transition>
+        <!-- Sletning bekræftelse dialog -->
+        <ConfirmDialog
+            v-model="visSletter"
+            :title="'Slet ' + title + '?'"
+            message="Denne handling kan ikke fortrydes og genstanden vil blive fjernet permanent."
+            confirm-label="Slet genstand"
+            :loading="sletter"
+            @confirm="sletGenstand"
+            @cancel="annullerSlet"
+        />
         
                 <!-- EDIT MODE ACTIONS (bottom) -->
 <section v-if="isEditing" class="edit-actions">
@@ -932,68 +901,6 @@ async handleImageUpload(event) {
     background: rgba(185, 28, 28, 0.08);
 }
 
-/* Dialog overlay - mørkt halvgennemsigtigt lag over hele skærmen */
-.slet-dialog {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    border: none;
-    padding: var(--space-4);
-    margin: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-    box-sizing: border-box;
-}
-
-/* Dialog indhold - hvid boks der glider op fra bunden */
-.slet-dialog-indhold {
-    background: var(--color-surface);
-    border-radius: var(--radius-lg);
-    padding: var(--space-6);
-    width: 100%;
-    max-width: 400px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
-    border-top: 3px solid #b91c1c;
-}
-
-/* Dialog title */
-.slet-dialog-titel {
-    font-family: var(--font-body);
-    font-size: var(--text-h3);
-    font-weight: 500;
-    color: var(--color-neutral);
-    margin: 0 0 var(--space-4) 0;
-}
-
-/* Bekræftelsestekst */
-.slet-dialog-tekst {
-    font-family: var(--font-body);
-    font-size: var(--text-label);
-    color: var(--color-secondary);
-    margin: 0 0 var(--space-5) 0;
-    line-height: 1.5;
-}
-
-/* Dialog knapper */
-.slet-dialog-knapper {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
-    gap: var(--space-2);
-}
-/* Fade overgang når dialogen åbner og lukker */
-.slet-fade-enter-active,
-.slet-fade-leave-active {
-    transition: opacity 0.2s ease;
-}
-.slet-fade-enter-from,
-.slet-fade-leave-to {
-    opacity: 0;
-}
 
 /* Bottom edit actions container */
 .edit-actions {
