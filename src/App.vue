@@ -7,7 +7,7 @@ import ConfirmItemScreen from "./components/ConfirmItemScreen.vue";
 import SuccessDialog from "./components/SuccessDialog.vue";
 import ItemOverviewView from "./components/Genstand/ItemOverviewView.vue";
 import Stepper from "@/components/Stepper.vue";
-import Homepage from "@/views/Homepage.vue";
+import Homepage from "@/views/home/Homepage.vue";
 
 
 export default {
