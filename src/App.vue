@@ -7,6 +7,7 @@ import ConfirmItemScreen from "./components/ConfirmItemScreen.vue";
 import SuccessDialog from "./components/SuccessDialog.vue";
 import ItemOverviewView from "./components/Genstand/ItemOverviewView.vue";
 import Stepper from "@/components/Stepper.vue";
+import Homepage from "@/views/Homepage.vue";
 
 
 export default {
@@ -19,6 +20,7 @@ export default {
     SuccessDialog,
     ItemOverviewView,
     Stepper,
+    Homepage,
   },
   data() {
     return {
@@ -44,6 +46,10 @@ export default {
     goHome() {
       this.currentPage = "home";
     },
+    goToHomepage() {
+  this.currentPage = "homepage";
+},
+    
     goToItems() {
       this.currentPage = "itemOverview";
     },
@@ -104,6 +110,9 @@ handleSaveDetails(details) {
     <v-main>
       <!-- Page navigation -->
       <Home v-if="currentPage === 'home'" @go-to-items="goToItems" />
+      <Homepage
+  v-if="currentPage === 'homepage'"
+/>
 
       <MyItems
         v-if="currentPage === 'items'"
@@ -157,6 +166,15 @@ handleSaveDetails(details) {
       color="primary"
       @click="goHome"
     />
+    <v-btn
+  class="ma-2"
+  color="secondary"
+  location="top right"
+  position="absolute"
+  @click="goToHomepage"
+>
+  Homepage
+</v-btn>
 
     <!-- <v-btn
       class="ma-2"
