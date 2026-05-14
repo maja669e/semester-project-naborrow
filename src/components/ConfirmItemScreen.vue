@@ -126,7 +126,7 @@ export default {
     <v-divider />
 
     <!-- Stepper -->
-    <Stepper :currentStep="currentStep" />
+    <Stepper :currentStep="currentStep" :steps="['Grundinfo', 'Detaljer', 'Forhåndsvisning']" />
 
     <!-- Content -->
     <v-card-text class="px-5 pt-2 pb-8 text">
@@ -224,55 +224,6 @@ export default {
 
 .top-toolbar {
   min-height: 56px;
-}
-
-.stepper-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px 8px;
-  gap: 6px;
-}
-
-.step-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.step-circle {
-  width: 24px;
-  height: 24px;
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 700;
-}
-
-.step-item.done .step-circle,
-.step-item.active .step-circle {
-  background: #389475;
-  color: white;
-}
-
-.step-item.active span {
-  color: #111827;
-  font-weight: 600;
-}
-
-.step-line {
-  flex: 1;
-  height: 2px;
-  min-width: 16px;
-  background: #cfd8d3;
-}
-
-.step-line.done {
-  background: #389475;
 }
 
 .section-title {

@@ -4,11 +4,11 @@ export default {
   props: {
     currentStep: {
       type: Number,
-      default: 1,
+      required: true,
     },
     steps: {
       type: Array,
-      default: () => ["Grundinfo", "Detaljer", "Forhåndsvisning"],
+      required: true,
     },
   },
 };

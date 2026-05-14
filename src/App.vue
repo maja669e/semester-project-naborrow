@@ -6,7 +6,6 @@ import PageOne from "@/components/PageOne.vue";
 import ConfirmItemScreen from "./components/ConfirmItemScreen.vue";
 import SuccessDialog from "./components/SuccessDialog.vue";
 import ItemOverviewView from "./components/Genstand/ItemOverviewView.vue";
-import Stepper from "@/components/Stepper.vue";
 import Homepage from "@/views/home/Homepage.vue";
 
 
@@ -19,7 +18,6 @@ export default {
     ConfirmItemScreen,
     SuccessDialog,
     ItemOverviewView,
-    Stepper,
     Homepage,
   },
   data() {

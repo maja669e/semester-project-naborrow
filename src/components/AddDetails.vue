@@ -139,7 +139,7 @@ export default {
       </v-toolbar>
 
       <v-divider />
-    <Stepper :currentStep="currentStep" />
+    <Stepper :currentStep="currentStep" :steps="['Grundinfo', 'Detaljer', 'Forhåndsvisning']" />
 
     <h1 class="mt-2 mb-2">Tilbehør og detaljer</h1>
     <p>

@@ -161,7 +161,7 @@ export default {
 
     <v-divider />
     <!-- Stepper -->
-    <Stepper :currentStep="currentStep" />
+    <Stepper :currentStep="currentStep" :steps="['Grundinfo', 'Detaljer', 'Forhåndsvisning']" />
 
     <h2>Beskriv din genstand</h2>
     <p>
