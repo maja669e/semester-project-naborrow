@@ -7,6 +7,9 @@ import ConfirmItemScreen from "./components/ConfirmItemScreen.vue";
 import SuccessDialog from "./components/SuccessDialog.vue";
 import ItemOverviewView from "./components/Genstand/ItemOverviewView.vue";
 import Homepage from "@/views/home/Homepage.vue";
+import RentalPageOne from "@/components/rentals/RentalPageOne.vue";
+import RentalPageTwo from "@/components/rentals/RentalPageTwo.vue";
+import RentalConfirmPage from "@/components/rentals/RentalConfirmPage.vue";
 
 
 export default {
@@ -19,86 +22,134 @@ export default {
     SuccessDialog,
     ItemOverviewView,
     Homepage,
+    RentalPageOne,
+    RentalPageTwo,
+    RentalConfirmPage
   },
+
   data() {
     return {
       currentPage: "home",
       currentStep: 1,
+
       showSuccess: false,
       itemsReloadKey: 0,
       selectedItemId: null,
-      itemDetails: {
-  name: "",
-  brand: "",
-  category: "",
-  images: [],
-  condition: "",
-  loanPeriod: "",
-  extras: [],
-  categoryID: null,
 
-},
+      itemDetails: {
+        name: "",
+        brand: "",
+        category: "",
+        images: [],
+        condition: "",
+        loanPeriod: "",
+        extras: [],
+        categoryID: null,
+      },
+
+      rentalDetails: {
+        startDate: "",
+        endDate: "",
+        pickupTime: "",
+        accessories: [],
+        acceptedTerms: false,
+      },
     };
   },
+
   methods: {
     goHome() {
       this.currentPage = "home";
     },
+
     goToHomepage() {
-  this.currentPage = "homepage";
-},
-    
+      this.currentPage = "homepage";
+    },
+
     goToItems() {
       this.currentPage = "itemOverview";
     },
+
     goToPageOne() {
       this.currentPage = "pageOne";
       this.currentStep = 1;
     },
-goToAddDetails(data) {
-  console.log("PageOne data:", data);
 
-  this.itemDetails.name = data.name || "";
-  this.itemDetails.category = data.category || "";
-  this.itemDetails.images = data.images || [];
-  this.itemDetails.brand = data.brand || "";
-  this.itemDetails.categoryID = data.categoryID || 1
+    goToAddDetails(data) {
+      console.log("PageOne data:", data);
 
+      this.itemDetails.name = data.name || "";
+      this.itemDetails.category = data.category || "";
+      this.itemDetails.images = data.images || [];
+      this.itemDetails.brand = data.brand || "";
+      this.itemDetails.categoryID = data.categoryID || 1;
 
-  this.currentPage = "addDetails";
-  this.currentStep = 2;
-},
-handleSaveDetails(details) {
-  this.itemDetails.condition = details.condition || "";
-  this.itemDetails.loanPeriod = details.maxLoanPeriod || "";
-  this.itemDetails.extras = details.extras || [];
+      this.currentPage = "addDetails";
+      this.currentStep = 2;
+    },
 
-  console.log("Saved:", this.itemDetails);
-},
+    handleSaveDetails(details) {
+      this.itemDetails.condition = details.condition || "";
+      this.itemDetails.loanPeriod = details.maxLoanPeriod || "";
+      this.itemDetails.extras = details.extras || [];
+
+      console.log("Saved:", this.itemDetails);
+    },
+
     goToConfirmItem() {
       this.currentPage = "confirmItem";
       this.currentStep = 3;
     },
+
     goToItemOverview() {
       this.currentPage = "itemOverview";
     },
+
     onItemCreated(newId) {
       // navigate to overview then show success dialog and request reload
       this.currentPage = 'itemOverview'
+
       // Pass the created id so the overview can scroll/highlight the new card.
       // It will not open the detail view anymore.
       this.selectedItemId = newId
+
       // increment key so ItemOverviewView can refetch
       this.itemsReloadKey += 1
+
       // show dialog overlay on overview
       this.showSuccess = true
     },
+
     handleSuccessBack() {
       this.showSuccess = false
       this.currentPage = 'itemOverview'
+
       // clear selected id after navigating
       this.selectedItemId = null
-    }
+    },
+
+    goToRentalPageOne() {
+      this.currentPage = "rentalPageOne";
+      this.currentStep = 1;
+    },
+
+    goToRentalPageTwo(data) {
+      this.rentalDetails.startDate = data.startDate;
+      this.rentalDetails.endDate = data.endDate;
+
+      this.currentPage = "rentalPageTwo";
+      this.currentStep = 2;
+    },
+
+    saveRentalDetails(data) {
+      this.rentalDetails.pickupTime = data.pickupTime;
+      this.rentalDetails.accessories = data.accessories;
+    },
+
+    goToRentalConfirm() {
+      this.currentPage = "rentalConfirm";
+      this.currentStep = 3;
+    },
   },
 };
 </script>
@@ -154,6 +205,27 @@ handleSaveDetails(details) {
         :selectItemId="selectedItemId"
         @go-to-page-one="goToPageOne"
       />
+
+      <RentalPageOne
+  v-if="currentPage === 'rentalPageOne'"
+  :currentStep="currentStep"
+  @go-to-rental-page-two="goToRentalPageTwo"
+/>
+<RentalPageTwo
+  v-if="currentPage === 'rentalPageTwo'"
+  :currentStep="currentStep"
+  @save-rental-details="saveRentalDetails"
+  @go-to-rental-confirm="goToRentalConfirm"
+  @goBack="goToRentalPageOne"
+/>
+
+<RentalConfirmPage
+  v-if="currentPage === 'rentalConfirm'"
+  :currentStep="currentStep"
+  :rental="rentalDetails"
+  @goBack="currentPage = 'rentalPageTwo'"
+/>
+
     </v-main>
 
     <v-btn
@@ -171,7 +243,18 @@ handleSaveDetails(details) {
   position="absolute"
   @click="goToHomepage"
 >
-  Homepage
+  Forside
+</v-btn>
+
+<v-btn
+  class="ma-2"
+  color="primary"
+  location="top right"
+  position="absolute"
+  style="top: 60px"
+  @click="goToRentalPageOne"
+>
+  Test låneflow
 </v-btn>
 
     <!-- <v-btn
