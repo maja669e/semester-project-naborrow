@@ -1,7 +1,7 @@
 <script>
 import Stepper from "@/components/Stepper.vue";
-import CalendarPicker from "./CalendarPicker.vue";
-import PeriodSummary from "./PeriodSummary.vue";
+import CalendarPicker from "./components/rentals/CalendarPicker.vue";
+import PeriodSummary from "./components/rentals/PeriodSummary.vue";
 
 export default {
   name: "RentalPageOne",

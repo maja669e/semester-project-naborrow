@@ -1,57 +1,45 @@
 <script>
 import Stepper from "@/components/Stepper.vue";
-
-import PickupTimeSelector from "./PickupTimeSelector.vue";
-import PickAccessories from "./PickAccessories.vue";
+import RentalSummaryCard from "./components/rentals/RentalSummaryCard.vue";
 
 export default {
-  name: "RentalPageTwo",
+  name: "RentalConfirmPage",
 
   components: {
     Stepper,
-    PickupTimeSelector,
-    PickAccessories,
+    RentalSummaryCard,
   },
 
   props: {
     currentStep: Number,
+
+    rental: {
+      type: Object,
+      required: true,
+    },
   },
 
   data() {
     return {
-      pickupTime: "",
-      accessories: [],
+      acceptedTerms: false,
 
-      errors: {
-        pickupTime: "",
-      },
+      error: "",
     };
   },
 
   methods: {
-    validate() {
-      if (!this.pickupTime) {
-        this.errors.pickupTime = "Vælg et tidspunkt";
-        return false;
+    confirmRental() {
+
+      if (!this.acceptedTerms) {
+        this.error = "Du skal acceptere vilkår og betingelser";
+        return;
       }
 
-      this.errors.pickupTime = "";
-      return true;
-    },
+      this.error = "";
 
-    next() {
-      if (!this.validate()) return;
+      console.log("Rental confirmed:", this.rental);
 
-      this.$emit("save-rental-details", {
-        pickupTime: this.pickupTime,
-        accessories: this.accessories,
-      });
-      console.log({
-  pickupTime: this.pickupTime,
-  accessories: this.accessories,
-});
-
-      this.$emit("go-to-rental-confirm");
+      alert("Låneanmodning sendt!");
     },
   },
 };
@@ -67,28 +55,32 @@ export default {
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
 
-    <h2>Afhentning</h2>
+    <h2>Bekræft lån</h2>
 
     <p>
-      Vælg tidspunkt og tilbehør til lånet.
+      Tjek dine oplysninger før du sender låneanmodningen
     </p>
 
-    <!-- Pickup time -->
-    <PickupTimeSelector
-      v-model="pickupTime"
+    <!-- Summary card -->
+    <RentalSummaryCard
+      :rental="rental"
     />
 
+    <!-- Terms -->
+    <v-checkbox
+      v-model="acceptedTerms"
+      class="mt-4"
+      color="primary"
+      label="Jeg accepterer vilkår og betingelser"
+    />
+
+    <!-- Error -->
     <div
-      v-if="errors.pickupTime"
+      v-if="error"
       class="error-text"
     >
-      {{ errors.pickupTime }}
+      {{ error }}
     </div>
-
-    <!-- Accessories -->
-    <PickAccessories
-      v-model="accessories"
-    />
 
     <!-- Buttons -->
     <div class="bottom-bar">
@@ -111,9 +103,9 @@ export default {
         color="primary"
         rounded="lg"
         class="create-button"
-        @click="next"
+        @click="confirmRental"
       >
-        Næste
+        Bekræft lån
       </v-btn>
 
     </div>

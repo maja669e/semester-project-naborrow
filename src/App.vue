@@ -7,9 +7,9 @@ import ConfirmItemScreen from "./components/ConfirmItemScreen.vue";
 import SuccessDialog from "./components/SuccessDialog.vue";
 import ItemOverviewView from "./components/Genstand/ItemOverviewView.vue";
 import Homepage from "@/views/home/Homepage.vue";
-import RentalPageOne from "@/components/rentals/RentalPageOne.vue";
-import RentalPageTwo from "@/components/rentals/RentalPageTwo.vue";
-import RentalConfirmPage from "@/components/rentals/RentalConfirmPage.vue";
+import RentalPageOne from "@/views/rentals/RentalPageOne.vue";
+import RentalPageTwo from "@/views/rentals/RentalPageTwo.vue";
+import RentalConfirmPage from "@/views/rentals/RentalConfirmPage.vue";
 
 
 export default {
