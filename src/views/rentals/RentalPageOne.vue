@@ -62,12 +62,13 @@ watch: {
   this.errors.dates = "";
   this.errors.pickupTime = "";
 
-  const diff =
-  new Date(this.endDate) -
-  new Date(this.startDate)
+  const s = new Date(this.startDate);
+  s.setHours(0, 0, 0, 0);
+  const e = new Date(this.endDate);
+  e.setHours(0, 0, 0, 0);
 
 const diffDays =
-  Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1
+  Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1
 
 if (
   this.item?.maxDays &&
