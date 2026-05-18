@@ -1,6 +1,7 @@
 <script>
 import Stepper from "@/components/Stepper.vue";
 import RentalSummaryCard from "@/components/rentals/RentalSummaryCard.vue";
+import TermsDialog from "@/components/feedback/TermsDialog.vue";
 
 export default {
   name: "RentalConfirmPage",
@@ -8,6 +9,7 @@ export default {
   components: {
     Stepper,
     RentalSummaryCard,
+    TermsDialog,
   },
  
 
@@ -28,25 +30,28 @@ export default {
   data() {
     return {
       acceptedTerms: false,
-
       error: "",
+      showTerms: false,
     };
   },
 
   methods: {
-    confirmRental() {
+   
+  confirmRental() {
+    if (!this.acceptedTerms) {
+        console.log("CONFIRM CLICKED"); // <-- add this first
+      this.error = "Du skal acceptere vilkår og betingelser";
+      return;
+    }
 
-      if (!this.acceptedTerms) {
-        this.error = "Du skal acceptere vilkår og betingelser";
-        return;
-      }
+    this.error = "";
 
-      this.error = "";
+    console.log("Rental confirmed:", this.rental);
 
-      console.log("Rental confirmed:", this.rental);
+    // instead of alert:
+    this.$emit("rental-confirmed");
+  },
 
-      alert("Låneanmodning sendt!");
-    },
   },
 };
 </script>
@@ -75,12 +80,23 @@ export default {
     />
 
     <!-- Terms -->
-    <v-checkbox
-      v-model="acceptedTerms"
-      class="mt-4"
-      color="primary"
-      label="Jeg accepterer vilkår og betingelser"
-    />
+  <v-checkbox v-model="acceptedTerms" color="primary">
+  <template #label>
+    <span>
+      Jeg accepterer
+      <a
+        href="#"
+        class="terms-link"
+        @click.prevent="showTerms = true"
+      >
+        vilkår og betingelser
+      </a>
+    </span>
+  </template>
+</v-checkbox>
+
+<TermsDialog v-model="showTerms" />
+
 
     <!-- Error -->
     <div
@@ -158,6 +174,11 @@ export default {
 }
 .page {
   padding-bottom: 120px; /* space for bottom button */
+}
+.terms-link {
+  color: #1B5E20;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 </style>

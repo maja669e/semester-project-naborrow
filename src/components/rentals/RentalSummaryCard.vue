@@ -59,23 +59,23 @@ methods: {
     return `${startDay}. ${startMonth} - ${endDay}. ${endMonth} ${year}`
   },
 
-  getDuration(start, end) {
-    if (!start || !end) return "-"
+ getDuration(start, end) {
+  if (!start || !end) return "-";
 
-    const startDate = new Date(start)
-    const endDate = new Date(end)
+  const startDate = new Date(start);
+  const endDate = new Date(end);
 
-    const diffTime =
-      endDate - startDate
+  // normalize to remove time differences
+  startDate.setHours(0, 0, 0, 0);
+  endDate.setHours(0, 0, 0, 0);
 
-    const diffDays =
-      Math.ceil(
-        diffTime /
-          (1000 * 60 * 60 * 24)
-      ) + 1
+  const diffTime = endDate - startDate;
 
-    return `${diffDays} dage`
-  },
+  const diffDays =
+    Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+  return `${diffDays} dage`;
+}
 },
 };
 </script>

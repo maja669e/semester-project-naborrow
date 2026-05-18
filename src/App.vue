@@ -240,6 +240,7 @@ export default {
   :rental="rentalDetails"
   :item="selectedRentalItem"
   @goBack="currentPage = 'rentalPageTwo'"
+  @rental-confirmed="goToHomepage"
 />
 
     </v-main>
