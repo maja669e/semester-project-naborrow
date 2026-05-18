@@ -16,6 +16,10 @@ export default {
 
   props: {
     currentStep: Number,
+    item: {
+    type: Object,
+    default: () => ({}),
+  },
   },
 
   data() {
@@ -58,6 +62,23 @@ watch: {
   this.errors.dates = "";
   this.errors.pickupTime = "";
 
+  const diff =
+  new Date(this.endDate) -
+  new Date(this.startDate)
+
+const diffDays =
+  Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1
+
+if (
+  this.item?.maxDays &&
+  diffDays > this.item.maxDays
+) {
+  this.errors.dates =
+    `Maks ${this.item.maxDays} dage`
+
+  return false
+}
+
   return true;
 },
     next() {
@@ -96,12 +117,14 @@ watch: {
     <CalendarPicker
       v-model:startDate="startDate"
       v-model:endDate="endDate"
+      :maxDays="item?.maxDays"
     />
 
   
     <PeriodSummary
       :startDate="startDate"
       :endDate="endDate"
+       :maxDays="item?.maxDays"
     />
     <div v-if="errors.dates" class="error-text">
       {{ errors.dates }}

@@ -19,13 +19,20 @@ export default {
   },
 
   diffDays() {
-    if (!this.startDate || !this.endDate) return 0;
+  if (!this.startDate || !this.endDate) return 0;
 
-    const diff =
-      new Date(this.endDate) - new Date(this.startDate);
+  const start = new Date(this.startDate);
+  const end = new Date(this.endDate);
 
-    return Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
-  }
+  // normalize to midnight (VERY important)
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+
+  const diffTime = end - start;
+
+  return Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+},
+ 
 }
 };
 </script>
@@ -36,9 +43,14 @@ export default {
   <v-icon>mdi-calendar-month</v-icon>Valgt periode: {{ formattedStart }} <v-icon size="small">mdi-arrow-right</v-icon> {{ formattedEnd }} ({{ diffDays }} dage)
 </v-card-text>
   </v-card>
+  
 </template>
 
 <style scoped>
-
+.error-text {
+  color: #B00020;
+  margin-top: 8px;
+  font-size: 14px;
+}
 
   </style>

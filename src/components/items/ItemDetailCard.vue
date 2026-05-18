@@ -75,7 +75,7 @@ emits: ['requestLoan'],
     <div class="detail-box">
 
         <span class="detail-box-label">
-            Maks lån
+            Maks låne
         </span>
 
         <span class="detail-box-number">

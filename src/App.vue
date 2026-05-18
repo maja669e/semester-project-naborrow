@@ -222,6 +222,7 @@ export default {
       <RentalPageOne
   v-if="currentPage === 'rentalPageOne'"
   :currentStep="currentStep"
+   :item="selectedRentalItem"
   @go-to-rental-page-two="goToRentalPageTwo"
 />
 <RentalPageTwo
@@ -256,7 +257,7 @@ export default {
   color="secondary"
   location="top right"
   position="absolute"
-  @click="goToHomepage"
+  @click="goToHomepage" :item="selectedRentalItem"
 >
   Forside
 </v-btn>
