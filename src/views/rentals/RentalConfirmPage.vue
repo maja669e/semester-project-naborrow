@@ -1,6 +1,6 @@
 <script>
 import Stepper from "@/components/Stepper.vue";
-import RentalSummaryCard from "./components/rentals/RentalSummaryCard.vue";
+import RentalSummaryCard from "@/components/rentals/RentalSummaryCard.vue";
 
 export default {
   name: "RentalConfirmPage",
@@ -9,6 +9,7 @@ export default {
     Stepper,
     RentalSummaryCard,
   },
+ 
 
   props: {
     currentStep: Number,
@@ -17,6 +18,11 @@ export default {
       type: Object,
       required: true,
     },
+
+     item: {
+    type: Object,
+    required: true
+  }
   },
 
   data() {
@@ -47,13 +53,14 @@ export default {
 
 <template>
 
-  <v-container class="pa-4">
+  <v-container class="pa-4 page">
 
     <!-- Stepper -->
     <Stepper
       :currentStep="currentStep"
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
+  
 
     <h2>Bekræft lån</h2>
 
@@ -64,6 +71,7 @@ export default {
     <!-- Summary card -->
     <RentalSummaryCard
       :rental="rental"
+       :item="item"
     />
 
     <!-- Terms -->
@@ -147,6 +155,9 @@ export default {
   color: #B00020;
   font-size: 14px;
   margin-top: 4px;
+}
+.page {
+  padding-bottom: 120px; /* space for bottom button */
 }
 
 </style>

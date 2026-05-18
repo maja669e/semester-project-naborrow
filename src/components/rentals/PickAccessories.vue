@@ -7,22 +7,16 @@ export default {
       type: Array,
       default: () => [],
     },
+
+    accessories: {
+      type: Array,
+      default: () => [],
+    },
   },
 
   emits: [
     "update:modelValue",
   ],
-
-  data() {
-    return {
-      availableAccessories: [
-        "Oplader",
-        "Taske",
-        "Batteri",
-        "Stativ",
-      ],
-    };
-  },
 
   methods: {
     toggleAccessory(accessory) {
@@ -50,18 +44,16 @@ export default {
 
   <div class="mt-8">
 
-    <h3>Tilbehør</h3>
-
     <div class="d-flex flex-wrap ga-2 mt-3">
 
       <v-btn
-        v-for="accessory in availableAccessories"
+        v-for="accessory in accessories"
         :key="accessory"
         rounded="xl"
         :color="isSelected(accessory) ? 'primary' : ''"
         @click="toggleAccessory(accessory)"
       >
-        {{ accessory }}
+       {{ accessory }}
       </v-btn>
 
     </div>

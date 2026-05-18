@@ -1,54 +1,41 @@
 <script>
 import Stepper from "@/components/Stepper.vue";
-
-import PickupTimeSelector from "./components/rentals/PickupTimeSelector.vue";
-import PickAccessories from "./components/rentals/PickAccessories.vue";
+import PickAccessories from "@/components/rentals/PickAccessories.vue";
 
 export default {
   name: "RentalPageTwo",
 
   components: {
     Stepper,
-    PickupTimeSelector,
     PickAccessories,
+    
   },
 
   props: {
     currentStep: Number,
+     item: {
+    type: Object,
+    required: true,
+  },
   },
 
   data() {
     return {
-      pickupTime: "",
       accessories: [],
-
-      errors: {
-        pickupTime: "",
-      },
+      messageToLender: "",
     };
   },
 
   methods: {
-    validate() {
-      if (!this.pickupTime) {
-        this.errors.pickupTime = "Vælg et tidspunkt";
-        return false;
-      }
-
-      this.errors.pickupTime = "";
-      return true;
-    },
-
-    next() {
-      if (!this.validate()) return;
-
+  next() {
       this.$emit("save-rental-details", {
-        pickupTime: this.pickupTime,
         accessories: this.accessories,
+        messageToLender: this.messageToLender,
       });
-      console.log({
-  pickupTime: this.pickupTime,
-  accessories: this.accessories,
+
+    console.log({
+    accessories: this.accessories,
+    messageToLender: this.messageToLender,
 });
 
       this.$emit("go-to-rental-confirm");
@@ -69,26 +56,22 @@ export default {
 
     <h2>Afhentning</h2>
 
-    <p>
-      Vælg tidspunkt og tilbehør til lånet.
-    </p>
-
-    <!-- Pickup time -->
-    <PickupTimeSelector
-      v-model="pickupTime"
-    />
-
-    <div
-      v-if="errors.pickupTime"
-      class="error-text"
-    >
-      {{ errors.pickupTime }}
-    </div>
-
+   <h3>Vælg ønsket tilbehør</h3>
     <!-- Accessories -->
     <PickAccessories
       v-model="accessories"
+      :accessories="item.accessories"
     />
+
+    <v-textarea
+  v-model="messageToLender"
+  label="Besked til udlåner"
+  placeholder="Skriv en besked..."
+  variant="outlined"
+  rounded="xl"
+  rows="4"
+  class="mt-6"
+/>
 
     <!-- Buttons -->
     <div class="bottom-bar">

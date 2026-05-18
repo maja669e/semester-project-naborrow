@@ -36,6 +36,8 @@ export default {
       itemsReloadKey: 0,
       selectedItemId: null,
 
+      selectedRentalItem: null,
+
       itemDetails: {
         name: "",
         brand: "",
@@ -53,6 +55,7 @@ export default {
         pickupTime: "",
         accessories: [],
         acceptedTerms: false,
+        messageToLender: "",
       },
     };
   },
@@ -136,13 +139,14 @@ export default {
     goToRentalPageTwo(data) {
       this.rentalDetails.startDate = data.startDate;
       this.rentalDetails.endDate = data.endDate;
+      this.rentalDetails.pickupTime = data.pickupTime;
 
       this.currentPage = "rentalPageTwo";
       this.currentStep = 2;
     },
 
     saveRentalDetails(data) {
-      this.rentalDetails.pickupTime = data.pickupTime;
+      this.rentalDetails.messageToLender = data.messageToLender;
       this.rentalDetails.accessories = data.accessories;
     },
 
@@ -150,6 +154,13 @@ export default {
       this.currentPage = "rentalConfirm";
       this.currentStep = 3;
     },
+    startRentalFlow(item) {
+
+  this.selectedRentalItem = item
+
+  this.currentPage = "rentalPageOne"
+  this.currentStep = 1
+},
   },
 };
 </script>
@@ -159,8 +170,10 @@ export default {
     <v-main>
       <!-- Page navigation -->
       <Home v-if="currentPage === 'home'" @go-to-items="goToItems" />
+      
       <Homepage
   v-if="currentPage === 'homepage'"
+    @startRental="startRentalFlow"
 />
 
       <MyItems
@@ -214,6 +227,7 @@ export default {
 <RentalPageTwo
   v-if="currentPage === 'rentalPageTwo'"
   :currentStep="currentStep"
+  :item="selectedRentalItem"
   @save-rental-details="saveRentalDetails"
   @go-to-rental-confirm="goToRentalConfirm"
   @goBack="goToRentalPageOne"
@@ -223,6 +237,7 @@ export default {
   v-if="currentPage === 'rentalConfirm'"
   :currentStep="currentStep"
   :rental="rentalDetails"
+  :item="selectedRentalItem"
   @goBack="currentPage = 'rentalPageTwo'"
 />
 
@@ -244,17 +259,6 @@ export default {
   @click="goToHomepage"
 >
   Forside
-</v-btn>
-
-<v-btn
-  class="ma-2"
-  color="primary"
-  location="top right"
-  position="absolute"
-  style="top: 60px"
-  @click="goToRentalPageOne"
->
-  Test låneflow
 </v-btn>
 
     <!-- <v-btn
