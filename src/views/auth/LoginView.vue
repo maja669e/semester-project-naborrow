@@ -1,43 +1,74 @@
 <script>
 // Login-side for LÅKAL.
 // Brugeren logger ind med email og adgangskode.
-// authStore.logInd() kalder API'et og gemmer brugeren i den centrale auth-tilstand.
+// authStore og gaaTilHjem injekteres fra App.vue via provide/inject –
+// præcis som gaaTilGenstande i HomeView og gaaTilOpret i ItemOverviewView.
 // Router-vagten i router/index.js sender ikke-loggede brugere hertil automatisk.
-import { authStore } from "@/stores/auth.js";
-
 export default {
   name: "LoginView",
 
+  inject: ["authStore", "gaaTilHjem"],
+
   data() {
     return {
-      email:          "",
-      adgangskode:    "",
-      visFejl:        "",      // Fejlbesked vist ved forkerte oplysninger
-      indlaeser:      false,   // Deaktiverer knappen mens API-kaldet kører
-      visAdgangskode: false,   // Skifter adgangskodefeltet mellem tekst og password
+      email:           "",
+      adgangskode:     "",
+      visFejl:         "",     // Fejlbesked vist ved forkerte loginoplysninger
+      indlaeser:       false,  // Deaktiverer knappen mens API-kaldet kører
+      visAdgangskode:  false,  // Skifter adgangskodefeltet mellem tekst og password
+      formForsøgt:     false,  // Skifter adgangskodevalidering til "input" efter første indsendelse
+      emailFejl:       "",     // Manuel fejlbesked for email – styret uden for Vuetify rules
 
-      // Valideringsregler – køres af Vuetify før formularen indsendes
-      emailRegler: [
-        v => !!v                                          || "Email er påkrævet.",
-        v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)       || "Indtast en gyldig email-adresse.",
-      ],
+      // Adgangskoderegler – køres af Vuetify via form.validate() ved indsendelse
       adgangskodeRegler: [
         v => !!v || "Adgangskode er påkrævet.",
       ],
     };
   },
 
+  computed: {
+    // Adgangskode: ingen fejl mens brugeren skriver første gang.
+    // Efter første indsendelse vises fejl løbende mens brugeren retter.
+    adgangskodeValideringsHændelse() {
+      return this.formForsøgt ? "input" : "submit";
+    },
+  },
+
   methods: {
-    // Kaldes ved formularindsendelse – validerer felter, logger ind og navigerer til forsiden
+    // Validerer email med 200ms forsinkelse efter blur.
+    // Forsinkelsen sikrer at autofyld (Face ID, fingeraftryk, adgangskodehåndtering)
+    // når at udfylde feltet inden vi kontrollerer om det er tomt –
+    // så der ikke vises en falsk fejl under biometrisk login.
+    validerEmailEfterBlur() {
+      setTimeout(() => {
+        this.emailFejl = this.tjekEmail();
+      }, 200);
+    },
+
+    // Returnerer en fejlbesked hvis email er ugyldig, ellers tom streng
+    tjekEmail() {
+      if (!this.email) return "Email er påkrævet.";
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(this.email)) return "Indtast en gyldig email-adresse.";
+      return "";
+    },
+
+    // Kaldes ved formularindsendelse – validerer alle felter og logger brugeren ind
     async logInd() {
+      this.formForsøgt = true;
+
+      // Validér email manuelt så vi har fuld kontrol over hvornår fejlen vises
+      this.emailFejl = this.tjekEmail();
+
+      // Validér adgangskode via Vuetify
       const { valid } = await this.$refs.loginFormular.validate();
-      if (!valid) return;
+
+      if (this.emailFejl || !valid) return;
 
       this.visFejl = "";
       this.indlaeser = true;
       try {
-        await authStore.logInd(this.email, this.adgangskode);
-        this.$router.push({ name: "home" });
+        await this.authStore.logInd(this.email, this.adgangskode);
+        this.gaaTilHjem();
       } catch (err) {
         this.visFejl = err.message;
       } finally {
@@ -61,14 +92,15 @@ export default {
         Log ind for at fortsætte
       </p>
 
-      <!-- aria-labelledby knytter formularen til overskriften for skærmlæsere -->
       <v-form
         ref="loginFormular"
         aria-labelledby="login-beskrivelse"
-        @submit.prevent="logInd"
         novalidate
+        @submit.prevent="logInd"
       >
 
+        <!-- Email styres manuelt – blur-validering har 200ms forsinkelse for at
+             undgå falsk fejl under Face ID / biometrisk autofyld -->
         <v-text-field
           v-model="email"
           label="Email"
@@ -77,11 +109,11 @@ export default {
           autocomplete="email"
           type="email"
           class="mb-3"
-          :rules="emailRegler"
+          :error-messages="emailFejl"
           :disabled="indlaeser"
-          validate-on="blur"
           required
-          @update:model-value="visFejl = ''"
+          @blur="validerEmailEfterBlur"
+          @update:model-value="emailFejl = ''; visFejl = ''"
         />
 
         <v-text-field
@@ -95,14 +127,14 @@ export default {
           autocomplete="current-password"
           class="mb-2"
           :rules="adgangskodeRegler"
+          :validate-on="adgangskodeValideringsHændelse"
           :disabled="indlaeser"
-          validate-on="blur"
           required
           @update:model-value="visFejl = ''"
           @click:append-inner="visAdgangskode = !visAdgangskode"
         />
 
-        <!-- Fejlbesked annonceres til skærmlæsere via role="alert" (indbygget i v-alert type="error") -->
+        <!-- Fejlbesked fra server – annonceres til skærmlæsere via role="alert" -->
         <v-alert
           v-if="visFejl"
           type="error"

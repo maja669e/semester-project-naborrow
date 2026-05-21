@@ -18,11 +18,12 @@ export default {
     items: {
       type: Array,
       default: () => [
-        { key: "home",         label: "Hjem",      icon: "mdi-home-outline",      activeIcon: "mdi-home" },
-        { key: "homepage",     label: "Udforsk",   icon: "mdi-compass-outline",   activeIcon: "mdi-compass" },
-        { key: "itemOverview", label: "Mine ting", icon: "mdi-tag-outline",       activeIcon: "mdi-tag" },
-        // "Lån" er endnu ikke implementeret – deaktiveret indtil låneflowet er færdigt
-        { key: "loans",        label: "Lån",       icon: "mdi-handshake-outline", activeIcon: "mdi-handshake", disabled: true },
+        { key: "home",         label: "Hjem",      icon: "mdi-home-outline",             activeIcon: "mdi-home" },
+        { key: "homepage",     label: "Udforsk",   icon: "mdi-compass-outline",          activeIcon: "mdi-compass" },
+        { key: "itemOverview", label: "Mine ting", icon: "mdi-tag-outline",              activeIcon: "mdi-tag" },
+        // "Beskeder" er endnu ikke implementeret – deaktiveret indtil chatflowet er færdigt
+        { key: "beskeder",     label: "Beskeder",  icon: "mdi-chat-outline",             activeIcon: "mdi-chat", disabled: true },
+        { key: "profil",       label: "Profil",    icon: "mdi-account-circle-outline",   activeIcon: "mdi-account-circle" },
       ],
     },
   },

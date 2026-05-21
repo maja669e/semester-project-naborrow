@@ -14,6 +14,9 @@ export default {
 
   data() {
     return {
+      // ── Profil / logout ──────────────────────────────────
+      visProfilMenu: false,
+
       // ── Opret-genstand flow ──────────────────────────────
       visSucces: false,
 
@@ -47,6 +50,7 @@ export default {
       gaaTilGenstande:  this.gaaTilGenstande,
       gaaTilOpret:      this.gaaTilOpret,
       genstandOprettet: this.onItemCreated,
+      gaaTilHjem:       this.gaaTilHjem,
 
       // Auth – tilgængeligt i alle descendant-komponenter
       authStore,
@@ -56,6 +60,7 @@ export default {
   computed: {
     // Oversæt den aktuelle rute til en AppBottomNav-fanepnøgle
     activePage() {
+      if (this.visProfilMenu) return "profil";
       const map = { home: "home", community: "homepage", items: "itemOverview" };
       return map[this.$route?.name] || "";
     },
@@ -110,8 +115,10 @@ export default {
 
   methods: {
     // ── Generel navigation ───────────────────────────────────
-    // Oversæt AppBottomNav-fanepnøgle til et rutenavn og naviger
+    // Oversæt AppBottomNav-fanepnøgle til et rutenavn og naviger.
+    // "profil" åbner bundmenuen i stedet for at navigere til en ny rute.
     navigateTo(key) {
+      if (key === "profil") { this.visProfilMenu = true; return; }
       const map = { home: "home", homepage: "community", itemOverview: "items" };
       if (map[key]) this.$router.push({ name: map[key] });
     },
@@ -122,6 +129,10 @@ export default {
 
     gaaTilOpret() {
       this.$router.push({ name: "opret-genstand" });
+    },
+
+    gaaTilHjem() {
+      this.$router.push({ name: "home" });
     },
 
     // ── Opret-genstand flow ──────────────────────────────────
@@ -164,6 +175,13 @@ export default {
     gaaTilLaaneTrinEt() {
       this.$router.push({ name: "laan-trin-1" });
     },
+
+    // Logger brugeren ud, lukker profilmenuen og sender til login-siden
+    logUd() {
+      authStore.logUd();
+      this.visProfilMenu = false;
+      this.$router.push({ name: "login" });
+    },
   },
 };
 </script>
@@ -193,12 +211,88 @@ export default {
       @back-to-overview="handleSuccessBack"
     />
 
-    <!-- Bundnavigation vises kun på de tre primære sider -->
+    <!-- Bundnavigation vises kun på de primære sider når brugeren er logget ind -->
     <AppBottomNav
       v-if="showBottomNav"
       :activePage="activePage"
       @navigate="navigateTo"
     />
 
+    <!-- Profilmenu – vises som bundark når brugeren trykker på Profil-fanen -->
+    <v-bottom-sheet v-model="visProfilMenu" max-width="600">
+      <v-sheet class="profil-ark">
+
+        <!-- Brugerinfo øverst i arket -->
+        <div class="profil-ark__bruger">
+          <v-icon size="48" color="var(--color-primary)">mdi-account-circle</v-icon>
+          <div class="profil-ark__navn">
+            <span class="profil-ark__fulde-navn">
+              {{ authStore.bruger.value?.firstName }} {{ authStore.bruger.value?.lastName }}
+            </span>
+            <span class="profil-ark__email">{{ authStore.bruger.value?.email }}</span>
+          </div>
+        </div>
+
+        <v-divider class="mb-4" />
+
+        <!-- Log ud-knap -->
+        <v-btn
+          block
+          variant="tonal"
+          color="error"
+          size="large"
+          prepend-icon="mdi-logout"
+          class="profil-ark__log-ud"
+          @click="logUd"
+        >
+          Log ud
+        </v-btn>
+
+        <!-- Luk-knap -->
+        <v-btn
+          block
+          variant="text"
+          class="mt-2 profil-ark__luk"
+          @click="visProfilMenu = false"
+        >
+          Annuller
+        </v-btn>
+
+      </v-sheet>
+    </v-bottom-sheet>
+
   </v-app>
 </template>
+
+<style scoped>
+.profil-ark {
+  padding: 24px 16px 32px;
+  border-radius: 16px 16px 0 0;
+}
+
+.profil-ark__bruger {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.profil-ark__navn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.profil-ark__fulde-navn {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: 600;
+  color: var(--color-neutral);
+}
+
+.profil-ark__email {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--color-secondary);
+}
+</style>

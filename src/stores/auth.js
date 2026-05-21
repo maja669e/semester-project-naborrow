@@ -5,9 +5,9 @@
 import { reactive, computed } from "vue";
 import { login as loginApi } from "@/services/authservice.js";
 
-// Reaktiv tilstand – bruger er null når ingen er logget ind
+// Reaktiv tilstand – gendannes fra localStorage så login overlever sideopdatering
 const tilstand = reactive({
-    bruger: null,
+    bruger: JSON.parse(localStorage.getItem("laakl_bruger")) || null,
 });
 
 export const authStore = {
@@ -15,14 +15,16 @@ export const authStore = {
     erLoggetInd: computed(() => tilstand.bruger !== null),
     bruger:      computed(() => tilstand.bruger),
 
-    // Kalder login-API og gemmer brugerdata i tilstand ved succes
+    // Kalder login-API og gemmer brugerdata i tilstand og localStorage ved succes
     async logInd(email, adgangskode) {
         const bruger = await loginApi(email, adgangskode);
         tilstand.bruger = bruger;
+        localStorage.setItem("laakl_bruger", JSON.stringify(bruger));
     },
 
-    // Nulstiller tilstand – bruges ved logout
+    // Nulstiller tilstand og fjerner bruger fra localStorage – bruges ved logout
     logUd() {
         tilstand.bruger = null;
+        localStorage.removeItem("laakl_bruger");
     },
 };
