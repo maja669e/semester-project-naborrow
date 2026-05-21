@@ -1,12 +1,14 @@
 <script>
 // Velkomstside – første visning brugeren ser ved opstart.
 // Indeholder et velkomstbillede og navigation til genstandsoversigt og lån.
+// gaaTilGenstande injekteres fra App.vue via provide/inject i stedet for $emit,
+// så komponenten ikke behøver at kende til sin forælder.
 export default {
   name: "HomeView",
 
-  emits: [
-    "go-to-items", // Udsendes når brugeren trykker på "Dine genstande"
-  ],
+  // Injekter navigationsmetoden fra App.vue.
+  // App.vue provides gaaTilGenstande via sin provide()-funktion.
+  inject: ["gaaTilGenstande"],
 };
 </script>
 
@@ -32,12 +34,12 @@ export default {
       <nav aria-label="Hovednavigation">
         <v-row>
 
-          <!-- Naviger til brugerens egne genstande -->
+          <!-- Naviger til brugerens egne genstande via injekteret metode -->
           <v-col cols="12">
             <v-btn
               class="genstande-knap mt-15"
               size="large"
-              @click="$emit('go-to-items')"
+              @click="gaaTilGenstande()"
             >
               Dine genstande
             </v-btn>

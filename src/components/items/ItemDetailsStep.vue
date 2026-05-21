@@ -1,7 +1,8 @@
 <script>
 // Trin 2 i opret-genstand-flowet.
 // Indsamler tilbehør, stand og maksimal låneperiode.
-// Validerer felterne inden data sendes videre til trin 3 via go-to-confirm-item.
+// Modtager initialData fra CreateItemView så formularen gendannes
+// korrekt hvis brugeren trykker tilbage fra trin 3.
 import MultiStepFormHeader from "@/components/layout/MultiStepFormHeader.vue";
 import FormBottomBar       from "@/components/layout/FormBottomBar.vue";
 
@@ -12,16 +13,24 @@ export default {
   props: {
     // Det aktuelle trin sendt videre til MultiStepFormHeader
     currentStep: { type: Number, default: 1 },
+
+    // Tidligere udfyldte data fra CreateItemView.
+    // Bruges til at gendanne formens tilstand hvis brugeren går tilbage.
+    initialData: { type: Object, default: () => ({}) },
   },
 
   data() {
     return {
-      harTilbehoer:    null,   // null = ubesvaret, true/false = brugerens valg
-      tilbehoerListe:  [],     // Liste over tilføjet tilbehør
-      stand:           null,
-      tilbehoerNavn:   "",     // Midlertidigt felt til tilføjelse af nyt tilbehør
-      maksLaanePeriode: null,
-      brugerdefPeriode: "",    // Udfyldes kun når maksLaanePeriode === "Andet"
+      // Gendannes fra initialData hvis brugeren er vendt tilbage fra trin 3
+      harTilbehoer:     this.initialData.hasExtra   ?? null,
+      tilbehoerListe:   this.initialData.extras?.length
+        ? [...this.initialData.extras]
+        : [],
+      stand:            this.initialData.condition  || null,
+      maksLaanePeriode: this.initialData.loanPeriod || null,
+
+      tilbehoerNavn:    "",   // Midlertidigt felt til tilføjelse af nyt tilbehør
+      brugerdefPeriode: "",   // Udfyldes kun når maksLaanePeriode === "Andet"
 
       // Valideringsfejl – vises under de respektive felter
       fejl: {
@@ -113,15 +122,17 @@ export default {
       return gyldig;
     },
 
-    // Valider, udsend data og gå videre til bekræftelsesskærmen
+    // Valider, udsend data og gå videre til bekræftelsesskærmen.
+    // harTilbehoer inkluderes så CreateItemView kan gendanne dette valg
+    // hvis brugeren vender tilbage til trin 2 fra trin 3.
     naeste() {
       if (this.valider()) {
         const detaljer = {
-          harTilbehoer:   this.harTilbehoer,
-          extras:         this.tilbehoerListe,
-          condition:      this.stand,
+          harTilbehoer:  this.harTilbehoer,
+          extras:        this.tilbehoerListe,
+          condition:     this.stand,
           // Brug det brugerdefinerede felt hvis "Andet" er valgt
-          maxLoanPeriod:  this.maksLaanePeriode === "Andet"
+          maxLoanPeriod: this.maksLaanePeriode === "Andet"
             ? this.brugerdefPeriode
             : this.maksLaanePeriode,
         };
@@ -269,12 +280,12 @@ export default {
       <div role="group" aria-labelledby="laaneperiode-overskrift" aria-required="true">
         <v-row>
           <v-col cols="12">
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '1 dag' }"    :aria-pressed="maksLaanePeriode === '1 dag'"    @click="vaelgMaksLaanePeriode('1 dag')">1 dag</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '3 dage' }"   :aria-pressed="maksLaanePeriode === '3 dage'"   @click="vaelgMaksLaanePeriode('3 dage')">3 dage</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '1 uge' }"    :aria-pressed="maksLaanePeriode === '1 uge'"    @click="vaelgMaksLaanePeriode('1 uge')">1 uge</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '2 uger' }"   :aria-pressed="maksLaanePeriode === '2 uger'"   @click="vaelgMaksLaanePeriode('2 uger')">2 uger</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '1 måned' }"  :aria-pressed="maksLaanePeriode === '1 måned'"  @click="vaelgMaksLaanePeriode('1 måned')">1 måned</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === 'Andet' }"    :aria-pressed="maksLaanePeriode === 'Andet'"    @click="vaelgMaksLaanePeriode('Andet')">Andet</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '1 dag' }"   :aria-pressed="maksLaanePeriode === '1 dag'"   @click="vaelgMaksLaanePeriode('1 dag')">1 dag</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '3 dage' }"  :aria-pressed="maksLaanePeriode === '3 dage'"  @click="vaelgMaksLaanePeriode('3 dage')">3 dage</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '1 uge' }"   :aria-pressed="maksLaanePeriode === '1 uge'"   @click="vaelgMaksLaanePeriode('1 uge')">1 uge</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '2 uger' }"  :aria-pressed="maksLaanePeriode === '2 uger'"  @click="vaelgMaksLaanePeriode('2 uger')">2 uger</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '1 måned' }" :aria-pressed="maksLaanePeriode === '1 måned'" @click="vaelgMaksLaanePeriode('1 måned')">1 måned</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === 'Andet' }"   :aria-pressed="maksLaanePeriode === 'Andet'"   @click="vaelgMaksLaanePeriode('Andet')">Andet</v-btn>
             <div v-if="fejl.maksLaanePeriode" class="fejltekst" role="alert">
               {{ fejl.maksLaanePeriode }}
             </div>

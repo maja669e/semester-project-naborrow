@@ -1,178 +1,169 @@
 <script>
-import Home from "@/views/home/HomeView.vue";
-import MyItems from "@/views/items/MyItemsView.vue";
-import AddDetails from "@/components/items/ItemDetailsStep.vue";
-import PageOne from "@/components/items/ItemBasicInfoStep.vue";
-import ConfirmItemScreen from "@/components/ConfirmItemScreen.vue";
+// Rod-komponent for naborrow SPA.
+// Ansvaret er:
+//   1. Vise den aktuelle rute via <router-view>
+//   2. Levere tværgående tilstand til de redigerede views via provide()
+//   3. Videregive props/events til de urørte lån- og community-views via routeProps/routeListeners
+//   4. Vise AppBottomNav og SuccessDialog uden for ruterne
+import AppBottomNav  from "@/components/layout/AppBottomNav.vue";
 import SuccessDialog from "@/components/SuccessDialog.vue";
-import ItemOverviewView from "@/views/items/ItemOverviewView.vue";
-import Homepage from "@/views/home/Homepage.vue";
-import RentalPageOne from "@/views/rentals/RentalPageOne.vue";
-import RentalPageTwo from "@/views/rentals/RentalPageTwo.vue";
-import RentalConfirmPage from "@/views/rentals/RentalConfirmPage.vue";
-import AppBottomNav from "@/components/layout/AppBottomNav.vue";
 
 export default {
-  components: {
-    Home,
-    MyItems,
-    AddDetails,
-    PageOne,
-    ConfirmItemScreen,
-    SuccessDialog,
-    ItemOverviewView,
-    Homepage,
-    RentalPageOne,
-    RentalPageTwo,
-    RentalConfirmPage,
-    AppBottomNav,
-  },
+  components: { AppBottomNav, SuccessDialog },
 
   data() {
     return {
-      currentPage: "home",
-      currentStep: 1,
+      // ── Opret-genstand flow ──────────────────────────────
+      visSucces: false,
 
-      showSuccess: false,
-      itemsReloadKey: 0,
-      selectedItemId: null,
-
-      selectedRentalItem: null,
-
-      itemDetails: {
-        name: "",
-        brand: "",
-        category: "",
-        images: [],
-        condition: "",
-        loanPeriod: "",
-        extras: [],
-        categoryID: null,
+      // State for genstandsoversigten samlet i ét objekt, så provide()
+      // kan levere en reaktiv reference – property-mutationer slår igennem
+      // i alle descendant-views der injekterer genstande (som vist i slidesene).
+      genstande: {
+        genindlaesNoegle: 0,    // Forøges af onItemCreated for at udløse re-fetch
+        vistGenstandId:   null, // Id der fremhæves og scrolles til efter oprettelse
       },
 
+      // ── Udlejnings-flow (bruges stadig via routeProps/routeListeners) ──
+      // Den genstand brugeren valgte at leje
+      selectedRentalItem: null,
+      // Samler datoer og detaljer på tværs af laan-trin-1 og laan-trin-2
       rentalDetails: {
-        startDate: "",
-        endDate: "",
-        pickupTime: "",
-        accessories: [],
-        acceptedTerms: false,
+        startDate:       "",
+        endDate:         "",
+        pickupTime:      "",
+        accessories:     [],
+        acceptedTerms:   false,
         messageToLender: "",
       },
     };
   },
 
-  methods: {
-    goHome() {
-      this.currentPage = "home";
-    },
+  // Eksponér state og metoder til de views vi har arbejdet på (HomeView,
+  // ItemOverviewView, CreateItemView). Da vi leverer objektreferencer fra
+  // data() er property-mutations reaktive i descendant-views der injekterer dem
+  // – præcis som vist i "Data + provide"-slidet.
+  provide() {
+    return {
+      // State-referencer (reaktive fordi de peger på data()-objekter)
+      genstande: this.genstande,
 
-    goToHomepage() {
-      this.currentPage = "homepage";
-    },
-
-    goToItems() {
-      this.currentPage = "itemOverview";
-    },
-
-    goToPageOne() {
-      this.currentPage = "pageOne";
-      this.currentStep = 1;
-    },
-
-    goToAddDetails(data) {
-      console.log("PageOne data:", data);
-
-      this.itemDetails.name = data.name || "";
-      this.itemDetails.category = data.category || "";
-      this.itemDetails.images = data.images || [];
-      this.itemDetails.brand = data.brand || "";
-      this.itemDetails.categoryID = data.categoryID || 1;
-
-      this.currentPage = "addDetails";
-      this.currentStep = 2;
-    },
-
-    handleSaveDetails(details) {
-      this.itemDetails.condition = details.condition || "";
-      this.itemDetails.loanPeriod = details.maxLoanPeriod || "";
-      this.itemDetails.extras = details.extras || [];
-
-      console.log("Saved:", this.itemDetails);
-    },
-
-    goToConfirmItem() {
-      this.currentPage = "confirmItem";
-      this.currentStep = 3;
-    },
-
-    goToItemOverview() {
-      this.currentPage = "itemOverview";
-    },
-
-    onItemCreated(newId) {
-      // navigate to overview then show success dialog and request reload
-      this.currentPage = 'itemOverview'
-
-      // Pass the created id so the overview can scroll/highlight the new card.
-      // It will not open the detail view anymore.
-      this.selectedItemId = newId
-
-      // increment key so ItemOverviewView can refetch
-      this.itemsReloadKey += 1
-
-      // show dialog overlay on overview
-      this.showSuccess = true
-    },
-
-    handleSuccessBack() {
-      this.showSuccess = false
-      this.currentPage = 'itemOverview'
-
-      // clear selected id after navigating
-      this.selectedItemId = null
-    },
-
-    goToRentalPageOne() {
-      this.currentPage = "rentalPageOne";
-      this.currentStep = 1;
-    },
-
-    goToRentalPageTwo(data) {
-      this.rentalDetails.startDate = data.startDate;
-      this.rentalDetails.endDate = data.endDate;
-      this.rentalDetails.pickupTime = data.pickupTime;
-
-      this.currentPage = "rentalPageTwo";
-      this.currentStep = 2;
-    },
-
-    saveRentalDetails(data) {
-      this.rentalDetails.messageToLender = data.messageToLender;
-      this.rentalDetails.accessories = data.accessories;
-    },
-
-    goToRentalConfirm() {
-      this.currentPage = "rentalConfirm";
-      this.currentStep = 3;
-    },
-    startRentalFlow(item) {
-      this.selectedRentalItem = item;
-      this.currentPage = "rentalPageOne";
-      this.currentStep = 1;
-    },
-    handleNavigate(page) {
-      const pageMap = {
-        home: "home",
-        homepage: "homepage",
-        itemOverview: "itemOverview",
-      };
-      if (pageMap[page]) this.currentPage = pageMap[page];
-    },
+      // Metoder til navigation og state-mutation
+      gaaTilGenstande:  this.gaaTilGenstande,
+      gaaTilOpret:      this.gaaTilOpret,
+      genstandOprettet: this.onItemCreated,
+    };
   },
 
   computed: {
+    // Oversæt den aktuelle rute til en AppBottomNav-fanepnøgle
+    activePage() {
+      const map = { home: "home", community: "homepage", items: "itemOverview" };
+      return map[this.$route?.name] || "";
+    },
+
+    // Bundnavigationen vises kun på de tre primære sider
     showBottomNav() {
-      return ["home", "homepage", "itemOverview"].includes(this.currentPage);
+      return ["home", "community", "items"].includes(this.$route?.name);
+    },
+
+    // Props der sendes til de urørte lån- og community-views via router-view slot.
+    // HomeView, ItemOverviewView og CreateItemView bruger nu provide/inject i stedet.
+    routeProps() {
+      const name = this.$route?.name;
+      if (name === "laan-trin-1") {
+        return { item: this.selectedRentalItem, currentStep: 1 };
+      }
+      if (name === "laan-trin-2") {
+        return { item: this.selectedRentalItem, currentStep: 2 };
+      }
+      if (name === "laan-bekraeft") {
+        return { item: this.selectedRentalItem, rental: this.rentalDetails, currentStep: 3 };
+      }
+      return {};
+    },
+
+    // Event-lyttere til de urørte lån- og community-views.
+    // HomeView, ItemOverviewView og CreateItemView bruger provide/inject og har ingen lyttere her.
+    routeListeners() {
+      const name = this.$route?.name;
+      const l    = {};
+
+      if (name === "community") {
+        l.startRental = this.startRentalFlow;
+      }
+      if (name === "laan-trin-1") {
+        l["go-to-rental-page-two"] = this.gaaTilLaaneTrinTo;
+      }
+      if (name === "laan-trin-2") {
+        l["save-rental-details"]  = this.gemLaaneDetaljer;
+        l["go-to-rental-confirm"] = this.gaaTilLaaneBekraeft;
+        l.goBack                  = this.gaaTilLaaneTrinEt;
+      }
+      if (name === "laan-bekraeft") {
+        l.goBack              = () => this.$router.push({ name: "laan-trin-2" });
+        l["rental-confirmed"] = () => this.$router.push({ name: "community" });
+      }
+
+      return l;
+    },
+  },
+
+  methods: {
+    // ── Generel navigation ───────────────────────────────────
+    // Oversæt AppBottomNav-fanepnøgle til et rutenavn og naviger
+    navigateTo(key) {
+      const map = { home: "home", homepage: "community", itemOverview: "items" };
+      if (map[key]) this.$router.push({ name: map[key] });
+    },
+
+    gaaTilGenstande() {
+      this.$router.push({ name: "items" });
+    },
+
+    gaaTilOpret() {
+      this.$router.push({ name: "opret-genstand" });
+    },
+
+    // ── Opret-genstand flow ──────────────────────────────────
+    // Kaldt via provide/inject fra CreateItemView når en genstand er oprettet.
+    // Opdaterer genstande-objektet (reaktivt via provide) og viser success-dialog.
+    onItemCreated(newId) {
+      this.genstande.vistGenstandId  = newId;
+      this.genstande.genindlaesNoegle += 1;
+      this.visSucces = true;
+      this.$router.push({ name: "items" });
+    },
+
+    handleSuccessBack() {
+      this.visSucces = false;
+      this.genstande.vistGenstandId = null;
+    },
+
+    // ── Udlejnings-flow (kaldt via routeListeners fra lån-views) ────────────
+    startRentalFlow(item) {
+      this.selectedRentalItem = item;
+      this.$router.push({ name: "laan-trin-1" });
+    },
+
+    gaaTilLaaneTrinTo(data) {
+      this.rentalDetails.startDate  = data.startDate;
+      this.rentalDetails.endDate    = data.endDate;
+      this.rentalDetails.pickupTime = data.pickupTime;
+      this.$router.push({ name: "laan-trin-2" });
+    },
+
+    gemLaaneDetaljer(data) {
+      this.rentalDetails.messageToLender = data.messageToLender;
+      this.rentalDetails.accessories     = data.accessories;
+    },
+
+    gaaTilLaaneBekraeft() {
+      this.$router.push({ name: "laan-bekraeft" });
+    },
+
+    gaaTilLaaneTrinEt() {
+      this.$router.push({ name: "laan-trin-1" });
     },
   },
 };
@@ -181,87 +172,34 @@ export default {
 <template>
   <v-app>
     <v-main>
-      <!-- Page navigation -->
-      <Home v-if="currentPage === 'home'" @go-to-items="goToItems" />
-      
-      <Homepage
-  v-if="currentPage === 'homepage'"
-    @startRental="startRentalFlow"
-/>
 
-      <MyItems
-        v-if="currentPage === 'items'"
-        @go-to-home="goHome"
-        @go-to-page-one="goToPageOne"
-      />
-
-      <PageOne
-        v-if="currentPage === 'pageOne'"
-        :currentStep="currentStep"
-        @go-to-add-details="goToAddDetails"
-        @go-to-items="goToItems"
-      />
-
-      <AddDetails
-        v-if="currentPage === 'addDetails'"
-        :currentStep="currentStep"
-        @go-to-home="goHome"
-        @go-to-page-one="goToPageOne"
-        @save-details="handleSaveDetails"
-        @go-to-confirm-item="goToConfirmItem"
-      />
-      <ConfirmItemScreen
-        v-if="currentPage === 'confirmItem'"
-        :currentStep="currentStep"
-        :item="itemDetails"
-        @goBack="currentPage = 'addDetails'"
-        @item-created="onItemCreated"
-      />
-
-      <SuccessDialog
-        v-model="showSuccess"
-        title="Oprettet!"
-        message="Din genstand er nu oprettet og klar"
-        @back-to-overview="handleSuccessBack"
-      />
-
-      <item-overview-view
-        v-if="currentPage === 'itemOverview'"
-        :reloadKey="itemsReloadKey"
-        :selectItemId="selectedItemId"
-        @go-to-page-one="goToPageOne"
-      />
-
-      <RentalPageOne
-  v-if="currentPage === 'rentalPageOne'"
-  :currentStep="currentStep"
-   :item="selectedRentalItem"
-  @go-to-rental-page-two="goToRentalPageTwo"
-/>
-<RentalPageTwo
-  v-if="currentPage === 'rentalPageTwo'"
-  :currentStep="currentStep"
-  :item="selectedRentalItem"
-  @save-rental-details="saveRentalDetails"
-  @go-to-rental-confirm="goToRentalConfirm"
-  @goBack="goToRentalPageOne"
-/>
-
-<RentalConfirmPage
-  v-if="currentPage === 'rentalConfirm'"
-  :currentStep="currentStep"
-  :rental="rentalDetails"
-  :item="selectedRentalItem"
-  @goBack="currentPage = 'rentalPageTwo'"
-  @rental-confirmed="goToHomepage"
-/>
+      <!-- Router-view med slot til de urørte lån-/community-views der stadig
+           modtager data via routeProps og routeListeners.
+           HomeView, ItemOverviewView og CreateItemView bruger provide/inject. -->
+      <router-view v-slot="{ Component }">
+        <component
+          :is="Component"
+          v-bind="routeProps"
+          v-on="routeListeners"
+        />
+      </router-view>
 
     </v-main>
 
+    <!-- Success-dialog vises oven på genstandsoversigten efter oprettelse -->
+    <SuccessDialog
+      v-model="visSucces"
+      title="Oprettet!"
+      message="Din genstand er nu oprettet og klar"
+      @back-to-overview="handleSuccessBack"
+    />
+
+    <!-- Bundnavigation vises kun på de tre primære sider -->
     <AppBottomNav
       v-if="showBottomNav"
-      :activePage="currentPage"
-      @navigate="handleNavigate"
+      :activePage="activePage"
+      @navigate="navigateTo"
     />
+
   </v-app>
 </template>

@@ -1,8 +1,8 @@
 <script>
 // Trin 1 i opret-genstand-flowet.
 // Indsamler billeder, kategori, navn og mærke.
-// Henter kategorier fra serveren ved montering og validerer felterne
-// inden data sendes videre til trin 2 via go-to-add-details.
+// Modtager initialData fra CreateItemView så formularen gendannes
+// korrekt hvis brugeren trykker tilbage fra trin 2.
 import MultiStepFormHeader from "@/components/layout/MultiStepFormHeader.vue";
 import FormBottomBar       from "@/components/layout/FormBottomBar.vue";
 import { getAllCategories } from "@/services/itemservice.js";
@@ -14,16 +14,27 @@ export default {
   props: {
     // Det aktuelle trin sendt videre til MultiStepFormHeader
     currentStep: { type: Number, default: 1 },
+
+    // Tidligere udfyldte data fra CreateItemView.
+    // Bruges til at gendanne formens tilstand hvis brugeren går tilbage.
+    initialData: { type: Object, default: () => ({}) },
   },
 
   data() {
     return {
-      kategorier:        [],   // Hentet fra serveren ved montering
-      valgtKategori:     null,
-      brugerdefKategori: "",   // Udfyldes kun når valgtKategori === "Andet"
-      uploadedeBilleder: [],   // Base64-strenge fra FileReader
-      genstandNavn:      "",
-      maerke:            "",
+      kategorier: [],
+
+      // Gendannes fra initialData hvis brugeren er vendt tilbage fra trin 2.
+      // selectedCategory er btn-toggle-værdien; kan være "Andet" eller et kategorinavn.
+      valgtKategori:     this.initialData.selectedCategory || null,
+      brugerdefKategori: this.initialData.selectedCategory === "Andet"
+        ? (this.initialData.category || "")
+        : "",
+      uploadedeBilleder: this.initialData.images?.length
+        ? [...this.initialData.images]
+        : [],
+      genstandNavn: this.initialData.name  || "",
+      maerke:       this.initialData.brand || "",
 
       // Valideringsfejl – vises under de respektive felter
       fejl: {
@@ -116,19 +127,23 @@ export default {
       return gyldig;
     },
 
-    // Valider og send data videre til trin 2
+    // Valider og send data videre til trin 2.
+    // selectedCategory gemmes adskilt fra category så CreateItemView
+    // kan gendanne btn-toggle-valget hvis brugeren vender tilbage.
     naeste() {
       if (this.valider()) {
-        // Find kategori-id'et så serveren kan knytte genstanden til den rigtige kategori
         const valgtKat = this.kategorier.find(
           (k) => k.CategoryName === this.valgtKategori
         );
         const data = {
-          category:   this.valgtKategori === "Andet" ? this.brugerdefKategori : this.valgtKategori,
-          categoryID: valgtKat?.CategoryID || null,
-          images:     this.uploadedeBilleder,
-          name:       this.genstandNavn,
-          brand:      this.maerke,
+          category:         this.valgtKategori === "Andet"
+            ? this.brugerdefKategori
+            : this.valgtKategori,
+          selectedCategory: this.valgtKategori,
+          categoryID:       valgtKat?.CategoryID || null,
+          images:           this.uploadedeBilleder,
+          name:             this.genstandNavn,
+          brand:            this.maerke,
         };
         this.$emit("go-to-add-details", data);
       }
@@ -238,7 +253,7 @@ export default {
         {{ fejl.valgtKategori }}
       </div>
 
-      <!-- Fritext-felt vises kun når "Andet" er valgt -->
+      <!-- Fritekstfelt vises kun når "Andet" er valgt -->
       <v-text-field
         v-if="valgtKategori === 'Andet'"
         v-model="brugerdefKategori"

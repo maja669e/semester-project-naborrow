@@ -2,8 +2,10 @@
 // Genstandsoversigt – viser alle brugerens genstande som en kortliste.
 // Understøtter statusfiltrering via ItemFilterTabs og åbner ItemDetailView
 // når brugeren klikker på et kort.
-// reloadKey-prop'en bruges af forælderen til at udløse en ny hentning
-// efter oprettelse af en genstand.
+//
+// Tidligere modtog denne komponent reloadKey og selectItemId som props fra App.vue.
+// Nu injekterer den genstande-objektet og gaaTilOpret-metoden direkte fra App.vue
+// via provide/inject – præcis som vist i "Løsningen: Provide & inject"-slidet.
 import ItemCard       from "@/components/items/ItemCard.vue";
 import ItemDetailView from "@/components/items/ItemDetailView.vue";
 import ItemFilterTabs from "@/components/items/ItemFilterTabs.vue";
@@ -13,19 +15,16 @@ export default {
   name: "ItemOverviewView",
   components: { ItemCard, ItemDetailView, ItemFilterTabs },
 
-  props: {
-    // Forøges af forælderen for at udløse en ny hentning (fx efter oprettelse)
-    reloadKey:    { type: Number, default: 0 },
-
-    // Id på en genstand der skal fremhæves og scrolles til ved indlæsning
-    selectItemId: { type: [Number, String], default: null },
-  },
+  // Injekterer fra App.vue's provide():
+  //   genstande  – reaktivt objekt med genindlaesNoegle og vistGenstandId
+  //   gaaTilOpret – navigationsmetode til opret-genstand-ruten
+  inject: ["genstande", "gaaTilOpret"],
 
   data() {
     return {
       valgtGenstand:      null,    // Den genstand der vises i detaljeskærmen
       aktivtFilter:       "Alle",
-      genstande:          [],
+      genstande_liste:    [],      // Lokal kopi af hentet data (adskilt fra injekteret genstande-objekt)
       indlaeser:          false,
       fejl:               null,
       fremhaevetGenstandId: null,  // Id på den genstand der animeres efter oprettelse
@@ -38,8 +37,8 @@ export default {
   computed: {
     // Filtrer genstandslisten baseret på det valgte statusfilter
     filtreredeGenstande() {
-      if (this.aktivtFilter === "Alle") return this.genstande;
-      return this.genstande.filter((g) => g.status === this.aktivtFilter);
+      if (this.aktivtFilter === "Alle") return this.genstande_liste;
+      return this.genstande_liste.filter((g) => g.status === this.aktivtFilter);
     },
   },
 
@@ -57,7 +56,7 @@ export default {
       this.indlaeser = true;
       try {
         const data = await getAllItems();
-        this.genstande = data.map((genstand) => ({
+        this.genstande_liste = data.map((genstand) => ({
           id:          genstand.ItemID,
           title:       genstand.ItemName,
           category:
@@ -77,9 +76,9 @@ export default {
           rating:      null,
         }));
 
-        // Scroll til og fremhæv en specifik genstand hvis angivet
-        if (this.selectItemId) {
-          this.fremhaevOgScrollTilGenstand(this.selectItemId);
+        // Scroll til og fremhæv en specifik genstand hvis angivet via inject
+        if (this.genstande.vistGenstandId) {
+          this.fremhaevOgScrollTilGenstand(this.genstande.vistGenstandId);
         }
       } catch (fejl) {
         this.fejl = "Kunne ikke hente genstande. Prøv igen.";
@@ -107,12 +106,12 @@ export default {
 
     // Åbn detaljeskærmen for den valgte genstand
     visDetaljer(id) {
-      this.valgtGenstand = this.genstande.find((g) => g.id === id);
+      this.valgtGenstand = this.genstande_liste.find((g) => g.id === id);
     },
 
     // Modtag besked fra ItemDetailView om at en genstand er slettet
     genstandBlevSlettet(titel) {
-      this.genstande = this.genstande.filter(
+      this.genstande_liste = this.genstande_liste.filter(
         (g) => g.id !== this.valgtGenstand.id
       );
       this.valgtGenstand = null;
@@ -126,7 +125,7 @@ export default {
     // Opdater den viste genstand efter redigering uden at genhente hele listen
     async opdaterGenstand() {
       await this.hentGenstande();
-      this.valgtGenstand = this.genstande.find(
+      this.valgtGenstand = this.genstande_liste.find(
         (g) => g.id === this.valgtGenstand.id
       );
     },
@@ -137,19 +136,19 @@ export default {
   },
 
   watch: {
-    // Genhent listen når forælderen øger reloadKey (fx efter oprettelse)
-    reloadKey(nyVaerdi, gammelVaerdi) {
+    // Genhent listen når App.vue øger genstande.genindlaesNoegle (fx efter oprettelse).
+    // Vi bruger string dot-notation da genindlaesNoegle er en property på det
+    // injekterede genstande-objekt – Vue 3 understøtter dette i Options API.
+    "genstande.genindlaesNoegle"(nyVaerdi, gammelVaerdi) {
       if (nyVaerdi !== gammelVaerdi) this.hentGenstande();
     },
 
-    // Fremhæv en genstand når forælderen angiver et nyt id
-    selectItemId(nyVaerdi, gammelVaerdi) {
+    // Fremhæv en genstand når App.vue sætter et nyt id (fx efter oprettelse)
+    "genstande.vistGenstandId"(nyVaerdi, gammelVaerdi) {
       if (!nyVaerdi) return;
       if (nyVaerdi !== gammelVaerdi) this.fremhaevOgScrollTilGenstand(nyVaerdi);
     },
   },
-
-  emits: [],
 
   beforeUnmount() {
     // Ryd timeren så der ikke sker opdateringer efter komponenten er fjernet
@@ -244,13 +243,13 @@ export default {
       </p>
     </section>
 
-    <!-- Fast bundknap til oprettelse af ny genstand -->
+    <!-- Fast bundknap til oprettelse af ny genstand – kalder injekteret metode -->
     <footer v-if="!valgtGenstand" class="opret-knap-wrapper">
       <v-btn
         color="primary"
         rounded="lg"
         class="opret-knap"
-        @click="$emit('go-to-page-one')"
+        @click="gaaTilOpret()"
       >
         Opret ny genstand
       </v-btn>
