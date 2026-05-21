@@ -2,17 +2,18 @@ const bcrypt = require("bcryptjs");
 const db = require("../models");
 const User = db.users;
 
-// POST /api/auth/login
-// Body: { username, password }
+// LOG IND – finder brugeren via email og sammenligner adgangskoden med bcrypt.
+// Returnerer brugeroplysninger uden adgangskode hvis login er korrekt.
+// Body: { email, password }
 exports.login = async (req, res) => {
-    const { username, password } = req.body;
+    const { email, password } = req.body;
 
-    if (!username || !password) {
-        return res.status(400).send({ message: "Brugernavn og adgangskode er påkrævet." });
+    if (!email || !password) {
+        return res.status(400).send({ message: "Email og adgangskode er påkrævet." });
     }
 
     try {
-        const user = await User.findOne({ where: { Username: username } });
+        const user = await User.findOne({ where: { Email: email } });
 
         if (!user) {
             return res.status(401).send({ message: "Forkert brugernavn eller adgangskode." });
