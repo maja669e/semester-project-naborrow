@@ -158,6 +158,7 @@ emits: ['requestLoan'],
     background: var(--color-bg);
     min-height: 100vh;
     padding: 16px;
+    padding: 16px;
 }
 
 .image-wrapper {
@@ -272,5 +273,6 @@ emits: ['requestLoan'],
 }
 .rental-action {
     margin-top: 24px;
+    margin-bottom: 64px;
 }
 </style>
