@@ -1,16 +1,16 @@
 <script>
-import Home from "@/components/Home.vue";
-import MyItems from "@/components/MyItems.vue";
-import AddDetails from "@/components/AddDetails.vue";
-import PageOne from "@/components/PageOne.vue";
-import ConfirmItemScreen from "./components/ConfirmItemScreen.vue";
-import SuccessDialog from "./components/SuccessDialog.vue";
-import ItemOverviewView from "./components/Genstand/ItemOverviewView.vue";
+import Home from "@/views/home/HomeView.vue";
+import MyItems from "@/views/items/MyItemsView.vue";
+import AddDetails from "@/components/items/ItemDetailsStep.vue";
+import PageOne from "@/components/items/ItemBasicInfoStep.vue";
+import ConfirmItemScreen from "@/components/ConfirmItemScreen.vue";
+import SuccessDialog from "@/components/SuccessDialog.vue";
+import ItemOverviewView from "@/views/items/ItemOverviewView.vue";
 import Homepage from "@/views/home/Homepage.vue";
 import RentalPageOne from "@/views/rentals/RentalPageOne.vue";
 import RentalPageTwo from "@/views/rentals/RentalPageTwo.vue";
 import RentalConfirmPage from "@/views/rentals/RentalConfirmPage.vue";
-
+import AppBottomNav from "@/components/layout/AppBottomNav.vue";
 
 export default {
   components: {
@@ -24,7 +24,8 @@ export default {
     Homepage,
     RentalPageOne,
     RentalPageTwo,
-    RentalConfirmPage
+    RentalConfirmPage,
+    AppBottomNav,
   },
 
   data() {
@@ -155,12 +156,24 @@ export default {
       this.currentStep = 3;
     },
     startRentalFlow(item) {
+      this.selectedRentalItem = item;
+      this.currentPage = "rentalPageOne";
+      this.currentStep = 1;
+    },
+    handleNavigate(page) {
+      const pageMap = {
+        home: "home",
+        homepage: "homepage",
+        itemOverview: "itemOverview",
+      };
+      if (pageMap[page]) this.currentPage = pageMap[page];
+    },
+  },
 
-  this.selectedRentalItem = item
-
-  this.currentPage = "rentalPageOne"
-  this.currentStep = 1
-},
+  computed: {
+    showBottomNav() {
+      return ["home", "homepage", "itemOverview"].includes(this.currentPage);
+    },
   },
 };
 </script>
@@ -245,30 +258,10 @@ export default {
 
     </v-main>
 
-    <v-btn
-      class="ma-2"
-      icon="mdi-home"
-      location="top left"
-      position="absolute"
-      color="primary"
-      @click="goHome"
+    <AppBottomNav
+      v-if="showBottomNav"
+      :activePage="currentPage"
+      @navigate="handleNavigate"
     />
-    <v-btn
-  class="ma-2"
-  color="secondary"
-  location="top right"
-  position="absolute"
-  @click="goToHomepage" :item="selectedRentalItem"
->
-  Forside
-</v-btn>
-
-    <!-- <v-btn
-      class="ma-2"
-      icon="mdi-theme-light-dark"
-      location="top right"
-      position="absolute"
-      @click="$vuetify.theme.cycle()" 
-    />-->
   </v-app>
 </template>
