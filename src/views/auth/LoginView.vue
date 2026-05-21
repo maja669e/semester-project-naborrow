@@ -17,7 +17,7 @@ export default {
       indlaeser:       false,  // Deaktiverer knappen mens API-kaldet kører
       visAdgangskode:  false,  // Skifter adgangskodefeltet mellem tekst og password
       formForsøgt:     false,  // Skifter adgangskodevalidering til "input" efter første indsendelse
-      emailFejl:       "",     // Manuel fejlbesked for email – styret uden for Vuetify rules
+      emailFejl:       "",     // Emailfejl vises kun ved indsendelse, ryddes når brugeren skriver
 
       // Adgangskoderegler – køres af Vuetify via form.validate() ved indsendelse
       adgangskodeRegler: [
@@ -35,16 +35,6 @@ export default {
   },
 
   methods: {
-    // Validerer email med 200ms forsinkelse efter blur.
-    // Forsinkelsen sikrer at autofyld (Face ID, fingeraftryk, adgangskodehåndtering)
-    // når at udfylde feltet inden vi kontrollerer om det er tomt –
-    // så der ikke vises en falsk fejl under biometrisk login.
-    validerEmailEfterBlur() {
-      setTimeout(() => {
-        this.emailFejl = this.tjekEmail();
-      }, 200);
-    },
-
     // Returnerer en fejlbesked hvis email er ugyldig, ellers tom streng
     tjekEmail() {
       if (!this.email) return "Email er påkrævet.";
@@ -112,7 +102,6 @@ export default {
           :error-messages="emailFejl"
           :disabled="indlaeser"
           required
-          @blur="validerEmailEfterBlur"
           @update:model-value="emailFejl = ''; visFejl = ''"
         />
 

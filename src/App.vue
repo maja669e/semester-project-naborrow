@@ -58,6 +58,11 @@ export default {
   },
 
   computed: {
+    // Giver skabelonen adgang til den loggede bruger uden at gå uden om Vue
+    inloggetBruger() {
+      return authStore.bruger.value;
+    },
+
     // Oversæt den aktuelle rute til en AppBottomNav-fanepnøgle
     activePage() {
       if (this.visProfilMenu) return "profil";
@@ -227,9 +232,9 @@ export default {
           <v-icon size="48" color="var(--color-primary)">mdi-account-circle</v-icon>
           <div class="profil-ark__navn">
             <span class="profil-ark__fulde-navn">
-              {{ authStore.bruger.value?.firstName }} {{ authStore.bruger.value?.lastName }}
+              {{ inloggetBruger?.firstName }} {{ inloggetBruger?.lastName }}
             </span>
-            <span class="profil-ark__email">{{ authStore.bruger.value?.email }}</span>
+            <span class="profil-ark__email">{{ inloggetBruger?.email }}</span>
           </div>
         </div>
 
