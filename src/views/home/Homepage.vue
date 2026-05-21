@@ -1,5 +1,5 @@
 <script>
-import { getAllItems } from '@/services/itemservice.js'
+import { getAllItems } from '@/services/items/itemservice.js'
 import ItemDetailCard from '@/components/items/ItemDetailCard.vue'
 
 

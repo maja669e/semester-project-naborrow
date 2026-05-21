@@ -9,7 +9,7 @@
 import ItemCard       from "@/components/items/ItemCard.vue";
 import ItemDetailView from "@/components/items/ItemDetailView.vue";
 import ItemFilterTabs from "@/components/items/ItemFilterTabs.vue";
-import { getAllItems } from "@/services/itemservice.js";
+import { getAllItems } from "@/services/items/itemservice.js";
 
 export default {
   name: "ItemOverviewView",

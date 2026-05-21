@@ -1,6 +1,6 @@
 <script>
 import Stepper from "@/components/Stepper.vue";
-import { createItem, createAccessory } from "../services/itemservice.js";
+import { createItem, createAccessory } from "../services/items/itemservice.js";
 
 export default {
   name: "ConfirmItemScreen",

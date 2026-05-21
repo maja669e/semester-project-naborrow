@@ -3,7 +3,7 @@
 // Viser billede, metadata, tilbehør, ejerinfo og statistik.
 // Understøtter to tilstande: visning (standard) og redigering (isEditing).
 // Sletning sker via ConfirmDialog for at undgå utilsigtet sletning.
-import { deleteItem, updateItem } from "@/services/itemservice.js";
+import { deleteItem, updateItem } from "@/services/items/itemservice.js";
 import ToggleButton  from "@/components/ToggleButton.vue";
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 

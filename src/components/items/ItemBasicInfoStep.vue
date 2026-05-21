@@ -5,7 +5,7 @@
 // korrekt hvis brugeren trykker tilbage fra trin 2.
 import MultiStepFormHeader from "@/components/layout/MultiStepFormHeader.vue";
 import FormBottomBar       from "@/components/layout/FormBottomBar.vue";
-import { getAllCategories } from "@/services/itemservice.js";
+import { getAllCategories } from "@/services/items/itemservice.js";
 
 export default {
   name: "ItemBasicInfoStep",
