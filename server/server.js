@@ -63,6 +63,7 @@ db.sequelize.sync()
     console.log("Failed to sync db: " + err.message);
   });
 
+require("./routes/auth.routes.js")(app);
 require("./routes/item.routes.js")(app);
 require("./routes/category.routes")(app);
 require("./routes/itemAccessory.routes")(app);

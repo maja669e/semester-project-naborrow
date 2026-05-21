@@ -7,6 +7,7 @@
 //   4. Vise AppBottomNav og SuccessDialog uden for ruterne
 import AppBottomNav  from "@/components/layout/AppBottomNav.vue";
 import SuccessDialog from "@/components/SuccessDialog.vue";
+import { authStore }  from "@/stores/auth.js";
 
 export default {
   components: { AppBottomNav, SuccessDialog },
@@ -39,19 +40,16 @@ export default {
     };
   },
 
-  // Eksponér state og metoder til de views vi har arbejdet på (HomeView,
-  // ItemOverviewView, CreateItemView). Da vi leverer objektreferencer fra
-  // data() er property-mutations reaktive i descendant-views der injekterer dem
-  // – præcis som vist i "Data + provide"-slidet.
   provide() {
     return {
-      // State-referencer (reaktive fordi de peger på data()-objekter)
       genstande: this.genstande,
 
-      // Metoder til navigation og state-mutation
       gaaTilGenstande:  this.gaaTilGenstande,
       gaaTilOpret:      this.gaaTilOpret,
       genstandOprettet: this.onItemCreated,
+
+      // Auth – tilgængeligt i alle descendant-komponenter
+      authStore,
     };
   },
 
@@ -62,9 +60,10 @@ export default {
       return map[this.$route?.name] || "";
     },
 
-    // Bundnavigationen vises kun på de tre primære sider
+    // Bundnavigationen vises kun på de tre primære sider (ikke på login)
     showBottomNav() {
-      return ["home", "community", "items"].includes(this.$route?.name);
+      return ["home", "community", "items"].includes(this.$route?.name)
+        && authStore.erLoggetInd.value;
     },
 
     // Props der sendes til de urørte lån- og community-views via router-view slot.
