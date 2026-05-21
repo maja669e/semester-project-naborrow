@@ -27,14 +27,14 @@ VALUES (1, '4');
 -- ============================================
 INSERT INTO User (AddressID, FirstName, LastName, Username, Email, PhoneNumber, ApartmentNumber, Password, DateOfBirth, Role)
 VALUES
-(1, 'Lars',    'Hansen',       'L. Hansen',       'lars.hansen@mail.dk',      '20345678', '2tv',  'password123', '1998-03-12', 'admin'),
-(1, 'Sofie',   'Andersen',     'S. Andersen',     'sofie.andersen@mail.dk',   '31456789', '3th',  'password123', '2001-07-22', 'user'),
-(1, 'Mikkel',  'Christensen',  'M. Christensen',  'mikkel.c@mail.dk',         '40567890', '1tv',  'password123', '1995-11-05', 'user'),
-(1, 'Emma',    'Pedersen',     'E. Pedersen',     'emma.pedersen@mail.dk',    '51678901', '2th',  'password123', '2000-04-18', 'user'),
-(1, 'Jonas',   'Nielsen',      'J. Nielsen',      'jonas.nielsen@mail.dk',    '60789012', '1mf',  'password123', '1997-09-30', 'user'),
-(1, 'Camilla', 'Møller',       'C. Moller',       'camilla.m@mail.dk',        '71890123', '4tv',  'password123', '2003-01-14', 'user'),
-(1, 'Thomas',  'Kjær',         'T. Kjaer',        'thomas.kjaer@mail.dk',     '82901234', '1th',  'password123', '1988-06-25', 'user'),
-(1, 'Nadia',   'Poulsen',      'N. Poulsen',      'nadia.p@mail.dk',          '35234567', '3tv',  'password123', '1990-05-17', 'user');
+(1, 'Lars',    'Hansen',       'L. Hansen',       'lars.hansen@mail.dk',      '20345678', '2tv',  '$2b$10$B8Sds7QI3ohfWL0YwKd73esBXYgvLwQ1PvmGOg7PzLOvE6fWeiYAi', '1998-03-12', 'admin'),
+(1, 'Sofie',   'Andersen',     'S. Andersen',     'sofie.andersen@mail.dk',   '31456789', '3th',  '$2b$10$B8Sds7QI3ohfWL0YwKd73esBXYgvLwQ1PvmGOg7PzLOvE6fWeiYAi', '2001-07-22', 'user'),
+(1, 'Mikkel',  'Christensen',  'M. Christensen',  'mikkel.c@mail.dk',         '40567890', '1tv',  '$2b$10$B8Sds7QI3ohfWL0YwKd73esBXYgvLwQ1PvmGOg7PzLOvE6fWeiYAi', '1995-11-05', 'user'),
+(1, 'Emma',    'Pedersen',     'E. Pedersen',     'emma.pedersen@mail.dk',    '51678901', '2th',  '$2b$10$B8Sds7QI3ohfWL0YwKd73esBXYgvLwQ1PvmGOg7PzLOvE6fWeiYAi', '2000-04-18', 'user'),
+(1, 'Jonas',   'Nielsen',      'J. Nielsen',      'jonas.nielsen@mail.dk',    '60789012', '1mf',  '$2b$10$B8Sds7QI3ohfWL0YwKd73esBXYgvLwQ1PvmGOg7PzLOvE6fWeiYAi', '1997-09-30', 'user'),
+(1, 'Camilla', 'Møller',       'C. Moller',       'camilla.m@mail.dk',        '71890123', '4tv',  '$2b$10$B8Sds7QI3ohfWL0YwKd73esBXYgvLwQ1PvmGOg7PzLOvE6fWeiYAi', '2003-01-14', 'user'),
+(1, 'Thomas',  'Kjær',         'T. Kjaer',        'thomas.kjaer@mail.dk',     '82901234', '1th',  '$2b$10$B8Sds7QI3ohfWL0YwKd73esBXYgvLwQ1PvmGOg7PzLOvE6fWeiYAi', '1988-06-25', 'user'),
+(1, 'Nadia',   'Poulsen',      'N. Poulsen',      'nadia.p@mail.dk',          '35234567', '3tv',  '$2b$10$B8Sds7QI3ohfWL0YwKd73esBXYgvLwQ1PvmGOg7PzLOvE6fWeiYAi', '1990-05-17', 'user');
 
 -- ============================================
 -- INSERT: Categories
