@@ -2,6 +2,8 @@
 import Stepper from "@/components/Stepper.vue";
 import RentalSummaryCard from "@/components/rentals/RentalSummaryCard.vue";
 import TermsDialog from "@/components/feedback/TermsDialog.vue";
+import { createRentalRequest } from "@/services/rentalrequest/rentalrequestservice.js";
+
 
 export default {
   name: "RentalConfirmPage",
@@ -36,8 +38,42 @@ export default {
   },
 
   methods: {
+    async confirmRental() {
+    console.log("ITEM:", this.item);
+
+    if (!this.acceptedTerms) {
+      this.error = "Du skal acceptere vilkår og betingelser";
+      return;
+    }
+
+    this.error = "";
+
+    try {
+
+      const rentalData = {
+       ItemID: this.item.id,
+        RenterUserID: 2,
+
+      StartDate: this.rental.startDate,
+     EndDate: this.rental.endDate,
+
+     Status: "pending",
+      };
+
+      await createRentalRequest(rentalData);
+
+      this.$emit("rentalConfirmed");
+
+    } catch (err) {
+      console.error(err);
+
+      this.error =
+        "Kunne ikke sende låneanmodning";
+    }
+  },
+
    
-  confirmRental() {
+/*   confirmRental() {
     if (!this.acceptedTerms) {
         console.log("CONFIRM CLICKED"); // <-- add this first
       this.error = "Du skal acceptere vilkår og betingelser";
@@ -50,9 +86,11 @@ export default {
 
     // instead of alert:
     this.$emit("rental-confirmed");
-  },
+  }, */
 
   },
+
+  emits: ["goBack", "rentalConfirmed"],
 };
 </script>
 
