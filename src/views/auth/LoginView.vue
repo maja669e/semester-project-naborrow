@@ -18,8 +18,8 @@ export default {
 
       // Valideringsregler – køres af Vuetify før formularen indsendes
       emailRegler: [
-        v => !!v || "Email er påkrævet.",
-        v => /.+@.+\..+/.test(v) || "Indtast en gyldig email-adresse.",
+        v => !!v                                          || "Email er påkrævet.",
+        v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)       || "Indtast en gyldig email-adresse.",
       ],
       adgangskodeRegler: [
         v => !!v || "Adgangskode er påkrævet.",
@@ -49,13 +49,25 @@ export default {
 </script>
 
 <template>
-  <div class="login-baggrund">
+  <!-- Sidens primære indhold – <main> sikrer korrekt landmark for skærmlæsere -->
+  <main class="login-baggrund">
     <v-container class="login-container" max-width="400">
 
+      <!-- Appens navn som primær overskrift -->
       <h1 class="login-titel mb-2">LÅKAL</h1>
-      <p class="login-undertitel mb-8">Log ind for at fortsætte</p>
 
-      <v-form ref="loginFormular" @submit.prevent="logInd" validate-on="submit">
+      <!-- Beskrivelse af sidens formål – tilknyttet formularen via aria-describedby -->
+      <p id="login-beskrivelse" class="login-undertitel mb-8">
+        Log ind for at fortsætte
+      </p>
+
+      <!-- aria-labelledby knytter formularen til overskriften for skærmlæsere -->
+      <v-form
+        ref="loginFormular"
+        aria-labelledby="login-beskrivelse"
+        @submit.prevent="logInd"
+        novalidate
+      >
 
         <v-text-field
           v-model="email"
@@ -67,7 +79,9 @@ export default {
           class="mb-3"
           :rules="emailRegler"
           :disabled="indlaeser"
+          validate-on="blur"
           required
+          @update:model-value="visFejl = ''"
         />
 
         <v-text-field
@@ -77,20 +91,25 @@ export default {
           prepend-inner-icon="mdi-lock-outline"
           :type="visAdgangskode ? 'text' : 'password'"
           :append-inner-icon="visAdgangskode ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
+          :aria-label="visAdgangskode ? 'Adgangskode synlig' : 'Adgangskode skjult'"
           autocomplete="current-password"
           class="mb-2"
           :rules="adgangskodeRegler"
           :disabled="indlaeser"
+          validate-on="blur"
           required
+          @update:model-value="visFejl = ''"
           @click:append-inner="visAdgangskode = !visAdgangskode"
         />
 
+        <!-- Fejlbesked annonceres til skærmlæsere via role="alert" (indbygget i v-alert type="error") -->
         <v-alert
           v-if="visFejl"
           type="error"
           variant="tonal"
           class="mb-4"
           density="compact"
+          role="alert"
         >
           {{ visFejl }}
         </v-alert>
@@ -101,14 +120,14 @@ export default {
           size="large"
           class="login-knap"
           :loading="indlaeser"
-          :disabled="!email || !adgangskode"
+          :aria-busy="indlaeser"
         >
           Log ind
         </v-btn>
 
       </v-form>
     </v-container>
-  </div>
+  </main>
 </template>
 
 <style scoped>

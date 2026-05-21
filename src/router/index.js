@@ -35,10 +35,11 @@ router.beforeEach((to, from) => {
     return { name: "login" };
   }
 
-  // Send brugeren til forsiden ved sideopdatering (kun første navigation)
+  // Ved sideopdatering sendes brugeren kun til forsiden fra beskyttede ruter –
+  // ikke fra login-siden, da det ville skabe en unødvendig dobbelt-omdirigering
   if (from.name) return;
   const navEntry = performance.getEntriesByType?.("navigation")?.[0];
-  if (navEntry?.type === "reload" && to.path !== "/") {
+  if (navEntry?.type === "reload" && to.path !== "/" && !to.meta.offentlig) {
     return { path: "/" };
   }
 });

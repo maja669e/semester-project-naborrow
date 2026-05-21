@@ -15,13 +15,15 @@ exports.login = async (req, res) => {
     try {
         const user = await User.findOne({ where: { Email: email } });
 
+        // Samme besked uanset om email eller adgangskode er forkert –
+        // fortæller ikke angriberen hvilken del der er gal (som i rigtige apps)
         if (!user) {
-            return res.status(401).send({ message: "Forkert brugernavn eller adgangskode." });
+            return res.status(401).send({ message: "Forkert email eller adgangskode. Prøv igen." });
         }
 
         const adgangskodeKorrekt = await bcrypt.compare(password, user.Password);
         if (!adgangskodeKorrekt) {
-            return res.status(401).send({ message: "Forkert brugernavn eller adgangskode." });
+            return res.status(401).send({ message: "Forkert email eller adgangskode. Prøv igen." });
         }
 
         res.send({
