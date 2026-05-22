@@ -109,7 +109,7 @@ export default {
 
 .bottom-bar {
   position: fixed;
-  bottom: 0;
+  bottom: 64px;
   left: 0;
   right: 0;
 
@@ -121,6 +121,8 @@ export default {
   display: flex;
   gap: 12px;
 }
+
+
 
 .back-button {
   flex: 1;
@@ -138,6 +140,9 @@ export default {
   color: #B00020;
   font-size: 14px;
   margin-top: 4px;
+}
+.page {
+  padding-bottom: 100px;
 }
 
 </style>

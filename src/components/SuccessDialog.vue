@@ -3,7 +3,7 @@ export default {
     name: 'SuccessDialog',
     data() {
         return {
-            isOpen: false,
+            isOpen: this.modelValue,
             autoCloseTimer: null
         }
     },

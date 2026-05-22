@@ -72,7 +72,7 @@ export default {
 
     // Bundnavigationen vises kun på de tre primære sider (ikke på login)
     showBottomNav() {
-      return ["home", "community", "items"].includes(this.$route?.name)
+      return ["home", "community", "items", "laan-trin-1", "laan-trin-2", "laan-bekraeft"].includes(this.$route?.name)
         && authStore.erLoggetInd.value;
     },
 

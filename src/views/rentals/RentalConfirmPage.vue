@@ -3,6 +3,7 @@ import Stepper from "@/components/Stepper.vue";
 import RentalSummaryCard from "@/components/rentals/RentalSummaryCard.vue";
 import TermsDialog from "@/components/feedback/TermsDialog.vue";
 import { createRentalRequest } from "@/services/rentalrequest/rentalrequestservice.js";
+import SuccessDialog from "@/components/SuccessDialog.vue";
 
 
 export default {
@@ -12,6 +13,7 @@ export default {
     Stepper,
     RentalSummaryCard,
     TermsDialog,
+    SuccessDialog,
   },
  
 
@@ -34,6 +36,7 @@ export default {
       acceptedTerms: false,
       error: "",
       showTerms: false,
+      showSuccessDialog: false,
     };
   },
 
@@ -60,9 +63,9 @@ export default {
      Status: "pending",
       };
 
-      await createRentalRequest(rentalData);
+     await createRentalRequest(rentalData);
 
-      this.$emit("rentalConfirmed");
+this.showSuccessDialog = true;
 
     } catch (err) {
       console.error(err);
@@ -71,6 +74,10 @@ export default {
         "Kunne ikke sende låneanmodning";
     }
   },
+  handleSuccessBack() {
+  this.showSuccessDialog = false;
+  this.$emit("rental-confirmed");
+},
 
    
 /*   confirmRental() {
@@ -90,7 +97,7 @@ export default {
 
   },
 
-  emits: ["goBack", "rentalConfirmed"],
+  emits: ["goBack", "rental-confirmed"],
 };
 </script>
 
@@ -171,8 +178,15 @@ export default {
       </v-btn>
 
     </div>
+     <SuccessDialog
+  v-model="showSuccessDialog"
+  title="Låneanmodning sendt!"
+  message="Din låneanmodning er nu sendt til udlåner"
+  @back-to-overview="handleSuccessBack"
+/>
 
   </v-container>
+ 
 
 </template>
 
@@ -180,10 +194,9 @@ export default {
 
 .bottom-bar {
   position: fixed;
-  bottom: 0;
+  bottom: 64px;
   left: 0;
   right: 0;
-
   background: white;
   border-top: 1px solid #e5e7eb;
 
@@ -210,13 +223,14 @@ export default {
   font-size: 14px;
   margin-top: 4px;
 }
-.page {
-  padding-bottom: 120px; /* space for bottom button */
-}
+
 .terms-link {
   color: #1B5E20;
   text-decoration: underline;
   cursor: pointer;
+}
+.page {
+  padding-bottom: 180px;
 }
 
 </style>
