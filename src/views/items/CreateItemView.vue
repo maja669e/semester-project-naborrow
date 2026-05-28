@@ -65,6 +65,7 @@ export default {
 </script>
 
 <template>
+
   <!-- Trin 1: Grundlæggende information (billeder, kategori, navn) -->
   <ItemBasicInfoStep
     v-if="trin === 1"
@@ -93,4 +94,6 @@ export default {
     @goBack="trin = 2"
     @item-created="genstandOprettet($event)"
   />
+
+ 
 </template>

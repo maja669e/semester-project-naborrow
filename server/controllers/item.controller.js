@@ -59,6 +59,42 @@ exports.findAll = async (req, res) => {
   }
 };
 
+
+//Find all items by a specific user (with images)
+exports.findByUser = async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    const items = await Item.findAll({
+      where: {
+        UserID: userId
+      },
+      include: [
+        {
+          model: ItemImage,
+          as: "images"
+        },
+        {
+          model: Category,
+          attributes: ["CategoryID", "CategoryName"]
+        },
+        {
+          model: ItemAccessory,
+          as: "accessories"
+        }
+      ]
+    });
+
+    res.send(items);
+
+  } catch (err) {
+    res.status(500).send({
+      message: err.message
+    });
+  }
+};
+
+
 // GET one item by ID (with images)
 exports.findOne = async (req, res) => {
   const id = req.params.id;

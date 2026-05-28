@@ -66,13 +66,13 @@ export default {
     // Oversæt den aktuelle rute til en AppBottomNav-fanepnøgle
     activePage() {
       if (this.visProfilMenu) return "profil";
-      const map = { home: "home", community: "homepage", items: "itemOverview" };
+      const map = { home: "home", community: "homepage", items: "itemOverview", requests: "anmodninger" };
       return map[this.$route?.name] || "";
     },
 
     // Bundnavigationen vises kun på de tre primære sider (ikke på login)
     showBottomNav() {
-      return ["home", "community", "items", "laan-trin-1", "laan-trin-2", "laan-bekraeft"].includes(this.$route?.name)
+      return ["home", "community", "items", "laan-trin-1", "laan-trin-2", "laan-bekraeft", "anmodninger"].includes(this.$route?.name)
         && authStore.erLoggetInd.value;
     },
 

@@ -12,6 +12,7 @@ import CreateItemView   from "@/views/items/CreateItemView.vue";
 import RentalPageOne    from "@/views/rentals/RentalPageOne.vue";
 import RentalPageTwo    from "@/views/rentals/RentalPageTwo.vue";
 import RentalConfirmPage from "@/views/rentals/RentalConfirmPage.vue";
+import RequestsView      from "@/views/rentals/RequestsView.vue";
 
 const ruter = [
   { path: "/login",           name: "login",          component: LoginView,         meta: { offentlig: true } },
@@ -22,6 +23,7 @@ const ruter = [
   { path: "/laan/trin-1",     name: "laan-trin-1",    component: RentalPageOne },
   { path: "/laan/trin-2",     name: "laan-trin-2",    component: RentalPageTwo },
   { path: "/laan/bekraeft",   name: "laan-bekraeft",  component: RentalConfirmPage },
+  { path: "/anmodninger",     name: "anmodninger",    component: RequestsView },
 ];
 
 const router = createRouter({
