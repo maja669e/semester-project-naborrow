@@ -22,127 +22,127 @@ export default {
   data() {
     return {
       // Gendannes fra initialData hvis brugeren er vendt tilbage fra trin 3
-      harTilbehoer:     this.initialData.hasExtra   ?? null,
-      tilbehoerListe:   this.initialData.extras?.length
+      hasAccessories:  this.initialData.hasExtra   ?? null,
+      accessoriesList: this.initialData.extras?.length
         ? [...this.initialData.extras]
         : [],
-      stand:            this.initialData.condition  || null,
-      maksLaanePeriode: this.initialData.loanPeriod || null,
+      condition:       this.initialData.condition  || null,
+      maxLoanPeriod:   this.initialData.loanPeriod || null,
 
-      tilbehoerNavn:    "",   // Midlertidigt felt til tilføjelse af nyt tilbehør
-      brugerdefPeriode: "",   // Udfyldes kun når maksLaanePeriode === "Andet"
+      accessoryName: "",   // Midlertidigt felt til tilføjelse af nyt tilbehør
+      customPeriod:  "",   // Udfyldes kun når maxLoanPeriod === "Andet"
 
       // Valideringsfejl – vises under de respektive felter
-      fejl: {
-        harTilbehoer:     "",
-        tilbehoerListe:   "",
-        stand:            "",
-        maksLaanePeriode: "",
-        brugerdefPeriode: "",
+      errors: {
+        hasAccessories:  "",
+        accessoriesList: "",
+        condition:       "",
+        maxLoanPeriod:   "",
+        customPeriod:    "",
       },
     };
   },
 
   methods: {
     // Gem om genstanden har tilbehør og ryd fejlbesked
-    vaelgTilbehoer(vaerdi) {
-      this.harTilbehoer = vaerdi;
-      this.fejl.harTilbehoer = "";
+    selectAccessories(value) {
+      this.hasAccessories = value;
+      this.errors.hasAccessories = "";
     },
 
     // Tilføj et nyt tilbehørsnavn til listen
-    tilfoejTilbehoer() {
-      if (!this.tilbehoerNavn || !this.tilbehoerNavn.trim()) return;
-      this.tilbehoerListe.push(this.tilbehoerNavn.trim());
-      this.tilbehoerNavn = "";
-      this.fejl.tilbehoerListe = "";
+    addAccessory() {
+      if (!this.accessoryName || !this.accessoryName.trim()) return;
+      this.accessoriesList.push(this.accessoryName.trim());
+      this.accessoryName = "";
+      this.errors.accessoriesList = "";
     },
 
     // Fjern et tilbehørselement fra listen via dets indeks
-    fjernTilbehoer(indeks) {
-      this.tilbehoerListe.splice(indeks, 1);
+    removeAccessory(index) {
+      this.accessoriesList.splice(index, 1);
     },
 
     // Gem standsvalg og ryd fejlbesked
-    vaelgStand(vaerdi) {
-      this.stand = vaerdi;
-      this.fejl.stand = "";
+    selectCondition(value) {
+      this.condition = value;
+      this.errors.condition = "";
     },
 
     // Gem maksimal låneperiode og nulstil det brugerdefinerede felt hvis relevant
-    vaelgMaksLaanePeriode(vaerdi) {
-      this.maksLaanePeriode = vaerdi;
-      this.fejl.maksLaanePeriode = "";
-      if (vaerdi !== "Andet") {
-        this.brugerdefPeriode = "";
-        this.fejl.brugerdefPeriode = "";
+    selectMaxLoanPeriod(value) {
+      this.maxLoanPeriod = value;
+      this.errors.maxLoanPeriod = "";
+      if (value !== "Andet") {
+        this.customPeriod = "";
+        this.errors.customPeriod = "";
       }
     },
 
     // Valider alle felter og returnér true hvis alt er udfyldt korrekt
-    valider() {
-      let gyldig = true;
+    validate() {
+      let valid = true;
 
-      if (this.harTilbehoer === null) {
-        this.fejl.harTilbehoer = "Dette felt skal udfyldes";
-        gyldig = false;
+      if (this.hasAccessories === null) {
+        this.errors.hasAccessories = "Dette felt skal udfyldes";
+        valid = false;
       } else {
-        this.fejl.harTilbehoer = "";
+        this.errors.hasAccessories = "";
       }
 
       // Mindst ét tilbehør kræves hvis brugeren valgte "Ja"
-      if (this.harTilbehoer && this.tilbehoerListe.length === 0) {
-        this.fejl.tilbehoerListe = "Indtast mindst ét tilbehør";
-        gyldig = false;
+      if (this.hasAccessories && this.accessoriesList.length === 0) {
+        this.errors.accessoriesList = "Indtast mindst ét tilbehør";
+        valid = false;
       } else {
-        this.fejl.tilbehoerListe = "";
+        this.errors.accessoriesList = "";
       }
 
-      if (!this.stand) {
-        this.fejl.stand = "Dette felt skal udfyldes";
-        gyldig = false;
+      if (!this.condition) {
+        this.errors.condition = "Dette felt skal udfyldes";
+        valid = false;
       } else {
-        this.fejl.stand = "";
+        this.errors.condition = "";
       }
 
-      if (!this.maksLaanePeriode) {
-        this.fejl.maksLaanePeriode = "Dette felt skal udfyldes";
-        gyldig = false;
+      if (!this.maxLoanPeriod) {
+        this.errors.maxLoanPeriod = "Dette felt skal udfyldes";
+        valid = false;
       } else {
-        this.fejl.maksLaanePeriode = "";
+        this.errors.maxLoanPeriod = "";
       }
 
-      if (this.maksLaanePeriode === "Andet" && !this.brugerdefPeriode.trim()) {
-        this.fejl.brugerdefPeriode = "Indtast en låneperiode";
-        gyldig = false;
+      if (this.maxLoanPeriod === "Andet" && !this.customPeriod.trim()) {
+        this.errors.customPeriod = "Indtast en låneperiode";
+        valid = false;
       } else {
-        this.fejl.brugerdefPeriode = "";
+        this.errors.customPeriod = "";
       }
 
-      return gyldig;
+      return valid;
     },
 
     // Valider, udsend data og gå videre til bekræftelsesskærmen.
-    // harTilbehoer inkluderes så CreateItemView kan gendanne dette valg
+    // hasAccessories inkluderes så CreateItemView kan gendanne dette valg
     // hvis brugeren vender tilbage til trin 2 fra trin 3.
-    naeste() {
-      if (this.valider()) {
-        const detaljer = {
-          harTilbehoer:  this.harTilbehoer,
-          extras:        this.tilbehoerListe,
-          condition:     this.stand,
+    next() {
+      if (this.validate()) {
+        const details = {
+          hasAccessories: this.hasAccessories,
+          extras:         this.accessoriesList,
+          condition:      this.condition,
           // Brug det brugerdefinerede felt hvis "Andet" er valgt
-          maxLoanPeriod: this.maksLaanePeriode === "Andet"
-            ? this.brugerdefPeriode
-            : this.maksLaanePeriode,
+          maxLoanPeriod:  this.maxLoanPeriod === "Andet"
+            ? this.customPeriod
+            : this.maxLoanPeriod,
         };
-        this.$emit("save-details", detaljer);
+        this.$emit("save-details", details);
         this.$emit("go-to-confirm-item");
       }
     },
 
     // Gå tilbage til trin 1
-    tilbage() {
+    back() {
       this.$emit("go-to-page-one");
     },
   },
@@ -177,50 +177,50 @@ export default {
             <v-btn
               class="ma-2 tilbehoer-knap"
               size="large"
-              :class="{ valgt: harTilbehoer === true }"
-              :aria-pressed="harTilbehoer === true"
-              @click="vaelgTilbehoer(true)"
+              :class="{ valgt: hasAccessories === true }"
+              :aria-pressed="hasAccessories === true"
+              @click="selectAccessories(true)"
             >
               Ja
             </v-btn>
             <v-btn
               class="ma-2 tilbehoer-knap"
               size="large"
-              :class="{ valgt: harTilbehoer === false }"
-              :aria-pressed="harTilbehoer === false"
-              @click="vaelgTilbehoer(false)"
+              :class="{ valgt: hasAccessories === false }"
+              :aria-pressed="hasAccessories === false"
+              @click="selectAccessories(false)"
             >
               Nej
             </v-btn>
-            <div v-if="fejl.harTilbehoer" class="fejltekst" role="alert">
-              {{ fejl.harTilbehoer }}
+            <div v-if="errors.hasAccessories" class="fejltekst" role="alert">
+              {{ errors.hasAccessories }}
             </div>
           </v-col>
         </v-row>
       </div>
 
       <!-- Tilbehørsliste vises kun hvis brugeren valgte "Ja" -->
-      <v-row v-if="harTilbehoer === true">
+      <v-row v-if="hasAccessories === true">
         <v-col cols="12">
 
           <!-- Allerede tilføjet tilbehør vist som tags -->
           <div
-            v-if="tilbehoerListe.length"
+            v-if="accessoriesList.length"
             class="tags-wrapper"
             role="list"
             aria-label="Tilføjet tilbehør"
           >
             <span
-              v-for="(element, indeks) in tilbehoerListe"
-              :key="indeks"
+              v-for="(el, index) in accessoriesList"
+              :key="index"
               class="tag"
               role="listitem"
             >
-              {{ element }}
+              {{ el }}
               <button
                 class="fjern-tag"
-                :aria-label="`Fjern ${element}`"
-                @click="fjernTilbehoer(indeks)"
+                :aria-label="`Fjern ${el}`"
+                @click="removeAccessory(index)"
               >
                 ×
               </button>
@@ -232,23 +232,23 @@ export default {
             <input
               type="text"
               placeholder="F.eks. oplader, taske..."
-              v-model="tilbehoerNavn"
+              v-model="accessoryName"
               class="tekst-input"
               aria-label="Navn på tilbehør"
-              @keyup.enter="tilfoejTilbehoer"
+              @keyup.enter="addAccessory"
             />
             <v-btn
               class="tilfoej-knap"
               icon
               aria-label="Tilføj tilbehør"
-              @click="tilfoejTilbehoer"
+              @click="addAccessory"
             >
               +
             </v-btn>
           </div>
 
-          <div v-if="fejl.tilbehoerListe" class="fejltekst" role="alert">
-            {{ fejl.tilbehoerListe }}
+          <div v-if="errors.accessoriesList" class="fejltekst" role="alert">
+            {{ errors.accessoriesList }}
           </div>
         </v-col>
       </v-row>
@@ -260,12 +260,12 @@ export default {
       <div role="group" aria-labelledby="stand-overskrift" aria-required="true">
         <v-row>
           <v-col cols="12">
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: stand === 'Ny' }"    :aria-pressed="stand === 'Ny'"    @click="vaelgStand('Ny')">Ny</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: stand === 'God' }"   :aria-pressed="stand === 'God'"   @click="vaelgStand('God')">God</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: stand === 'Brugt' }" :aria-pressed="stand === 'Brugt'" @click="vaelgStand('Brugt')">Brugt</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: stand === 'Slidt' }" :aria-pressed="stand === 'Slidt'" @click="vaelgStand('Slidt')">Slidt</v-btn>
-            <div v-if="fejl.stand" class="fejltekst" role="alert">
-              {{ fejl.stand }}
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: condition === 'Ny' }"    :aria-pressed="condition === 'Ny'"    @click="selectCondition('Ny')">Ny</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: condition === 'God' }"   :aria-pressed="condition === 'God'"   @click="selectCondition('God')">God</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: condition === 'Brugt' }" :aria-pressed="condition === 'Brugt'" @click="selectCondition('Brugt')">Brugt</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: condition === 'Slidt' }" :aria-pressed="condition === 'Slidt'" @click="selectCondition('Slidt')">Slidt</v-btn>
+            <div v-if="errors.condition" class="fejltekst" role="alert">
+              {{ errors.condition }}
             </div>
           </v-col>
         </v-row>
@@ -280,41 +280,41 @@ export default {
       <div role="group" aria-labelledby="laaneperiode-overskrift" aria-required="true">
         <v-row>
           <v-col cols="12">
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '1 dag' }"   :aria-pressed="maksLaanePeriode === '1 dag'"   @click="vaelgMaksLaanePeriode('1 dag')">1 dag</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '3 dage' }"  :aria-pressed="maksLaanePeriode === '3 dage'"  @click="vaelgMaksLaanePeriode('3 dage')">3 dage</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '1 uge' }"   :aria-pressed="maksLaanePeriode === '1 uge'"   @click="vaelgMaksLaanePeriode('1 uge')">1 uge</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '2 uger' }"  :aria-pressed="maksLaanePeriode === '2 uger'"  @click="vaelgMaksLaanePeriode('2 uger')">2 uger</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === '1 måned' }" :aria-pressed="maksLaanePeriode === '1 måned'" @click="vaelgMaksLaanePeriode('1 måned')">1 måned</v-btn>
-            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maksLaanePeriode === 'Andet' }"   :aria-pressed="maksLaanePeriode === 'Andet'"   @click="vaelgMaksLaanePeriode('Andet')">Andet</v-btn>
-            <div v-if="fejl.maksLaanePeriode" class="fejltekst" role="alert">
-              {{ fejl.maksLaanePeriode }}
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maxLoanPeriod === '1 dag' }"   :aria-pressed="maxLoanPeriod === '1 dag'"   @click="selectMaxLoanPeriod('1 dag')">1 dag</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maxLoanPeriod === '3 dage' }"  :aria-pressed="maxLoanPeriod === '3 dage'"  @click="selectMaxLoanPeriod('3 dage')">3 dage</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maxLoanPeriod === '1 uge' }"   :aria-pressed="maxLoanPeriod === '1 uge'"   @click="selectMaxLoanPeriod('1 uge')">1 uge</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maxLoanPeriod === '2 uger' }"  :aria-pressed="maxLoanPeriod === '2 uger'"  @click="selectMaxLoanPeriod('2 uger')">2 uger</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maxLoanPeriod === '1 måned' }" :aria-pressed="maxLoanPeriod === '1 måned'" @click="selectMaxLoanPeriod('1 måned')">1 måned</v-btn>
+            <v-btn class="ma-2 stand-knap" size="large" :class="{ valgt: maxLoanPeriod === 'Andet' }"   :aria-pressed="maxLoanPeriod === 'Andet'"   @click="selectMaxLoanPeriod('Andet')">Andet</v-btn>
+            <div v-if="errors.maxLoanPeriod" class="fejltekst" role="alert">
+              {{ errors.maxLoanPeriod }}
             </div>
           </v-col>
         </v-row>
       </div>
 
       <!-- Fritekstfelt vises kun når "Andet" er valgt -->
-      <v-row v-if="maksLaanePeriode === 'Andet'">
+      <v-row v-if="maxLoanPeriod === 'Andet'">
         <v-col cols="12">
           <div class="input-wrapper">
             <input
               type="text"
               placeholder="F.eks. 10 dage, 3 måneder..."
-              v-model="brugerdefPeriode"
+              v-model="customPeriod"
               class="tekst-input"
               aria-label="Angiv din låneperiode"
               aria-required="true"
             />
           </div>
-          <div v-if="fejl.brugerdefPeriode" class="fejltekst" role="alert">
-            {{ fejl.brugerdefPeriode }}
+          <div v-if="errors.customPeriod" class="fejltekst" role="alert">
+            {{ errors.customPeriod }}
           </div>
         </v-col>
       </v-row>
     </section>
 
     <!-- Bundnavigation: tilbage til trin 1, næste til bekræftelse -->
-    <FormBottomBar @back="tilbage" @next="naeste" />
+    <FormBottomBar @back="back" @next="next" />
 
   </v-container>
 </template>

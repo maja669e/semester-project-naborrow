@@ -14,26 +14,26 @@ import RentalPageTwo    from "@/views/rentals/RentalPageTwo.vue";
 import RentalConfirmPage from "@/views/rentals/RentalConfirmPage.vue";
 import RequestsView      from "@/views/rentals/RequestsView.vue";
 
-const ruter = [
-  { path: "/login",           name: "login",          component: LoginView,         meta: { offentlig: true } },
+const routes = [
+  { path: "/login",           name: "login",          component: LoginView,         meta: { isPublic: true } },
   { path: "/",                name: "home",           component: HomeView },
   { path: "/fællesskab",      name: "community",      component: Homepage },
   { path: "/genstande",       name: "items",          component: ItemOverviewView },
-  { path: "/genstande/opret", name: "opret-genstand", component: CreateItemView },
-  { path: "/laan/trin-1",     name: "laan-trin-1",    component: RentalPageOne },
-  { path: "/laan/trin-2",     name: "laan-trin-2",    component: RentalPageTwo },
-  { path: "/laan/bekraeft",   name: "laan-bekraeft",  component: RentalConfirmPage },
-  { path: "/anmodninger",     name: "anmodninger",    component: RequestsView },
+  { path: "/genstande/opret", name: "create-item",    component: CreateItemView },
+  { path: "/laan/trin-1",     name: "rental-step-1",  component: RentalPageOne },
+  { path: "/laan/trin-2",     name: "rental-step-2",  component: RentalPageTwo },
+  { path: "/laan/bekraeft",   name: "rental-confirm", component: RentalConfirmPage },
+  { path: "/anmodninger",     name: "requests",       component: RequestsView },
 ];
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes: ruter,
+  routes,
 });
 
 router.beforeEach((to, from) => {
   // Videresend ikke-loggede brugere til login, medmindre ruten er offentlig
-  if (!to.meta.offentlig && !authStore.erLoggetInd.value) {
+  if (!to.meta.isPublic && !authStore.isLoggedIn.value) {
     return { name: "login" };
   }
 
@@ -41,7 +41,7 @@ router.beforeEach((to, from) => {
   // ikke fra login-siden, da det ville skabe en unødvendig dobbelt-omdirigering
   if (from.name) return;
   const navEntry = performance.getEntriesByType?.("navigation")?.[0];
-  if (navEntry?.type === "reload" && to.path !== "/" && !to.meta.offentlig) {
+  if (navEntry?.type === "reload" && to.path !== "/" && !to.meta.isPublic) {
     return { path: "/" };
   }
 });

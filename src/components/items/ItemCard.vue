@@ -18,7 +18,7 @@ export default {
 
   computed: {
     // Oversætter status-tekst til en CSS-modifikatorklasse for farvekodning
-    statusKlasse() {
+    statusClass() {
       if (this.status === "Tilgængelig") return "status-tilgaengelig";
       if (this.status === "Udlånt")      return "status-udlaant";
       if (this.status === "Inaktiv")     return "status-inaktiv";
@@ -28,7 +28,7 @@ export default {
 
   methods: {
     // Sender klik-hændelsen op til forælderen med genstandens id
-    haandterKlik() {
+    handleClick() {
       this.$emit("cardClicked", this.id);
     },
   },
@@ -45,9 +45,9 @@ export default {
     role="button"
     tabindex="0"
     :aria-label="`${title} — ${status}`"
-    @click="haandterKlik"
-    @keydown.enter.prevent="haandterKlik"
-    @keydown.space.prevent="haandterKlik"
+    @click="handleClick"
+    @keydown.enter.prevent="handleClick"
+    @keydown.space.prevent="handleClick"
   >
 
     <!-- Miniaturebillede af genstanden -->
@@ -59,7 +59,7 @@ export default {
       <!-- Øverste række: titel til venstre, status til højre -->
       <div class="kort__top">
         <h2 class="kort__titel">{{ title }}</h2>
-        <span class="kort__status" :class="statusKlasse">{{ status }}</span>
+        <span class="kort__status" :class="statusClass">{{ status }}</span>
       </div>
 
       <!-- Metadata: kategori og eventuelt mærke -->

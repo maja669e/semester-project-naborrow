@@ -25,7 +25,7 @@ export default {
       this.loading = true;
 
       try {
-        const userId = authStore.bruger.value.userID;
+        const userId = authStore.user.value.userID;
         this.requests = await getPendingRequestsByOwner(userId);
       } finally {
         this.loading = false;
