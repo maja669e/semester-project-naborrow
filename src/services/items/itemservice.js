@@ -6,7 +6,21 @@ export const getAllItems = async () => {
     const response = await fetch(`${BASE_URL}/api/items`);
     if (!response.ok) throw new Error("Fejl ved hentning af genstande");
         return response.json();
+    };
+
+
+//Hent alle genstande for en specifik bruger
+export const getItemsByUser = async (userId) => {
+    const response = await fetch(
+        `${BASE_URL}/api/items/user/${userId}`
+    );
+
+    if (!response.ok) {
+        throw new Error("Fejl ved hentning af brugerens genstande");
     }
+
+    return response.json();
+};
 
 // Hent én genstand med billeder og tilbehør
 export const getItemById = async (id) => {

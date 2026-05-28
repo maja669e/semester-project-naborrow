@@ -369,4 +369,6 @@ export default {
   font-size: 14px;
   margin-top: 4px;
 }
+
+
 </style>

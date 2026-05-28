@@ -10,6 +10,10 @@ import ItemCard       from "@/components/items/ItemCard.vue";
 import ItemDetailView from "@/components/items/ItemDetailView.vue";
 import ItemFilterTabs from "@/components/items/ItemFilterTabs.vue";
 import { getAllItems } from "@/services/items/itemservice.js";
+import { authStore } from "@/stores/auth.js";
+import { getItemsByUser } from "@/services/items/itemservice.js";
+import { getPendingCountByOwner } from "@/services/rentalRequest/rentalRequestService";
+
 
 export default {
   name: "ItemOverviewView",
@@ -31,6 +35,8 @@ export default {
       fremhaevetTimer:    null,    // Timeout-reference til at stoppe animationen
       sletBesked:         "",
       visSletBesked:      false,
+      pendingRequests: 0,
+    activeRentals: 0,
     };
   },
 
@@ -55,7 +61,8 @@ export default {
     async hentGenstande() {
       this.indlaeser = true;
       try {
-        const data = await getAllItems();
+       const userId = authStore.bruger.value.userID;
+        const data = await getItemsByUser(userId);
         this.genstande_liste = data.map((genstand) => ({
           id:          genstand.ItemID,
           title:       genstand.ItemName,
@@ -129,10 +136,26 @@ export default {
         (g) => g.id === this.valgtGenstand.id
       );
     },
+      async loadDashboardCounts() {
+    try {
+      const userId = authStore.bruger.value.userID;
+
+      const pending = await getPendingCountByOwner(userId);
+
+      this.pendingRequests = pending.count;
+    } catch (err) {
+      console.error(err);
+    }
+  },
+  goToPendingRequests() {
+  this.$router.push({ name: "anmodninger" });
+}
+
   },
 
   mounted() {
     this.hentGenstande();
+    this.loadDashboardCounts();
   },
 
   watch: {
@@ -191,9 +214,35 @@ export default {
       @itemUpdated="opdaterGenstand"
     />
 
+    
     <!-- Listevisning med filter og kortliste -->
     <section v-else>
-      <h1 class="side-titel">Dine genstande</h1>
+      <h1 class="side-titel">Mine ting</h1>
+      <v-row class="status-row">
+  <v-col cols="6">
+    <v-card class="status-card" @click="goToPendingRequests">
+      <div class="status-number">
+        {{ pendingRequests }}
+      </div>
+
+      <div class="status-label">
+        Afventer godkendelse
+      </div>
+    </v-card>
+  </v-col>
+
+  <v-col cols="6">
+    <v-card class="status-card">
+      <div class="status-number">
+        {{ activeRentals }}
+      </div>
+
+      <div class="status-label">
+        Aktive lån
+      </div>
+    </v-card>
+  </v-col>
+</v-row>
 
       <!-- Statusfilter-faner -->
       <ItemFilterTabs
@@ -359,5 +408,25 @@ export default {
   border-radius: var(--radius-lg);
   text-align: center;
   z-index: 200;
+}
+.status-row {
+  margin-bottom: 16px;
+}
+
+.status-card {
+  padding: 16px;
+  text-align: center;
+  border-radius: var(--radius-lg);
+}
+
+.status-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.status-label {
+  font-size: 13px;
+  color: var(--color-secondary);
 }
 </style>

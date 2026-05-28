@@ -6,6 +6,9 @@ module.exports = app => {
   // Retrieve all items
   router.get("/", items.findAll);
 
+  // Retrieve all items by a specific user
+  router.get("/user/:userId", items.findByUser);
+
   // Retrieve a single item with id
   router.get("/:id", items.findOne);
 
