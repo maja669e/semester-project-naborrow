@@ -42,6 +42,17 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: true
     },
 
+    IsDeleted: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false
+    },
+
+    DeletedAt: {
+      type: DataTypes.DATE,
+      allowNull: true
+    },
+
     CreatedAt: {
       type: DataTypes.DATE,
       allowNull: false,

@@ -9,6 +9,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.INTEGER,
         allowNull: false
     },
+    ApprovedByID: {
+        type: DataTypes.INTEGER,
+        allowNull: true
+    },
     FirstName: {
         type: DataTypes.STRING(100),
         allowNull: false
@@ -34,10 +38,6 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(20),
         allowNull: true
     },
-    Password: {
-        type: DataTypes.STRING(255),
-        allowNull: false
-    },
     DateOfBirth: {
         type: DataTypes.DATEONLY,
         allowNull: false
@@ -46,11 +46,20 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING(20),
         allowNull: false,
         defaultValue: "user"
+    },
+    MembershipStatus: {
+        type: DataTypes.STRING(20),
+        allowNull: false,
+        defaultValue: "pending"
+    },
+    CreatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
     }
     }, {
     tableName: "User",
     timestamps: false
-
 });
 return User;
 };

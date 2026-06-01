@@ -34,6 +34,7 @@ exports.create = async (req, res) => {
 exports.findAll = async (req, res) => {
   try {
     const items = await Item.findAll({
+      where: { IsDeleted: false },
       include: [
         {
           model: ItemImage,
@@ -67,7 +68,8 @@ exports.findByUser = async (req, res) => {
   try {
     const items = await Item.findAll({
       where: {
-        UserID: userId
+        UserID: userId,
+        IsDeleted: false
       },
       include: [
         {
@@ -100,7 +102,8 @@ exports.findOne = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const item = await Item.findByPk(id, {
+    const item = await Item.findOne({
+      where: { ItemID: id, IsDeleted: false },
       include: [
         {
           model: ItemImage,
@@ -191,16 +194,17 @@ exports.update = async (req, res) => {
   }
 };
 
-// DELETE item (images auto-delete via CASCADE)
+// DELETE item (soft delete — sætter IsDeleted så lånehistorik bevares)
 exports.delete = async (req, res) => {
   const id = req.params.id;
 
   try {
-    const num = await Item.destroy({
-      where: { ItemID: id }
-    });
+    const [num] = await Item.update(
+      { IsDeleted: true, DeletedAt: new Date() },
+      { where: { ItemID: id } }
+    );
 
-    if (num == 1) {
+    if (num === 1) {
       res.send({
         message: "Item deleted successfully!"
       });
