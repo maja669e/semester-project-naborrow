@@ -1,6 +1,7 @@
 <script>
 import Stepper from "@/components/Stepper.vue";
 import { createItem, createAccessory } from "../services/items/itemservice.js";
+import { authStore } from "@/stores/auth.js";
 
 export default {
   name: "ConfirmItemScreen",
@@ -64,6 +65,7 @@ export default {
     async opretGenstand() {
       this.loading = true;
       this.error = null;
+      const currentUserId = authStore.bruger.value.userID;
 
       try {
         // Byg item objekt til API
@@ -74,7 +76,7 @@ export default {
           Condition: this.item.condition,
           MaxRentPeriodDays: this.convertLoanPeriodToDays(this.item.loanPeriod),
           IsActive: true,
-          UserID: 1, // TODO: erstat med logged-in bruger ID
+          UserID: currentUserId,
           images: this.item.images?.map((img, index) => ({
             ImageURL: img,
             IsPrimary: index === 0,
