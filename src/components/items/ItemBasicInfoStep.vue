@@ -6,10 +6,11 @@
 import MultiStepFormHeader from "@/components/layout/MultiStepFormHeader.vue";
 import FormBottomBar       from "@/components/layout/FormBottomBar.vue";
 import { getAllCategories } from "@/services/items/itemservice.js";
+import ConfirmDialog from "@/components/ConfirmDialog.vue";
 
 export default {
   name: "ItemBasicInfoStep",
-  components: { MultiStepFormHeader, FormBottomBar },
+  components: { MultiStepFormHeader, FormBottomBar, ConfirmDialog },
 
   props: {
     // Det aktuelle trin sendt videre til MultiStepFormHeader
@@ -22,6 +23,7 @@ export default {
 
   data() {
     return {
+      showCancelDialog: false,
       categories: [],
 
       // Gendannes fra initialData hvis brugeren er vendt tilbage fra trin 2.
@@ -87,10 +89,13 @@ export default {
       });
     },
 
-    // Annuller oprettelsen og naviger tilbage til genstandsoversigten
+    // Annuller oprettelsen og naviger tilbage til genstandsoversigten samt modal pop up
     cancel() {
-      this.$emit("go-to-items");
+       this.showCancelDialog = true;
     },
+    confirmCancel() {
+  this.$router.push({ name: "items" });
+},
 
     // Valider alle felter og returnér true hvis alt er udfyldt korrekt
     validate() {
@@ -301,6 +306,14 @@ export default {
     <!-- Bundnavigation: tilbage annullerer, næste validerer og går videre -->
     <FormBottomBar @back="cancel" @next="next" />
 
+
+    <ConfirmDialog
+  v-model="showCancelDialog"
+  title="Annuller oprettelse?"
+  message="Er du sikker på, at du vil annullere oprettelsen? Alle oplysninger du har indtastet vil gå tabt."
+  confirm-label="Ja, annuller"
+  @confirm="confirmCancel"
+/>
   </v-container>
 </template>
 

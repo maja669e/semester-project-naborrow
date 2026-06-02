@@ -65,7 +65,7 @@ export default {
     async handleCreate() {
       this.loading = true;
       this.error = null;
-      const currentUserId = authStore.bruger.value.userID;
+      const currentUserId = authStore.user.value.userID;
 
       try {
         // Byg item objekt til API
