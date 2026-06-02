@@ -89,12 +89,27 @@ export default {
       });
     },
 
-    // Annuller oprettelsen og naviger tilbage til genstandsoversigten samt modal pop up
-    cancel() {
-       this.showCancelDialog = true;
-    },
-    confirmCancel() {
+    // Annuller oprettelse – vis bekræftelsesdialog hvis der er indtastet data, ellers gå tilbage med det samme
+cancel() {
+  if (this.hasEnteredData()) {
+    this.showCancelDialog = true;
+  } else {
+    this.confirmCancel();
+  }
+},
+
+confirmCancel() {
   this.$router.push({ name: "items" });
+},
+   
+hasEnteredData() {
+  return (
+    this.uploadedImages.length > 0 ||
+    this.selectedCategory !== null ||
+    this.customCategory.trim() !== "" ||
+    this.itemName.trim() !== "" ||
+    this.brand.trim() !== ""
+  );
 },
 
     // Valider alle felter og returnér true hvis alt er udfyldt korrekt
