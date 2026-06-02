@@ -27,8 +27,13 @@ exports.create = async (req, res) => {
         // Hash adgangskoden før gemning i Login-tabellen
         const hashetAdgangskode = await bcrypt.hash(req.body.Password, 10);
 
-        // Opret bruger uden adgangskode
+        // Opret bruger uden adgangskode.
+        // Username auto-genereres som "F. Efternavn" (fx "S. Andersen")
+        // hvis det ikke allerede er sat af frontend.
         const { Password, ...userData } = req.body;
+        if (!userData.Username) {
+            userData.Username = `${req.body.FirstName.charAt(0)}. ${req.body.LastName}`;
+        }
         const user = await User.create(userData);
 
         // Opret login-række med det hashede password

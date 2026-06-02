@@ -52,6 +52,36 @@ exports.getPendingCountByOwner = async (req, res) => {
 };
  
 
+// Godkend anmodning — sætter status til 'approved' (matcher SQL CHECK-constraint)
+exports.accept = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await RentalRequest.update(
+      { Status: "approved" },
+      { where: { RentalRequestID: id } }
+    );
+    const updated = await RentalRequest.findByPk(id);
+    res.send(updated);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
+// Afvis anmodning — sætter status til 'rejected'
+exports.reject = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await RentalRequest.update(
+      { Status: "rejected" },
+      { where: { RentalRequestID: id } }
+    );
+    const updated = await RentalRequest.findByPk(id);
+    res.send(updated);
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
 exports.getPendingByOwner = async (req, res) => {
   try {
     const userId = req.params.userId;

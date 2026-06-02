@@ -1,22 +1,27 @@
 <script>
+// Opsummeringskort der vises på bekræftelsestrinnet.
+// Modtager det valgte item og de samlede lejedetaljer og viser dem i en overskuelig liste.
 export default {
   name: "RentalSummaryCard",
 
-props: {
-  rental: {
-    type: Object,
-    required: true,
+  props: {
+    // Lejedetaljer indsamlet på trin 1 og 2 (datoer, tilbehør, besked m.m.)
+    rental: {
+      type: Object,
+      required: true,
+    },
+
+    // Den genstand der ønskes lånt — bruges til billede, titel og kategori
+    item: {
+      type: Object,
+      required: true,
+    },
   },
 
-  item: {
-    type: Object,
-    required: true,
-  },
-},
-
-methods: {
-  formatPeriod(start, end) {
-    if (!start || !end) return "-"
+  methods: {
+    // Formaterer start- og slutdato til læsbar dansk tekst, fx "1. januar - 5. januar 2025"
+    formatPeriod(start, end) {
+      if (!start || !end) return "-"
 
     const startDate = new Date(start)
     const endDate = new Date(end)
@@ -39,28 +44,16 @@ methods: {
     const startDay = startDate.getDate()
     const endDay = endDate.getDate()
 
-    const startMonth =
-      months[startDate.getMonth()]
-
-    const endMonth =
-      months[endDate.getMonth()]
-
-    const year =
-      endDate.getFullYear()
-
-    // same month
-    if (
-      startDate.getMonth() ===
-      endDate.getMonth()
-    ) {
-      return `${startDay}. ${startMonth} - ${endDay}. ${endMonth} ${year}`
-    }
+    const startMonth = months[startDate.getMonth()]
+    const endMonth   = months[endDate.getMonth()]
+    const year       = endDate.getFullYear()
 
     return `${startDay}. ${startMonth} - ${endDay}. ${endMonth} ${year}`
   },
 
- getDuration(start, end) {
-  if (!start || !end) return "-";
+    // Beregner antal lånedage inklusive start- og slutdag
+    getDuration(start, end) {
+      if (!start || !end) return "-";
 
   const startDate = new Date(start);
   const endDate = new Date(end);
@@ -133,7 +126,11 @@ methods: {
 
       <div class="summary-row">
         <span>Afhentning</span>
-        <strong>{{ rental.pickupTime }}</strong>
+        <strong>{{
+          Array.isArray(rental.pickupTime)
+            ? rental.pickupTime.join(", ")
+            : rental.pickupTime
+        }}</strong>
       </div>
 
       <div class="summary-row">

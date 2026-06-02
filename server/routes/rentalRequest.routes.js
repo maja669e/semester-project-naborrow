@@ -6,7 +6,7 @@ module.exports = app => {
   router.get("/", controller.findAll);
   router.get("/owner/:userId/pending-count",controller.getPendingCountByOwner);
   router.get("/owner/:userId/pending",controller.getPendingByOwner);
-  //router.put("/:id/accept", controller.accept);
-  //router.put("/:id/reject", controller.reject);
+  router.put("/:id/accept", controller.accept);
+  router.put("/:id/reject", controller.reject);
   app.use("/api/rentalRequests", router);
 };

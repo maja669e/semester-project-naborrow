@@ -1,4 +1,6 @@
 <script>
+// Visning af indkommende låneanmodninger for den loggede udlåner.
+// Henter kun anmodninger med status "pending" for udlånerens egne genstande.
 import { authStore } from "@/stores/auth.js";
 import {
   getPendingRequestsByOwner,
@@ -42,21 +44,40 @@ export default {
       await this.loadRequests();
     },
 
-    // Ændrer backend statuskoder til dansk på hjemmesiden
+    // Oversætter backend-statuskoder til dansk.
+    // 'approved' matcher SQL CHECK-constraint — ikke 'accepted'
     formatStatus(status) {
-      if (status === "pending") return "Afventer";
-      if (status === "accepted") return "Godkendt";
+      if (status === "pending")  return "Afventer";
+      if (status === "approved") return "Godkendt";
       if (status === "rejected") return "Afvist";
       return status;
     },
 
-    // Ændrer farve baseret på dens status
+    // Returnerer Vuetify-farve baseret på status
     statusColor(status) {
-      if (status === "pending") return "orange";
-      if (status === "accepted") return "green";
+      if (status === "pending")  return "orange";
+      if (status === "approved") return "green";
       if (status === "rejected") return "red";
       return "grey";
-    }
+    },
+
+    // Parser JSON-tekst fra databasen til et array.
+    // Returnerer tomt array hvis værdien er null eller ugyldig JSON.
+    parseJson(value) {
+      try {
+        return JSON.parse(value) ?? [];
+      } catch {
+        return [];
+      }
+    },
+
+    // Formaterer en ISO-dato (YYYY-MM-DD) til dansk kortform, fx "1. jun 2025"
+    formatDate(dateStr) {
+      if (!dateStr) return "–";
+      const d = new Date(dateStr);
+      const months = ["jan","feb","mar","apr","maj","jun","jul","aug","sep","okt","nov","dec"];
+      return `${d.getDate()}. ${months[d.getMonth()]} ${d.getFullYear()}`;
+    },
   }
 };
 </script>
@@ -92,7 +113,7 @@ export default {
     <v-row v-else dense>
       <v-col
         v-for="req in requests"
-        :key="req.RequestID"
+        :key="req.RentalRequestID"
         cols="12"
       >
         <v-card
@@ -101,70 +122,82 @@ export default {
           elevation="0"
         >
 
-          <!-- TOP CONTENT -->
-<div class="d-flex align-start">
+          <!-- HEADER: avatar + brugernavn + genstand + status -->
+          <div class="d-flex align-start">
 
-  <!-- LEFT AVATAR -->
-  <v-avatar
-    size="52"
-    color="#dfe8c8"
-    class="mr-4"
-  >
-    <span class="font-weight-bold text-black">
-      {{ req.renter.firstName?.charAt(0) }}
-    </span>
-  </v-avatar>
+            <v-avatar size="52" color="#dfe8c8" class="mr-4">
+              <span class="font-weight-bold text-black">
+                {{ req.renter.Username?.charAt(0) }}
+              </span>
+            </v-avatar>
 
-  <!-- INFO -->
-  <div class="flex-grow-1">
+            <div class="flex-grow-1">
+              <p class="renter-name">{{ req.renter.Username }}</p>
+              <p class="item-name">{{ req.item.ItemName }}</p>
+              <v-chip
+                size="x-small"
+                :color="statusColor(req.Status)"
+                class="mt-2"
+                variant="tonal"
+              >
+                {{ formatStatus(req.Status) }}
+              </v-chip>
+            </div>
 
-    <div class="text-subtitle-1 font-weight-bold text-grey-darken-4">
-      Bob Test
-    </div>
+          </div>
 
-  
-    <div class="text-body-2 text-grey-darken-1">
-      {{ req.item.ItemName }}
-    </div>
+          <!-- DETALJER: periode, afhentning, tilbehør -->
+          <dl class="details-section mt-4">
 
-    <!-- STATUS CHIP -->
-    <v-chip
-      size="x-small"
-      :color="statusColor(req.Status)"
-      class="mt-2"
-      variant="tonal"
-    >
-      {{ formatStatus(req.Status) }}
-    </v-chip>
+            <div class="detail-row">
+              <dt class="detail-label">Periode</dt>
+              <dd class="detail-value">
+                {{ formatDate(req.StartDate) }} – {{ formatDate(req.EndDate) }}
+              </dd>
+            </div>
 
-  </div>
+            <div class="detail-row" v-if="parseJson(req.PickupTimes).length">
+              <dt class="detail-label">Afhentning</dt>
+              <dd class="detail-value">{{ parseJson(req.PickupTimes).join(", ") }}</dd>
+            </div>
 
-</div>
+            <div class="detail-row" v-if="parseJson(req.SelectedAccessories).length">
+              <dt class="detail-label">Tilbehør</dt>
+              <dd class="detail-value">{{ parseJson(req.SelectedAccessories).join(", ") }}</dd>
+            </div>
 
-<!-- BUTTONS UNDER CONTENT -->
-<div class="d-flex mt-5 button-actions">
+          </dl>
 
-  <v-btn
-    color="error"
-    variant="outlined"
-    size="small"
-    class="action-btn reject-btn mr-3"
-    @click="reject(req.RequestID)"
-  >
-    Afvis
-  </v-btn>
+          <!-- BESKRIVELSE: vises som fremhævet blok da det er løbende tekst -->
+          <blockquote v-if="req.MessageToLender" class="description-block mt-3">
+            <p class="description-label">Beskrivelse fra låner</p>
+            <p class="description-text">{{ req.MessageToLender }}</p>
+          </blockquote>
 
-  <v-btn
-    color="success"
-    variant="flat"
-    size="small"
-    class="action-btn approve-btn"
-    @click="accept(req.RequestID)"
-  >
-    ✓ Godkend
-  </v-btn>
+          <!-- HANDLINGER -->
+          <div class="d-flex mt-4 button-actions">
 
-</div>
+            <v-btn
+              color="error"
+              variant="outlined"
+              size="small"
+              class="action-btn reject-btn mr-3"
+              @click="reject(req.RentalRequestID)"
+            >
+              Afvis
+            </v-btn>
+
+            <v-btn
+              color="success"
+              variant="flat"
+              size="small"
+              class="action-btn approve-btn"
+              @click="accept(req.RentalRequestID)"
+            >
+              ✓ Godkend
+            </v-btn>
+
+          </div>
 
         </v-card>
       </v-col>
@@ -189,10 +222,6 @@ export default {
   line-height: 1.4;
 }
 
-.button-row {
-  gap: 10px;
-}
-
 .action-btn {
   text-transform: none;
   font-weight: 700;
@@ -214,5 +243,66 @@ export default {
 
 .v-chip {
   font-weight: 600;
+}
+
+.renter-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #222;
+  margin: 0;
+}
+
+.item-name {
+  font-size: 13px;
+  color: #666;
+  margin: 2px 0 0;
+}
+
+.details-section {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 12px;
+  margin: 0;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+  font-size: 13px;
+}
+
+.detail-label {
+  color: #888;
+  flex-shrink: 0;
+}
+
+.detail-value {
+  color: #333;
+  text-align: right;
+}
+
+.description-block {
+  background: #f7f9f4;
+  border-left: 3px solid #445628;
+  border-radius: 0 8px 8px 0;
+  padding: 10px 14px;
+  margin: 0;
+}
+
+.description-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px;
+}
+
+.description-text {
+  font-size: 13px;
+  color: #333;
+  margin: 0;
+  line-height: 1.5;
 }
 </style>

@@ -35,7 +35,7 @@ export default {
       rentalDetails: {
         startDate:       "",
         endDate:         "",
-        pickupTime:      "",
+        pickupTime:      [],
         accessories:     [],
         acceptedTerms:   false,
         messageToLender: "",

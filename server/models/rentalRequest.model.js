@@ -24,6 +24,18 @@ module.exports = (sequelize, DataTypes) => {
     Status: {
       type: DataTypes.STRING,
       defaultValue: "pending"
+    },
+    MessageToLender: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    SelectedAccessories: {
+      type: DataTypes.TEXT,
+      allowNull: true
+    },
+    PickupTimes: {
+      type: DataTypes.TEXT,
+      allowNull: true
     }
   }, {
     tableName: "RentalRequest",

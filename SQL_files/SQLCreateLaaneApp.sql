@@ -129,12 +129,15 @@ CREATE TABLE ItemAccessory (
 );
 
 CREATE TABLE RentalRequest (
-    RentalRequestID INT             NOT NULL AUTO_INCREMENT,
-    ItemID          INT             NOT NULL,
-    RenterUserID    INT             NOT NULL,
-    StartDate       DATE            NOT NULL,
-    EndDate         DATE            NOT NULL,
-    Status          VARCHAR(20)     NOT NULL DEFAULT 'pending',
+    RentalRequestID     INT             NOT NULL AUTO_INCREMENT,
+    ItemID              INT             NOT NULL,
+    RenterUserID        INT             NOT NULL,
+    StartDate           DATE            NOT NULL,
+    EndDate             DATE            NOT NULL,
+    Status              VARCHAR(20)     NOT NULL DEFAULT 'pending',
+    MessageToLender     TEXT            NULL,
+    SelectedAccessories TEXT            NULL,
+    PickupTimes         TEXT            NULL,
     PRIMARY KEY (RentalRequestID),
     CONSTRAINT chk_request_status
         CHECK (Status IN ('pending','approved','rejected','cancelled')),

@@ -15,28 +15,31 @@ export default {
     },
     components: {
     ItemDetailCard
-},
-emits: ['startRental'],
+    },
+
+    inject: ['authStore'],
+    
+    emits: ['startRental'],
 
     methods: {
-      resolveImageUrl(rawUrl) {
-    if (!rawUrl) {
-        return 'https://placehold.co/400x300'
-    }
+        resolveImageUrl(rawUrl) {
+            if (!rawUrl) {
+                return 'https://placehold.co/400x300'
+                }
+                
+                // BASE64 billeder
+                if (rawUrl.startsWith('data:')) {
+                    return rawUrl
+                }
 
-    // BASE64 billeder
-    if (rawUrl.startsWith('data:')) {
-        return rawUrl
-    }
+                // Allerede fuld URL
+                if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
+                    return rawUrl
+                }
 
-    // Allerede fuld URL
-    if (rawUrl.startsWith('http://') || rawUrl.startsWith('https://')) {
-        return rawUrl
-    }
-
-    // Lokale uploads
-    return `http://localhost:8080/${rawUrl.replace(/^\/+/, '')}`
-},
+                // Lokale uploads
+                return `http://localhost:8080/${rawUrl.replace(/^\/+/, '')}`
+        },
 
         async fetchItems() {
 
@@ -44,38 +47,41 @@ emits: ['startRental'],
                 const data = await getAllItems()
                 console.log(data)
 
-                this.items = data.map(item => ({
-    ...item,
-    image: this.resolveImageUrl(item.images?.[0]?.ImageURL)
-}))
-            } catch (err) {
-                console.error(err)
-                this.error = 'Kunne ikke hente items'
-            } 
+                const myId = this.authStore.user.value.userID;
+                this.items = data
+                .filter(item => item.UserID !== myId)
+                .map(item => ({
+                    ...item,
+                    image: this.resolveImageUrl(item.images?.[0]?.ImageURL)
+                }))
+                } catch (err) {
+                    console.error(err)
+                    this.error = 'Kunne ikke hente items'
+                } 
         },
 
         openItem(item) {
-    this.selectedItem = {
-        id: item.ItemID,
-        title: item.ItemName,
-        category: item.Category?.CategoryName,
-        brand: item.Brand,
-        status: item.IsActive ? 'Tilgængelig' : 'Inaktiv',
-        image: item.image,
-        condition: item.Condition,
-        maxDays: item.MaxRentPeriodDays,
-        accessories: item.accessories?.map(
-        accessory => accessory.AccessoryName
-        ) || [],
-    }
-},
-openRentalFlow() {
-    this.$emit('startRental', this.selectedItem)
-},
+            this.selectedItem = {
+                id: item.ItemID,
+                title: item.ItemName,
+                category: item.Category?.CategoryName,
+                brand: item.Brand,
+                status: item.IsActive ? 'Tilgængelig' : 'Inaktiv',
+                image: item.image,
+                condition: item.Condition,
+                maxDays: item.MaxRentPeriodDays,
+                accessories: item.accessories?.map(
+                accessory => accessory.AccessoryName
+                ) || [],
+            }
+        },
+        openRentalFlow() {
+            this.$emit('startRental', this.selectedItem)
+        },
     },
 
     mounted() {
-        this.fetchItems()
+    this.fetchItems()
     }
 }
 </script>
