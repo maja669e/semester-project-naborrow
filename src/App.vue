@@ -15,17 +15,17 @@ export default {
   data() {
     return {
       // ── Profil / logout ──────────────────────────────────
-      visProfilMenu: false,
+      showProfileMenu: false,
 
       // ── Opret-genstand flow ──────────────────────────────
-      visSucces: false,
+      showSuccess: false,
 
       // State for genstandsoversigten samlet i ét objekt, så provide()
       // kan levere en reaktiv reference – property-mutationer slår igennem
-      // i alle descendant-views der injekterer genstande (som vist i slidesene).
-      genstande: {
-        genindlaesNoegle: 0,    // Forøges af onItemCreated for at udløse re-fetch
-        vistGenstandId:   null, // Id der fremhæves og scrolles til efter oprettelse
+      // i alle descendant-views der injekterer items (som vist i slidesene).
+      items: {
+        reloadKey:   0,    // Forøges af onItemCreated for at udløse re-fetch
+        shownItemId: null, // Id der fremhæves og scrolles til efter oprettelse
       },
 
       // ── Udlejnings-flow (bruges stadig via routeProps/routeListeners) ──
@@ -45,12 +45,12 @@ export default {
 
   provide() {
     return {
-      genstande: this.genstande,
+      items: this.items,
 
-      gaaTilGenstande:  this.gaaTilGenstande,
-      gaaTilOpret:      this.gaaTilOpret,
-      genstandOprettet: this.onItemCreated,
-      gaaTilHjem:       this.gaaTilHjem,
+      goToItems:   this.goToItems,
+      goToCreate:  this.goToCreate,
+      itemCreated: this.onItemCreated,
+      goToHome:    this.goToHome,
 
       // Auth – tilgængeligt i alle descendant-komponenter
       authStore,
@@ -59,34 +59,34 @@ export default {
 
   computed: {
     // Giver skabelonen adgang til den loggede bruger uden at gå uden om Vue
-    inloggetBruger() {
-      return authStore.bruger.value;
+    loggedInUser() {
+      return authStore.user.value;
     },
 
     // Oversæt den aktuelle rute til en AppBottomNav-fanepnøgle
     activePage() {
-      if (this.visProfilMenu) return "profil";
-      const map = { home: "home", community: "homepage", items: "itemOverview" };
+      if (this.showProfileMenu) return "profil";
+      const map = { home: "home", community: "homepage", items: "itemOverview", requests: "requests" };
       return map[this.$route?.name] || "";
     },
 
     // Bundnavigationen vises kun på de tre primære sider (ikke på login)
     showBottomNav() {
-      return ["home", "community", "items"].includes(this.$route?.name)
-        && authStore.erLoggetInd.value;
+      return ["home", "community", "items", "rental-step-1", "rental-step-2", "rental-confirm", "requests"].includes(this.$route?.name)
+        && authStore.isLoggedIn.value;
     },
 
     // Props der sendes til de urørte lån- og community-views via router-view slot.
     // HomeView, ItemOverviewView og CreateItemView bruger nu provide/inject i stedet.
     routeProps() {
       const name = this.$route?.name;
-      if (name === "laan-trin-1") {
+      if (name === "rental-step-1") {
         return { item: this.selectedRentalItem, currentStep: 1 };
       }
-      if (name === "laan-trin-2") {
+      if (name === "rental-step-2") {
         return { item: this.selectedRentalItem, currentStep: 2 };
       }
-      if (name === "laan-bekraeft") {
+      if (name === "rental-confirm") {
         return { item: this.selectedRentalItem, rental: this.rentalDetails, currentStep: 3 };
       }
       return {};
@@ -101,16 +101,16 @@ export default {
       if (name === "community") {
         l.startRental = this.startRentalFlow;
       }
-      if (name === "laan-trin-1") {
-        l["go-to-rental-page-two"] = this.gaaTilLaaneTrinTo;
+      if (name === "rental-step-1") {
+        l["go-to-rental-page-two"] = this.goToRentalStepTwo;
       }
-      if (name === "laan-trin-2") {
-        l["save-rental-details"]  = this.gemLaaneDetaljer;
-        l["go-to-rental-confirm"] = this.gaaTilLaaneBekraeft;
-        l.goBack                  = this.gaaTilLaaneTrinEt;
+      if (name === "rental-step-2") {
+        l["save-rental-details"]  = this.saveRentalDetails;
+        l["go-to-rental-confirm"] = this.goToRentalConfirm;
+        l.goBack                  = this.goToRentalStepOne;
       }
-      if (name === "laan-bekraeft") {
-        l.goBack              = () => this.$router.push({ name: "laan-trin-2" });
+      if (name === "rental-confirm") {
+        l.goBack              = () => this.$router.push({ name: "rental-step-2" });
         l["rental-confirmed"] = () => this.$router.push({ name: "community" });
       }
 
@@ -123,68 +123,68 @@ export default {
     // Oversæt AppBottomNav-fanepnøgle til et rutenavn og naviger.
     // "profil" åbner bundmenuen i stedet for at navigere til en ny rute.
     navigateTo(key) {
-      if (key === "profil") { this.visProfilMenu = true; return; }
+      if (key === "profil") { this.showProfileMenu = true; return; }
       const map = { home: "home", homepage: "community", itemOverview: "items" };
       if (map[key]) this.$router.push({ name: map[key] });
     },
 
-    gaaTilGenstande() {
+    goToItems() {
       this.$router.push({ name: "items" });
     },
 
-    gaaTilOpret() {
-      this.$router.push({ name: "opret-genstand" });
+    goToCreate() {
+      this.$router.push({ name: "create-item" });
     },
 
-    gaaTilHjem() {
+    goToHome() {
       this.$router.push({ name: "home" });
     },
 
     // ── Opret-genstand flow ──────────────────────────────────
     // Kaldt via provide/inject fra CreateItemView når en genstand er oprettet.
-    // Opdaterer genstande-objektet (reaktivt via provide) og viser success-dialog.
+    // Opdaterer items-objektet (reaktivt via provide) og viser success-dialog.
     onItemCreated(newId) {
-      this.genstande.vistGenstandId  = newId;
-      this.genstande.genindlaesNoegle += 1;
-      this.visSucces = true;
+      this.items.shownItemId  = newId;
+      this.items.reloadKey   += 1;
+      this.showSuccess = true;
       this.$router.push({ name: "items" });
     },
 
     handleSuccessBack() {
-      this.visSucces = false;
-      this.genstande.vistGenstandId = null;
+      this.showSuccess = false;
+      this.items.shownItemId = null;
     },
 
     // ── Udlejnings-flow (kaldt via routeListeners fra lån-views) ────────────
     startRentalFlow(item) {
       this.selectedRentalItem = item;
-      this.$router.push({ name: "laan-trin-1" });
+      this.$router.push({ name: "rental-step-1" });
     },
 
-    gaaTilLaaneTrinTo(data) {
+    goToRentalStepTwo(data) {
       this.rentalDetails.startDate  = data.startDate;
       this.rentalDetails.endDate    = data.endDate;
       this.rentalDetails.pickupTime = data.pickupTime;
-      this.$router.push({ name: "laan-trin-2" });
+      this.$router.push({ name: "rental-step-2" });
     },
 
-    gemLaaneDetaljer(data) {
+    saveRentalDetails(data) {
       this.rentalDetails.messageToLender = data.messageToLender;
       this.rentalDetails.accessories     = data.accessories;
     },
 
-    gaaTilLaaneBekraeft() {
-      this.$router.push({ name: "laan-bekraeft" });
+    goToRentalConfirm() {
+      this.$router.push({ name: "rental-confirm" });
     },
 
-    gaaTilLaaneTrinEt() {
-      this.$router.push({ name: "laan-trin-1" });
+    goToRentalStepOne() {
+      this.$router.push({ name: "rental-step-1" });
     },
 
     // Logger brugeren ud, lukker profilmenuen og sender til login-siden
-    logUd() {
-      authStore.logUd();
-      this.visProfilMenu = false;
+    logout() {
+      authStore.logout();
+      this.showProfileMenu = false;
       this.$router.push({ name: "login" });
     },
   },
@@ -210,7 +210,7 @@ export default {
 
     <!-- Success-dialog vises oven på genstandsoversigten efter oprettelse -->
     <SuccessDialog
-      v-model="visSucces"
+      v-model="showSuccess"
       title="Oprettet!"
       message="Din genstand er nu oprettet og klar"
       @back-to-overview="handleSuccessBack"
@@ -224,7 +224,7 @@ export default {
     />
 
     <!-- Profilmenu – vises som bundark når brugeren trykker på Profil-fanen -->
-    <v-bottom-sheet v-model="visProfilMenu" max-width="600">
+    <v-bottom-sheet v-model="showProfileMenu" max-width="600">
       <v-sheet class="profil-ark">
 
         <!-- Brugerinfo øverst i arket -->
@@ -232,9 +232,9 @@ export default {
           <v-icon size="48" color="var(--color-primary)">mdi-account-circle</v-icon>
           <div class="profil-ark__navn">
             <span class="profil-ark__fulde-navn">
-              {{ inloggetBruger?.firstName }} {{ inloggetBruger?.lastName }}
+              {{ loggedInUser?.firstName }} {{ loggedInUser?.lastName }}
             </span>
-            <span class="profil-ark__email">{{ inloggetBruger?.email }}</span>
+            <span class="profil-ark__email">{{ loggedInUser?.email }}</span>
           </div>
         </div>
 
@@ -248,7 +248,7 @@ export default {
           size="large"
           prepend-icon="mdi-logout"
           class="profil-ark__log-ud"
-          @click="logUd"
+          @click="logout"
         >
           Log ud
         </v-btn>
@@ -258,7 +258,7 @@ export default {
           block
           variant="text"
           class="mt-2 profil-ark__luk"
-          @click="visProfilMenu = false"
+          @click="showProfileMenu = false"
         >
           Annuller
         </v-btn>

@@ -62,7 +62,7 @@ export default {
       return map[period] || parseInt(period) || 7;
     },
 
-    async opretGenstand() {
+    async handleCreate() {
       this.loading = true;
       this.error = null;
       const currentUserId = authStore.bruger.value.userID;
@@ -200,7 +200,7 @@ export default {
         color="primary"
         rounded="lg"
         class="create-button"
-        @click="opretGenstand"
+        @click="handleCreate"
         :loading="loading"
       >
         Opret genstand

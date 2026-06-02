@@ -169,7 +169,8 @@ if (
 
 .bottom-bar {
   position: fixed;
-  bottom: 0;
+  bottom: 64px; /* height of AppBottomNav */
+
   left: 0;
   right: 0;
 
@@ -195,6 +196,6 @@ if (
   margin-top: 32px;
 }
 .page {
-  padding-bottom: 120px; /* space for bottom button */
+  padding-bottom: 200px; /* space for bottom button */
 }
 </style>

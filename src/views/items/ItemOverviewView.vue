@@ -4,155 +4,176 @@
 // når brugeren klikker på et kort.
 //
 // Tidligere modtog denne komponent reloadKey og selectItemId som props fra App.vue.
-// Nu injekterer den genstande-objektet og gaaTilOpret-metoden direkte fra App.vue
+// Nu injekterer den items-objektet og goToCreate-metoden direkte fra App.vue
 // via provide/inject – præcis som vist i "Løsningen: Provide & inject"-slidet.
 import ItemCard       from "@/components/items/ItemCard.vue";
 import ItemDetailView from "@/components/items/ItemDetailView.vue";
 import ItemFilterTabs from "@/components/items/ItemFilterTabs.vue";
-import { getAllItems } from "@/services/items/itemservice.js";
+import { authStore } from "@/stores/auth.js";
+import { getItemsByUser } from "@/services/items/itemservice.js";
+import { getPendingCountByOwner } from "@/services/rentalRequest/rentalRequestService";
+
 
 export default {
   name: "ItemOverviewView",
   components: { ItemCard, ItemDetailView, ItemFilterTabs },
 
   // Injekterer fra App.vue's provide():
-  //   genstande  – reaktivt objekt med genindlaesNoegle og vistGenstandId
-  //   gaaTilOpret – navigationsmetode til opret-genstand-ruten
-  inject: ["genstande", "gaaTilOpret"],
+  //   items       – reaktivt objekt med reloadKey og shownItemId
+  //   goToCreate  – navigationsmetode til opret-genstand-ruten
+  inject: ["items", "goToCreate"],
 
   data() {
     return {
-      valgtGenstand:      null,    // Den genstand der vises i detaljeskærmen
-      aktivtFilter:       "Alle",
-      genstande_liste:    [],      // Lokal kopi af hentet data (adskilt fra injekteret genstande-objekt)
-      indlaeser:          false,
-      fejl:               null,
-      fremhaevetGenstandId: null,  // Id på den genstand der animeres efter oprettelse
-      fremhaevetTimer:    null,    // Timeout-reference til at stoppe animationen
-      sletBesked:         "",
-      visSletBesked:      false,
+      selectedItem:      null,    // Den genstand der vises i detaljeskærmen
+      activeFilter:      "Alle",
+      itemsList:         [],      // Lokal kopi af hentet data (adskilt fra injekteret items-objekt)
+      isLoading:         false,
+      error:             null,
+      highlightedItemId: null,    // Id på den genstand der animeres efter oprettelse
+      highlightTimer:    null,    // Timeout-reference til at stoppe animationen
+      deleteMessage:     "",
+      showDeleteMessage: false,
+      pendingRequests: 0,
+      activeRentals: 0,
     };
   },
 
   computed: {
     // Filtrer genstandslisten baseret på det valgte statusfilter
-    filtreredeGenstande() {
-      if (this.aktivtFilter === "Alle") return this.genstande_liste;
-      return this.genstande_liste.filter((g) => g.status === this.aktivtFilter);
+    filteredItems() {
+      if (this.activeFilter === "Alle") return this.itemsList;
+      return this.itemsList.filter((g) => g.status === this.activeFilter);
     },
   },
 
   methods: {
     // Byg en fuld billed-URL fra en rå server-sti eller base64-streng
-    resolveImageUrl(raaUrl) {
-      if (!raaUrl) return "https://placehold.co/64x64";
-      if (raaUrl.startsWith("data:")) return raaUrl;
-      if (raaUrl.startsWith("http://") || raaUrl.startsWith("https://")) return raaUrl;
-      return `http://localhost:8080/${raaUrl.replace(/^\/+/, "")}`;
+    resolveImageUrl(rawUrl) {
+      if (!rawUrl) return "https://placehold.co/64x64";
+      if (rawUrl.startsWith("data:")) return rawUrl;
+      if (rawUrl.startsWith("http://") || rawUrl.startsWith("https://")) return rawUrl;
+      return `http://localhost:8080/${rawUrl.replace(/^\/+/, "")}`;
     },
 
     // Hent alle genstande fra API'et og map dem til det lokale dataformat
-    async hentGenstande() {
-      this.indlaeser = true;
+    async fetchItems() {
+      this.isLoading = true;
       try {
-        const data = await getAllItems();
-        this.genstande_liste = data.map((genstand) => ({
-          id:          genstand.ItemID,
-          title:       genstand.ItemName,
+        const userId = authStore.user.value.userID;
+        const data = await getItemsByUser(userId);
+        this.itemsList = data.map((item) => ({
+          id:          item.ItemID,
+          title:       item.ItemName,
           category:
-            genstand.Category?.CategoryName ||
-            genstand.category?.CategoryName ||
-            String(genstand.CategoryID),
-          brand:       genstand.Brand,
-          status:      genstand.IsActive ? "Tilgængelig" : "Inaktiv",
-          image:       this.resolveImageUrl(genstand.images?.[0]?.ImageURL),
-          rawImage:    genstand.images?.[0]?.ImageURL,
-          condition:   genstand.Condition,
-          maxDays:     genstand.MaxRentPeriodDays,
+            item.Category?.CategoryName ||
+            item.category?.CategoryName ||
+            String(item.CategoryID),
+          brand:       item.Brand,
+          status:      item.IsActive ? "Tilgængelig" : "Inaktiv",
+          image:       this.resolveImageUrl(item.images?.[0]?.ImageURL),
+          rawImage:    item.images?.[0]?.ImageURL,
+          condition:   item.Condition,
+          maxDays:     item.MaxRentPeriodDays,
           accessories:
-            genstand.accessories?.map((a) => a.AccessoryName).join(", ") || null,
+            item.accessories?.map((a) => a.AccessoryName).join(", ") || null,
           totalLoans:  0,
           activeLoans: 0,
           rating:      null,
         }));
 
         // Scroll til og fremhæv en specifik genstand hvis angivet via inject
-        if (this.genstande.vistGenstandId) {
-          this.fremhaevOgScrollTilGenstand(this.genstande.vistGenstandId);
+        if (this.items.shownItemId) {
+          this.highlightAndScrollToItem(this.items.shownItemId);
         }
-      } catch (fejl) {
-        this.fejl = "Kunne ikke hente genstande. Prøv igen.";
-        console.error("Fejl ved hentning af genstande:", fejl);
+      } catch (err) {
+        this.error = "Kunne ikke hente genstande. Prøv igen.";
+        console.error("Fejl ved hentning af genstande:", err);
       } finally {
-        this.indlaeser = false;
+        this.isLoading = false;
       }
     },
 
     // Fremhæv et kort med en flash-animation og scroll det ind i visningen
-    fremhaevOgScrollTilGenstand(genstandId) {
-      this.fremhaevetGenstandId = String(genstandId);
+    highlightAndScrollToItem(itemId) {
+      this.highlightedItemId = String(itemId);
       this.$nextTick(() => {
-        const element = document.getElementById(`genstand-${genstandId}`);
+        const element = document.getElementById(`genstand-${itemId}`);
         if (element) {
           element.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       });
       // Stop animationen efter 2,2 sekunder (matcher CSS-animationens varighed)
-      clearTimeout(this.fremhaevetTimer);
-      this.fremhaevetTimer = setTimeout(() => {
-        this.fremhaevetGenstandId = null;
+      clearTimeout(this.highlightTimer);
+      this.highlightTimer = setTimeout(() => {
+        this.highlightedItemId = null;
       }, 2200);
     },
 
     // Åbn detaljeskærmen for den valgte genstand
-    visDetaljer(id) {
-      this.valgtGenstand = this.genstande_liste.find((g) => g.id === id);
+    showDetails(id) {
+      this.selectedItem = this.itemsList.find((g) => g.id === id);
     },
 
     // Modtag besked fra ItemDetailView om at en genstand er slettet
-    genstandBlevSlettet(titel) {
-      this.genstande_liste = this.genstande_liste.filter(
-        (g) => g.id !== this.valgtGenstand.id
+    itemWasDeleted(title) {
+      this.itemsList = this.itemsList.filter(
+        (g) => g.id !== this.selectedItem.id
       );
-      this.valgtGenstand = null;
-      this.sletBesked = `${titel} blev slettet`;
-      this.visSletBesked = true;
+      this.selectedItem = null;
+      this.deleteMessage = `${title} blev slettet`;
+      this.showDeleteMessage = true;
       setTimeout(() => {
-        this.visSletBesked = false;
+        this.showDeleteMessage = false;
       }, 3000);
     },
 
     // Opdater den viste genstand efter redigering uden at genhente hele listen
-    async opdaterGenstand() {
-      await this.hentGenstande();
-      this.valgtGenstand = this.genstande_liste.find(
-        (g) => g.id === this.valgtGenstand.id
+    async updateItem() {
+      await this.fetchItems();
+      this.selectedItem = this.itemsList.find(
+        (g) => g.id === this.selectedItem.id
       );
+    },
+
+    async loadDashboardCounts() {
+      try {
+        const userId = authStore.user.value.userID;
+        const pending = await getPendingCountByOwner(userId);
+        this.pendingRequests = pending.count;
+      } catch (err) {
+        console.error(err);
+      }
+    },
+
+    goToPendingRequests() {
+      this.$router.push({ name: "requests" });
     },
   },
 
   mounted() {
-    this.hentGenstande();
+    this.fetchItems();
+    this.loadDashboardCounts();
   },
 
   watch: {
-    // Genhent listen når App.vue øger genstande.genindlaesNoegle (fx efter oprettelse).
-    // Vi bruger string dot-notation da genindlaesNoegle er en property på det
-    // injekterede genstande-objekt – Vue 3 understøtter dette i Options API.
-    "genstande.genindlaesNoegle"(nyVaerdi, gammelVaerdi) {
-      if (nyVaerdi !== gammelVaerdi) this.hentGenstande();
+    // Genhent listen når App.vue øger items.reloadKey (fx efter oprettelse).
+    // Vi bruger string dot-notation da reloadKey er en property på det
+    // injekterede items-objekt – Vue 3 understøtter dette i Options API.
+    "items.reloadKey"(newVal, oldVal) {
+      if (newVal !== oldVal) this.fetchItems();
     },
 
     // Fremhæv en genstand når App.vue sætter et nyt id (fx efter oprettelse)
-    "genstande.vistGenstandId"(nyVaerdi, gammelVaerdi) {
-      if (!nyVaerdi) return;
-      if (nyVaerdi !== gammelVaerdi) this.fremhaevOgScrollTilGenstand(nyVaerdi);
+    "items.shownItemId"(newVal, oldVal) {
+      if (!newVal) return;
+      if (newVal !== oldVal) this.highlightAndScrollToItem(newVal);
     },
   },
 
   beforeUnmount() {
     // Ryd timeren så der ikke sker opdateringer efter komponenten er fjernet
-    clearTimeout(this.fremhaevetTimer);
+    clearTimeout(this.highlightTimer);
   },
 };
 </script>
@@ -162,79 +183,105 @@ export default {
 
     <!-- Bekræftelsesbesked efter sletning -->
     <output
-      v-if="visSletBesked"
+      v-if="showDeleteMessage"
       class="slet-bekraeftelse"
       aria-live="polite"
       aria-atomic="true"
     >
-      ✅ {{ sletBesked }}
+      ✅ {{ deleteMessage }}
     </output>
 
     <!-- Detaljeskærm for valgt genstand -->
     <ItemDetailView
-      v-if="valgtGenstand"
-      :id="valgtGenstand.id"
-      :title="valgtGenstand.title"
-      :category="valgtGenstand.category"
-      :brand="valgtGenstand.brand"
-      :status="valgtGenstand.status"
-      :image="valgtGenstand.image"
-      :imagePath="valgtGenstand.rawImage"
-      :condition="valgtGenstand.condition"
-      :maxDays="valgtGenstand.maxDays"
-      :accessories="valgtGenstand.accessories"
-      :totalLoans="valgtGenstand.totalLoans"
-      :activeLoans="valgtGenstand.activeLoans"
-      :rating="valgtGenstand.rating"
-      @gåTilbage="valgtGenstand = null"
-      @genstandSlettet="genstandBlevSlettet"
-      @itemUpdated="opdaterGenstand"
+      v-if="selectedItem"
+      :id="selectedItem.id"
+      :title="selectedItem.title"
+      :category="selectedItem.category"
+      :brand="selectedItem.brand"
+      :status="selectedItem.status"
+      :image="selectedItem.image"
+      :imagePath="selectedItem.rawImage"
+      :condition="selectedItem.condition"
+      :maxDays="selectedItem.maxDays"
+      :accessories="selectedItem.accessories"
+      :totalLoans="selectedItem.totalLoans"
+      :activeLoans="selectedItem.activeLoans"
+      :rating="selectedItem.rating"
+      @goBack="selectedItem = null"
+      @itemDeleted="itemWasDeleted"
+      @itemUpdated="updateItem"
     />
+
 
     <!-- Listevisning med filter og kortliste -->
     <section v-else>
-      <h1 class="side-titel">Dine genstande</h1>
+      <h1 class="side-titel">Mine ting</h1>
+      <v-row class="status-row">
+  <v-col cols="6">
+    <v-card class="status-card" @click="goToPendingRequests">
+      <div class="status-number">
+        {{ pendingRequests }}
+      </div>
+
+      <div class="status-label">
+        Afventer godkendelse
+      </div>
+    </v-card>
+  </v-col>
+
+  <v-col cols="6">
+    <v-card class="status-card">
+      <div class="status-number">
+        {{ activeRentals }}
+      </div>
+
+      <div class="status-label">
+        Aktive lån
+      </div>
+    </v-card>
+  </v-col>
+</v-row>
 
       <!-- Statusfilter-faner -->
       <ItemFilterTabs
-        :activeFilter="aktivtFilter"
-        @filterChanged="aktivtFilter = $event"
+        :activeFilter="activeFilter"
+        @filterChanged="activeFilter = $event"
       />
 
       <!-- Indlæsningsindikator -->
-      <p v-if="indlaeser" class="indlaeser-tilstand" aria-live="polite">
+      <p v-if="isLoading" class="indlaeser-tilstand" aria-live="polite">
         <v-progress-circular indeterminate color="primary" />
       </p>
 
       <!-- Fejlbesked -->
-      <p v-else-if="fejl" class="fejltekst" role="alert">{{ fejl }}</p>
+      <p v-else-if="error" class="fejltekst" role="alert">{{ error }}</p>
 
       <!-- Genstandsliste -->
       <ul v-else class="kortliste">
         <li
-          v-for="genstand in filtreredeGenstande"
-          :key="genstand.id"
-          :id="`genstand-${genstand.id}`"
+          v-for="item in filteredItems"
+          :key="item.id"
+          :id="`genstand-${item.id}`"
           :class="{
             'kortliste__element--flash':
-              String(fremhaevetGenstandId) === String(genstand.id),
+              String(highlightedItemId) === String(item.id),
           }"
         >
           <ItemCard
-            :id="genstand.id"
-            :title="genstand.title"
-            :category="genstand.category"
-            :brand="genstand.brand"
-            :status="genstand.status"
-            :image="genstand.image"
-            @cardClicked="visDetaljer"
+            :id="item.id"
+            :title="item.title"
+            :category="item.category"
+            :brand="item.brand"
+            :status="item.status"
+            :image="item.image"
+            @cardClicked="showDetails"
           />
         </li>
       </ul>
 
       <!-- Tomt filter-resultat -->
       <p
-        v-if="filtreredeGenstande.length === 0"
+        v-if="filteredItems.length === 0"
         class="ingen-resultater"
         role="status"
         aria-live="polite"
@@ -244,12 +291,12 @@ export default {
     </section>
 
     <!-- Fast bundknap til oprettelse af ny genstand – kalder injekteret metode -->
-    <footer v-if="!valgtGenstand" class="opret-knap-wrapper">
+    <footer v-if="!selectedItem" class="opret-knap-wrapper">
       <v-btn
         color="primary"
         rounded="lg"
         class="opret-knap"
-        @click="gaaTilOpret()"
+        @click="goToCreate()"
       >
         Opret ny genstand
       </v-btn>
@@ -359,5 +406,25 @@ export default {
   border-radius: var(--radius-lg);
   text-align: center;
   z-index: 200;
+}
+.status-row {
+  margin-bottom: 16px;
+}
+
+.status-card {
+  padding: 16px;
+  text-align: center;
+  border-radius: var(--radius-lg);
+}
+
+.status-number {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.status-label {
+  font-size: 13px;
+  color: var(--color-secondary);
 }
 </style>

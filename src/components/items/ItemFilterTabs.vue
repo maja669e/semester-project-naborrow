@@ -15,13 +15,13 @@ export default {
   data() {
     return {
       // Tilgængelige filtervalg – matcher de mulige statusværdier på genstande
-      filtre: ["Alle", "Tilgængelig", "Udlånt", "Inaktiv"],
+      filters: ["Alle", "Tilgængelig", "Udlånt", "Inaktiv"],
     };
   },
 
   methods: {
     // Udsender det valgte filter til forælderen
-    vælgFilter(filter) {
+    selectFilter(filter) {
       this.$emit("filterChanged", filter);
     },
   },
@@ -34,13 +34,13 @@ export default {
 
     <!-- Én knap per filter; aria-pressed angiver hvilken der er valgt -->
     <button
-      v-for="filter in filtre"
+      v-for="filter in filters"
       :key="filter"
       class="filterfane"
       :class="{ 'filterfane--aktiv': activeFilter === filter }"
       :aria-pressed="activeFilter === filter"
       :aria-label="`Vis ${filter === 'Alle' ? 'alle genstande' : filter}`"
-      @click="vælgFilter(filter)"
+      @click="selectFilter(filter)"
     >
       {{ filter }}
     </button>

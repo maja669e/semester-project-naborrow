@@ -1,10 +1,10 @@
 <script>
 // Orkestreringsvisning for oprettelse af en ny genstand.
 // Styrer hvilket trin der vises og samler data fra begge formtrin
-// i genstandData, så formularen gendannes korrekt hvis brugeren
+// i itemData, så formularen gendannes korrekt hvis brugeren
 // trykker tilbage og retter sine svar.
 //
-// genstandOprettet injekteres fra App.vue via provide/inject, så denne
+// itemCreated injekteres fra App.vue via provide/inject, så denne
 // komponent ikke behøver at $emit op igennem router-view-slottet.
 import ItemBasicInfoStep from "@/components/items/ItemBasicInfoStep.vue";
 import ItemDetailsStep   from "@/components/items/ItemDetailsStep.vue";
@@ -16,17 +16,17 @@ export default {
 
   // Injekterer callback fra App.vue der håndterer navigation og
   // success-dialog efter vellykket oprettelse.
-  inject: ["genstandOprettet"],
+  inject: ["itemCreated"],
 
   data() {
     return {
       // Aktivt trin i formularen (1 = grundinfo, 2 = detaljer, 3 = bekræftelse)
-      trin: 1,
+      step: 1,
 
       // Akkumuleret data fra begge formtrin.
       // selectedCategory gemmer btn-toggle-værdien ("Andet" eller kategorinavn)
       // adskilt fra category som er den endelige, løste kategori.
-      genstandData: {
+      itemData: {
         name:             "",
         category:         "",   // Løst kategorinavn (inkl. brugerdefineret)
         selectedCategory: "",   // Btn-toggle-værdien – bruges til at gendanne formens valg
@@ -43,54 +43,57 @@ export default {
 
   methods: {
     // Modtager data fra trin 1, gemmer det og går til trin 2
-    haandterTrinEt(data) {
-      this.genstandData.name             = data.name;
-      this.genstandData.category         = data.category;
-      this.genstandData.selectedCategory = data.selectedCategory;
-      this.genstandData.brand            = data.brand;
-      this.genstandData.images           = data.images;
-      this.genstandData.categoryID       = data.categoryID;
-      this.trin = 2;
+    handleStepOne(data) {
+      this.itemData.name             = data.name;
+      this.itemData.category         = data.category;
+      this.itemData.selectedCategory = data.selectedCategory;
+      this.itemData.brand            = data.brand;
+      this.itemData.images           = data.images;
+      this.itemData.categoryID       = data.categoryID;
+      this.step = 2;
     },
 
     // Modtager data fra trin 2 og gemmer det inden bekræftelse
-    haandterTrinTo(detaljer) {
-      this.genstandData.condition  = detaljer.condition;
-      this.genstandData.loanPeriod = detaljer.maxLoanPeriod;
-      this.genstandData.extras     = detaljer.extras;
-      this.genstandData.hasExtra   = detaljer.harTilbehoer;
+    handleStepTwo(details) {
+      this.itemData.condition  = details.condition;
+      this.itemData.loanPeriod = details.maxLoanPeriod;
+      this.itemData.extras     = details.extras;
+      this.itemData.hasExtra   = details.hasAccessories;
     },
   },
 };
 </script>
 
 <template>
+
   <!-- Trin 1: Grundlæggende information (billeder, kategori, navn) -->
   <ItemBasicInfoStep
-    v-if="trin === 1"
+    v-if="step === 1"
     :currentStep="1"
-    :initialData="genstandData"
-    @go-to-add-details="haandterTrinEt"
+    :initialData="itemData"
+    @go-to-add-details="handleStepOne"
   />
 
   <!-- Trin 2: Detaljer (stand, låneperiode, tilbehør) -->
   <ItemDetailsStep
-    v-if="trin === 2"
+    v-if="step === 2"
     :currentStep="2"
-    :initialData="genstandData"
-    @save-details="haandterTrinTo"
-    @go-to-confirm-item="trin = 3"
-    @go-to-page-one="trin = 1"
+    :initialData="itemData"
+    @save-details="handleStepTwo"
+    @go-to-confirm-item="step = 3"
+    @go-to-page-one="step = 1"
   />
 
   <!-- Trin 3: Forhåndsvisning og bekræftelse inden oprettelse.
-       item-created håndteres af den injekterede genstandOprettet-metode
+       item-created håndteres af den injekterede itemCreated-metode
        fra App.vue i stedet for at boble op via $emit. -->
   <ConfirmItemScreen
-    v-if="trin === 3 && genstandData"
+    v-if="step === 3 && itemData"
     :currentStep="3"
-    :item="genstandData"
-    @goBack="trin = 2"
-    @item-created="genstandOprettet($event)"
+    :item="itemData"
+    @goBack="step = 2"
+    @item-created="itemCreated($event)"
   />
+
+
 </template>

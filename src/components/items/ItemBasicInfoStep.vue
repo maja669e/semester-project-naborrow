@@ -22,128 +22,128 @@ export default {
 
   data() {
     return {
-      kategorier: [],
+      categories: [],
 
       // Gendannes fra initialData hvis brugeren er vendt tilbage fra trin 2.
       // selectedCategory er btn-toggle-værdien; kan være "Andet" eller et kategorinavn.
-      valgtKategori:     this.initialData.selectedCategory || null,
-      brugerdefKategori: this.initialData.selectedCategory === "Andet"
+      selectedCategory: this.initialData.selectedCategory || null,
+      customCategory:   this.initialData.selectedCategory === "Andet"
         ? (this.initialData.category || "")
         : "",
-      uploadedeBilleder: this.initialData.images?.length
+      uploadedImages: this.initialData.images?.length
         ? [...this.initialData.images]
         : [],
-      genstandNavn: this.initialData.name  || "",
-      maerke:       this.initialData.brand || "",
+      itemName: this.initialData.name  || "",
+      brand:    this.initialData.brand || "",
 
       // Valideringsfejl – vises under de respektive felter
-      fejl: {
-        uploadedeBilleder: "",
-        valgtKategori:     "",
-        brugerdefKategori: "",
-        genstandNavn:      "",
+      errors: {
+        uploadedImages:   "",
+        selectedCategory: "",
+        customCategory:   "",
+        itemName:         "",
       },
     };
   },
 
   watch: {
     // Ryd det brugerdefinerede kategori-felt når en standardkategori vælges
-    valgtKategori(nyVaerdi) {
-      if (nyVaerdi !== "Andet") this.brugerdefKategori = "";
+    selectedCategory(newValue) {
+      if (newValue !== "Andet") this.customCategory = "";
     },
   },
 
   methods: {
     // Hent tilgængelige kategorier fra API'et
-    async hentKategorier() {
+    async fetchCategories() {
       try {
-        this.kategorier = await getAllCategories();
-      } catch (fejl) {
-        console.error("Fejl ved hentning af kategorier:", fejl);
+        this.categories = await getAllCategories();
+      } catch (err) {
+        console.error("Fejl ved hentning af kategorier:", err);
       }
     },
 
     // Åbn det skjulte fil-input via en ref
-    aabneFilDialog() {
+    openFileDialog() {
       this.$refs.filInput.click();
     },
 
-    // Konverter uploadede filer til base64 og gem dem i uploadedeBilleder
-    haandterFiler(event) {
-      Array.from(event.target.files).forEach((fil) => {
-        const laeseren = new FileReader();
-        laeseren.onload = (e) => this.uploadedeBilleder.push(e.target.result);
-        laeseren.readAsDataURL(fil);
+    // Konverter uploadede filer til base64 og gem dem i uploadedImages
+    handleFiles(event) {
+      Array.from(event.target.files).forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => this.uploadedImages.push(e.target.result);
+        reader.readAsDataURL(file);
       });
     },
 
     // Understøt drag-and-drop upload – ignorer ikke-billedfiler
-    haandterSlip(event) {
-      Array.from(event.dataTransfer.files).forEach((fil) => {
-        if (!fil.type.startsWith("image/")) return;
-        const laeseren = new FileReader();
-        laeseren.onload = (e) => this.uploadedeBilleder.push(e.target.result);
-        laeseren.readAsDataURL(fil);
+    handleDrop(event) {
+      Array.from(event.dataTransfer.files).forEach((file) => {
+        if (!file.type.startsWith("image/")) return;
+        const reader = new FileReader();
+        reader.onload = (e) => this.uploadedImages.push(e.target.result);
+        reader.readAsDataURL(file);
       });
     },
 
     // Annuller oprettelsen og naviger tilbage til genstandsoversigten
-    annuller() {
+    cancel() {
       this.$emit("go-to-items");
     },
 
     // Valider alle felter og returnér true hvis alt er udfyldt korrekt
-    valider() {
-      let gyldig = true;
+    validate() {
+      let valid = true;
 
-      if (this.uploadedeBilleder.length === 0) {
-        this.fejl.uploadedeBilleder = "Tilføj mindst ét billede*";
-        gyldig = false;
+      if (this.uploadedImages.length === 0) {
+        this.errors.uploadedImages = "Tilføj mindst ét billede*";
+        valid = false;
       } else {
-        this.fejl.uploadedeBilleder = "";
+        this.errors.uploadedImages = "";
       }
 
-      if (!this.valgtKategori) {
-        this.fejl.valgtKategori = "Vælg en kategori*";
-        gyldig = false;
+      if (!this.selectedCategory) {
+        this.errors.selectedCategory = "Vælg en kategori*";
+        valid = false;
       } else {
-        this.fejl.valgtKategori = "";
+        this.errors.selectedCategory = "";
       }
 
-      if (this.valgtKategori === "Andet" && !this.brugerdefKategori.trim()) {
-        this.fejl.brugerdefKategori = "Indtast en kategori*";
-        gyldig = false;
+      if (this.selectedCategory === "Andet" && !this.customCategory.trim()) {
+        this.errors.customCategory = "Indtast en kategori*";
+        valid = false;
       } else {
-        this.fejl.brugerdefKategori = "";
+        this.errors.customCategory = "";
       }
 
-      if (!this.genstandNavn.trim()) {
-        this.fejl.genstandNavn = "Indtast et navn på din genstand*";
-        gyldig = false;
+      if (!this.itemName.trim()) {
+        this.errors.itemName = "Indtast et navn på din genstand*";
+        valid = false;
       } else {
-        this.fejl.genstandNavn = "";
+        this.errors.itemName = "";
       }
 
-      return gyldig;
+      return valid;
     },
 
     // Valider og send data videre til trin 2.
     // selectedCategory gemmes adskilt fra category så CreateItemView
     // kan gendanne btn-toggle-valget hvis brugeren vender tilbage.
-    naeste() {
-      if (this.valider()) {
-        const valgtKat = this.kategorier.find(
-          (k) => k.CategoryName === this.valgtKategori
+    next() {
+      if (this.validate()) {
+        const matchedCategory = this.categories.find(
+          (k) => k.CategoryName === this.selectedCategory
         );
         const data = {
-          category:         this.valgtKategori === "Andet"
-            ? this.brugerdefKategori
-            : this.valgtKategori,
-          selectedCategory: this.valgtKategori,
-          categoryID:       valgtKat?.CategoryID || null,
-          images:           this.uploadedeBilleder,
-          name:             this.genstandNavn,
-          brand:            this.maerke,
+          category:         this.selectedCategory === "Andet"
+            ? this.customCategory
+            : this.selectedCategory,
+          selectedCategory: this.selectedCategory,
+          categoryID:       matchedCategory?.CategoryID || null,
+          images:           this.uploadedImages,
+          name:             this.itemName,
+          brand:            this.brand,
         };
         this.$emit("go-to-add-details", data);
       }
@@ -151,7 +151,7 @@ export default {
   },
 
   mounted() {
-    this.hentKategorier();
+    this.fetchCategories();
   },
 };
 </script>
@@ -182,11 +182,11 @@ export default {
         role="button"
         tabindex="0"
         aria-label="Upload billeder af din genstand. Tryk Enter eller Space for at åbne filvalg"
-        @click="aabneFilDialog"
-        @keydown.enter.prevent="aabneFilDialog"
-        @keydown.space.prevent="aabneFilDialog"
+        @click="openFileDialog"
+        @keydown.enter.prevent="openFileDialog"
+        @keydown.space.prevent="openFileDialog"
         @dragover.prevent
-        @drop.prevent="haandterSlip"
+        @drop.prevent="handleDrop"
         flat
       >
         <div class="ikon-wrapper mb-4">
@@ -205,25 +205,25 @@ export default {
           style="display: none"
           aria-hidden="true"
           tabindex="-1"
-          @change="haandterFiler"
+          @change="handleFiles"
         />
       </v-card>
 
       <!-- Forhåndsvisning af uploadede billeder -->
-      <div class="uploadede-billeder mt-4" v-if="uploadedeBilleder.length">
+      <div class="uploadede-billeder mt-4" v-if="uploadedImages.length">
         <v-img
-          v-for="(billede, indeks) in uploadedeBilleder"
-          :key="indeks"
-          :src="billede"
-          :alt="`Uploadet billede ${indeks + 1}`"
+          v-for="(img, index) in uploadedImages"
+          :key="index"
+          :src="img"
+          :alt="`Uploadet billede ${index + 1}`"
           max-width="150"
           class="mr-4 mb-4"
           rounded
         />
       </div>
 
-      <div v-if="fejl.uploadedeBilleder" class="fejltekst" role="alert">
-        {{ fejl.uploadedeBilleder }}
+      <div v-if="errors.uploadedImages" class="fejltekst" role="alert">
+        {{ errors.uploadedImages }}
       </div>
     </section>
 
@@ -233,30 +233,30 @@ export default {
 
       <div role="group" aria-labelledby="kategori-overskrift" aria-required="true">
         <v-btn-toggle
-          v-model="valgtKategori"
+          v-model="selectedCategory"
           class="kategori-toggle d-flex flex-wrap ga-2"
           mandatory
         >
           <v-btn
-            v-for="kategori in kategorier"
-            :key="kategori.CategoryID"
-            :value="kategori.CategoryName"
+            v-for="category in categories"
+            :key="category.CategoryID"
+            :value="category.CategoryName"
             rounded="xl"
             variant="#eeece8"
           >
-            {{ kategori.CategoryName }}
+            {{ category.CategoryName }}
           </v-btn>
         </v-btn-toggle>
       </div>
 
-      <div v-if="fejl.valgtKategori" class="fejltekst" role="alert">
-        {{ fejl.valgtKategori }}
+      <div v-if="errors.selectedCategory" class="fejltekst" role="alert">
+        {{ errors.selectedCategory }}
       </div>
 
       <!-- Fritekstfelt vises kun når "Andet" er valgt -->
       <v-text-field
-        v-if="valgtKategori === 'Andet'"
-        v-model="brugerdefKategori"
+        v-if="selectedCategory === 'Andet'"
+        v-model="customCategory"
         label="Skriv din kategori"
         class="mt-4"
         color="var(--color-primary)"
@@ -265,8 +265,8 @@ export default {
         clearable
         aria-required="true"
       />
-      <div v-if="fejl.brugerdefKategori" class="fejltekst" role="alert">
-        {{ fejl.brugerdefKategori }}
+      <div v-if="errors.customCategory" class="fejltekst" role="alert">
+        {{ errors.customCategory }}
       </div>
     </section>
 
@@ -274,14 +274,14 @@ export default {
     <section aria-labelledby="navn-overskrift">
       <h3 id="navn-overskrift">Navn på genstand*</h3>
       <v-text-field
-        v-model="genstandNavn"
+        v-model="itemName"
         label="Hvad er det for en genstand?"
         class="mt-4"
         color="var(--color-primary)"
         variant="outlined"
         rounded="xl"
         aria-required="true"
-        :error-messages="fejl.genstandNavn ? [fejl.genstandNavn] : []"
+        :error-messages="errors.itemName ? [errors.itemName] : []"
       />
     </section>
 
@@ -289,7 +289,7 @@ export default {
     <section aria-labelledby="maerke-overskrift">
       <h3 id="maerke-overskrift">Mærke</h3>
       <v-text-field
-        v-model="maerke"
+        v-model="brand"
         label="F.eks. Bosch, Apple..."
         class="mt-4"
         color="var(--color-primary)"
@@ -299,7 +299,7 @@ export default {
     </section>
 
     <!-- Bundnavigation: tilbage annullerer, næste validerer og går videre -->
-    <FormBottomBar @back="annuller" @next="naeste" />
+    <FormBottomBar @back="cancel" @next="next" />
 
   </v-container>
 </template>

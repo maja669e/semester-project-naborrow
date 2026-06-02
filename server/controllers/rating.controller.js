@@ -101,7 +101,7 @@ exports.create = async (req, res) => {
         }
 
         //Fejlhåndtering for rating, der ikke er mellem 1 og 5
-        if (req.body.Rating < 1 || req.body.Rating > 5) {
+        if (req.body.RatingScore < 1 || req.body.RatingScore > 5) {
         return res.status(400).send({
         message: "Rating skal være mellem 1 og 5"
             });

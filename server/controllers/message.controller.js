@@ -11,7 +11,7 @@ exports.create = async (req, res) => {
         if (!rental) {
             return res.status(404).send({ message: "Lån ikke fundet med id " + RentalID });
         }
-        if (rental.Status === "returned") {
+        if (rental.Status === "completed") {
             return res.status(403).send({ message: "Chatten er deaktiveret da lånet er afsluttet" });
         }
         const message = await Message.create({ SenderUserID, ReceiverUserID, RentalID, MessageText });
@@ -26,7 +26,7 @@ exports.findByRental = async (req, res) => {
     const rentalId = req.params.rentalId;
     try {
         const messages = await Message.findAll({
-            where: { RentalID: rentalId }
+            where: { RentalID: rentalId, IsDeleted: false }
         });
         res.send(messages);
     } catch (err) {
@@ -72,13 +72,14 @@ exports.markAsRead = async (req, res) => {
     }
 };
 
-// SLET én besked
+// SLET én besked (soft delete)
 exports.delete = async (req, res) => {
     const id = req.params.id;
     try {
-        const deleted = await Message.destroy({
-            where: { MessageID: id }
-        });
+        const [deleted] = await Message.update(
+            { IsDeleted: true, DeletedAt: new Date() },
+            { where: { MessageID: id } }
+        );
         if (deleted) {
             res.send({ message: "Besked slettet med id " + id });
         } else {
@@ -89,13 +90,14 @@ exports.delete = async (req, res) => {
     }
 };
 
-// SLET hele samtalen for et lån
+// SLET hele samtalen for et lån (soft delete)
 exports.deleteConversation = async (req, res) => {
     const rentalId = req.params.rentalId;
     try {
-        const deleted = await Message.destroy({
-            where: { RentalID: rentalId }
-        });
+        const [deleted] = await Message.update(
+            { IsDeleted: true, DeletedAt: new Date() },
+            { where: { RentalID: rentalId } }
+        );
         if (deleted) {
             res.send({ message: "Samtale slettet for lån med id " + rentalId });
         } else {

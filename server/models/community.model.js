@@ -5,6 +5,10 @@ module.exports = (sequelize, DataTypes) => {
             primaryKey: true,
             autoIncrement: true
         },
+        AdminUserID: {
+            type: DataTypes.INTEGER,
+            allowNull: true
+        },
         CommunityName: {
             type: DataTypes.STRING(255),
             allowNull: false
@@ -23,10 +27,6 @@ module.exports = (sequelize, DataTypes) => {
         },
         PostalCode: {
             type: DataTypes.STRING(10),
-            allowNull: false
-        },
-        City: {
-            type: DataTypes.STRING(100),
             allowNull: false
         }
     }, {

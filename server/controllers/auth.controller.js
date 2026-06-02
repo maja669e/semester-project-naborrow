@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const db = require("../models");
 const User = db.users;
+const Login = db.logins;
 
 // LOG IND – finder brugeren via email og sammenligner adgangskoden med bcrypt.
 // Returnerer brugeroplysninger uden adgangskode hvis login er korrekt.
@@ -21,7 +22,13 @@ exports.login = async (req, res) => {
             return res.status(401).send({ message: "Forkert email eller adgangskode. Prøv igen." });
         }
 
-        const adgangskodeKorrekt = await bcrypt.compare(password, user.Password);
+        const login = await Login.findOne({ where: { UserID: user.UserID } });
+
+        if (!login) {
+            return res.status(401).send({ message: "Forkert email eller adgangskode. Prøv igen." });
+        }
+
+        const adgangskodeKorrekt = await bcrypt.compare(password, login.PasswordHash);
         if (!adgangskodeKorrekt) {
             return res.status(401).send({ message: "Forkert email eller adgangskode. Prøv igen." });
         }

@@ -29,9 +29,8 @@ db.communities = require("./community.model.js")(sequelize, Sequelize);
 db.addresses = require("./address.model.js")(sequelize, Sequelize);
 db.users = require("./user.model.js")(sequelize, Sequelize);
 db.messages = require("./message.model.js")(sequelize, Sequelize);
-
-
-
+db.logins = require("./login.model.js")(sequelize, Sequelize);
+db.postalCodes = require("./postalCode.model.js")(sequelize, Sequelize);
 
 
 // Rental -> RentalRequest (én udlejning hører til én forespørgsel)
@@ -49,24 +48,60 @@ db.communities.hasMany(db.addresses, {
   foreignKey: "CommunityID",
   as: "addresses"
 });
-
 db.addresses.belongsTo(db.communities, {
   foreignKey: "CommunityID",
   as: "community"
 });
 
+// User -> Login (én bruger har ét login)
+db.users.hasOne(db.logins, {
+  foreignKey: "UserID",
+  as: "login"
+});
+db.logins.belongsTo(db.users, {
+  foreignKey: "UserID"
+});
+
+// PostalCode -> Community (ét postnummer kan have mange communities)
+db.postalCodes.hasMany(db.communities, {
+  foreignKey: "PostalCode",
+  as: "communities"
+});
+db.communities.belongsTo(db.postalCodes, {
+  foreignKey: "PostalCode",
+  as: "postalCode"
+});
+
+// Community -> User (AdminUserID: community-admins)
+db.communities.belongsTo(db.users, {
+  foreignKey: "AdminUserID",
+  as: "admin"
+});
+
+// User -> User (ApprovedByID: self-FK, den admin der godkendte beboeren)
+db.users.belongsTo(db.users, {
+  foreignKey: "ApprovedByID",
+  as: "approvedBy"
+});
+
 //User -> Rating (én rating hører til én bruger, en bruger kan have mange ratings)
- db.users.hasMany(db.ratings, {
+db.users.hasMany(db.ratings, {
   foreignKey: "RaterUserID",
   as: "ratings"
 });
- 
+
 //Rating -> User (én rating hører til én bruger)
 db.ratings.belongsTo(db.users, {
   foreignKey: "RaterUserID",
   as: "rater"
 });
- 
+
+// Rating -> User (RatedUserID: den bruger der er blevet rated)
+db.ratings.belongsTo(db.users, {
+  foreignKey: "RatedUserID",
+  as: "ratedUser"
+});
+
 // Rental -> Ratings
 db.rentals.hasMany(db.ratings, {
   foreignKey: "RentalID",

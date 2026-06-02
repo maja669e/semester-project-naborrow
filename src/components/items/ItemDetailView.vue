@@ -31,26 +31,26 @@ export default {
 
   data() {
     return {
-      visSletter: false,   // Styrer om ConfirmDialog er åben
-      sletter:    false,   // Viser indlæsningsindikator mens sletning pågår
-      redigerer:  false,   // Skifter mellem visnings- og redigeringstilstand
-      redigertGenstand: {},// Arbejdskopi af genstandsdata under redigering
+      showDeleteDialog: false,  // Styrer om ConfirmDialog er åben
+      isDeleting:       false,  // Viser indlæsningsindikator mens sletning pågår
+      isEditing:        false,  // Skifter mellem visnings- og redigeringstilstand
+      editedItem:       {},     // Arbejdskopi af genstandsdata under redigering
 
       // Valideringsfejl vist under de respektive felter i redigeringstilstand
-      fejl: {
-        billede:     null,
-        kategori:    null,
-        titel:       null,
-        stand:       null,
-        maksLaaneDage: null,
-        tilbehoer:   null,
+      errors: {
+        image:       null,
+        category:    null,
+        title:       null,
+        condition:   null,
+        maxRentDays: null,
+        accessories: null,
       },
     };
   },
 
   computed: {
     // Oversætter status-tekst til en CSS-modifikatorklasse for farvekodning
-    statusKlasse() {
+    statusClass() {
       if (this.status === "Tilgængelig") return "status-tilgaengelig";
       if (this.status === "Udlånt")      return "status-udlaant";
       if (this.status === "Inaktiv")     return "status-inaktiv";
@@ -58,172 +58,172 @@ export default {
     },
 
     // Konvertér den kommaseparerede tilbehørsstreng til et array af tags
-    tilbehoerListe() {
+    accessoriesList() {
       if (!this.accessories) return [];
-      return this.accessories.split(",").map((element) => element.trim());
+      return this.accessories.split(",").map((el) => el.trim());
     },
   },
 
   methods: {
     // Åbn sletbekræftelsesdialogen
-    aabneSlettDialog() {
-      this.visSletter = true;
+    openDeleteDialog() {
+      this.showDeleteDialog = true;
     },
 
     // Luk dialogen uden at slette
-    annullerSletning() {
-      this.visSletter = false;
+    cancelDeletion() {
+      this.showDeleteDialog = false;
     },
 
     // Slet genstanden permanent via API'et og underret forælderen
-    async sletGenstand() {
-      this.sletter = true;
+    async deleteItem() {
+      this.isDeleting = true;
       try {
         await deleteItem(this.id);
-        this.visSletter = false;
-        this.$emit("genstandSlettet", this.title);
-      } catch (fejl) {
-        console.error("Fejl ved sletning af genstand:", fejl);
+        this.showDeleteDialog = false;
+        this.$emit("itemDeleted", this.title);
+      } catch (err) {
+        console.error("Fejl ved sletning af genstand:", err);
       } finally {
-        this.sletter = false;
+        this.isDeleting = false;
       }
     },
 
     // Opret en arbejdskopi af genstandsdata og skift til redigeringstilstand
-    startRedigering() {
-      this.redigerer = true;
-      this.redigertGenstand = {
-        titel:       this.title,
-        kategori:    this.category,
-        maerke:      this.brand,
-        status:      this.status,
-        stand:       this.condition,
-        maksLaaneDage: this.maxDays,
-        tilbehoer:   this.accessories || "",
-        billede:     this.image,
-        raaBillede:  this.imagePath,
-        billedeBase64: null,   // Udfyldes kun hvis brugeren uploader et nyt billede
-        billedeForhaandsvisning: null,
+    startEditing() {
+      this.isEditing = true;
+      this.editedItem = {
+        title:        this.title,
+        category:     this.category,
+        brand:        this.brand,
+        status:       this.status,
+        condition:    this.condition,
+        maxRentDays:  this.maxDays,
+        accessories:  this.accessories || "",
+        image:        this.image,
+        rawImage:     this.imagePath,
+        imageBase64:  null,   // Udfyldes kun hvis brugeren uploader et nyt billede
+        imagePreview: null,
         // IsActive: 1 = tilgængelig, 0 = inaktiv
-        erAktiv: this.status === "Tilgængelig" ? 1 : 0,
+        isActive: this.status === "Tilgængelig" ? 1 : 0,
       };
     },
 
     // Gem ændringerne via API'et og underret forælderen om den opdaterede genstand
-    async gemRedigering() {
-      if (!this.valider()) return;
+    async saveEditing() {
+      if (!this.validate()) return;
       try {
         const payload = {
-          ItemName:          this.redigertGenstand.titel,
-          CategoryName:      this.redigertGenstand.kategori,
-          Brand:             this.redigertGenstand.maerke,
-          Condition:         this.redigertGenstand.stand,
-          MaxRentPeriodDays: this.redigertGenstand.maksLaaneDage,
-          IsActive:          this.redigertGenstand.erAktiv,
+          ItemName:          this.editedItem.title,
+          CategoryName:      this.editedItem.category,
+          Brand:             this.editedItem.brand,
+          Condition:         this.editedItem.condition,
+          MaxRentPeriodDays: this.editedItem.maxRentDays,
+          IsActive:          this.editedItem.isActive,
         };
 
         // Inkludér kun billedet i payload hvis det er ændret eller eksisterende
-        if (this.redigertGenstand.billedeBase64 || this.redigertGenstand.raaBillede) {
+        if (this.editedItem.imageBase64 || this.editedItem.rawImage) {
           payload.images = [
             {
-              ImageURL:  this.redigertGenstand.billedeBase64 || this.redigertGenstand.raaBillede,
+              ImageURL:  this.editedItem.imageBase64 || this.editedItem.rawImage,
               IsPrimary: true,
             },
           ];
         }
 
         // Konverter tilbehørstekst til array inden afsendelse til API'et
-        if (this.redigertGenstand.tilbehoer !== undefined) {
-          payload.accessories = (this.redigertGenstand.tilbehoer || "")
+        if (this.editedItem.accessories !== undefined) {
+          payload.accessories = (this.editedItem.accessories || "")
             .split(",")
-            .map((element) => element.trim())
+            .map((el) => el.trim())
             .filter(Boolean);
         }
 
         await updateItem(this.id, payload);
 
         // Opdatér lokalt billede til base64 hvis et nyt blev uploadet
-        if (this.redigertGenstand.billedeBase64) {
-          this.redigertGenstand.billede = this.redigertGenstand.billedeBase64;
+        if (this.editedItem.imageBase64) {
+          this.editedItem.image = this.editedItem.imageBase64;
         }
 
-        this.redigerer = false;
+        this.isEditing = false;
 
         this.$emit("itemUpdated", {
-          ...this.redigertGenstand,
-          status: this.redigertGenstand.erAktiv ? "Tilgængelig" : "Inaktiv",
+          ...this.editedItem,
+          status: this.editedItem.isActive ? "Tilgængelig" : "Inaktiv",
           image:
-            this.redigertGenstand.billedeBase64 ||
-            this.redigertGenstand.raaBillede     ||
+            this.editedItem.imageBase64 ||
+            this.editedItem.rawImage     ||
             this.image,
         });
-      } catch (fejl) {
-        console.error("Fejl ved opdatering:", fejl);
+      } catch (err) {
+        console.error("Fejl ved opdatering:", err);
       }
     },
 
     // Konvertér uploadet billede til base64 og opdatér forhåndsvisning
-    async haandterBilledeUpload(event) {
-      const fil = event.target.files[0];
-      if (!fil) return;
-      const laeseren = new FileReader();
-      laeseren.onload = () => {
-        const base64 = laeseren.result;
-        this.redigertGenstand.billedeBase64            = base64;
-        this.redigertGenstand.billedeForhaandsvisning  = base64;
-        this.redigertGenstand.raaBillede               = null;
-        this.redigertGenstand.billede                  = base64;
+    async handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = reader.result;
+        this.editedItem.imageBase64  = base64;
+        this.editedItem.imagePreview = base64;
+        this.editedItem.rawImage     = null;
+        this.editedItem.image        = base64;
       };
-      laeseren.readAsDataURL(fil);
+      reader.readAsDataURL(file);
     },
 
     // Valider redigerede felter og returnér true hvis alt er gyldigt
-    valider() {
-      let gyldig = true;
+    validate() {
+      let valid = true;
 
-      if (this.redigertGenstand.billede.length === 0) {
-        this.fejl.billede = "Tilføj mindst ét billede";
-        gyldig = false;
+      if (this.editedItem.image.length === 0) {
+        this.errors.image = "Tilføj mindst ét billede";
+        valid = false;
       } else {
-        this.fejl.billede = "";
+        this.errors.image = "";
       }
 
-      if (!this.redigertGenstand.kategori) {
-        this.fejl.kategori = "Udfyld kategori";
-        gyldig = false;
+      if (!this.editedItem.category) {
+        this.errors.category = "Udfyld kategori";
+        valid = false;
       } else {
-        this.fejl.kategori = "";
+        this.errors.category = "";
       }
 
-      if (!this.redigertGenstand.titel.trim()) {
-        this.fejl.titel = "Indtast et navn på din genstand";
-        gyldig = false;
+      if (!this.editedItem.title.trim()) {
+        this.errors.title = "Indtast et navn på din genstand";
+        valid = false;
       } else {
-        this.fejl.titel = "";
+        this.errors.title = "";
       }
 
-      if (!this.redigertGenstand.stand.trim()) {
-        this.fejl.stand = "Udfyld stand på din genstand";
-        gyldig = false;
+      if (!this.editedItem.condition.trim()) {
+        this.errors.condition = "Udfyld stand på din genstand";
+        valid = false;
       } else {
-        this.fejl.stand = "";
+        this.errors.condition = "";
       }
 
-      if (!this.redigertGenstand.maksLaaneDage || this.redigertGenstand.maksLaaneDage <= 0) {
-        this.fejl.maksLaaneDage = "Indtast en gyldig låneperiode";
-        gyldig = false;
+      if (!this.editedItem.maxRentDays || this.editedItem.maxRentDays <= 0) {
+        this.errors.maxRentDays = "Indtast en gyldig låneperiode";
+        valid = false;
       } else {
-        this.fejl.maksLaaneDage = "";
+        this.errors.maxRentDays = "";
       }
 
-      return gyldig;
+      return valid;
     },
   },
 
   emits: [
-    "gåTilbage",      // Luk detaljeskærmen og gå tilbage til listen
-    "genstandSlettet",// Genstand slettet – sender titel til forælderen
-    "itemUpdated",    // Genstand opdateret – sender det opdaterede objekt
+    "goBack",      // Luk detaljeskærmen og gå tilbage til listen
+    "itemDeleted", // Genstand slettet – sender titel til forælderen
+    "itemUpdated", // Genstand opdateret – sender det opdaterede objekt
   ],
 };
 </script>
@@ -234,25 +234,25 @@ export default {
 
     <!-- Sidehoved: tilbage-knap og rediger-knap -->
     <header class="detalje-header">
-      <button class="tilbage-knap" @click="$emit('gåTilbage')">
+      <button class="tilbage-knap" @click="$emit('goBack')">
         ← Tilbage
       </button>
       <nav class="header-knapper" aria-label="Rediger eller slet genstand">
-        <button v-if="!redigerer" class="rediger-knap" @click="startRedigering">
+        <button v-if="!isEditing" class="rediger-knap" @click="startEditing">
           <v-icon start icon="mdi-pencil" />Rediger
         </button>
       </nav>
     </header>
 
     <!-- Aktiv/inaktiv-toggle vises kun i redigeringstilstand -->
-    <ToggleButton v-if="redigerer" v-model="redigertGenstand.erAktiv" />
+    <ToggleButton v-if="isEditing" v-model="editedItem.isActive" />
 
     <!-- Billede og statusmærke -->
     <figure class="detalje-billede-wrapper">
 
-      <!-- Visningsitlstand: statisk billede -->
+      <!-- Visningstilstand: statisk billede -->
       <img
-        v-if="!redigerer"
+        v-if="!isEditing"
         :src="image"
         :alt="`Billede af ${title}`"
         class="detalje-billede"
@@ -261,9 +261,9 @@ export default {
       <!-- Redigeringstilstand: billede med upload-mulighed -->
       <div v-else class="detalje-billede-rediger">
         <img
-          v-if="redigertGenstand.billedeBase64 || image"
-          :src="redigertGenstand.billedeBase64 || image"
-          :alt="`Nuværende billede af ${redigertGenstand.titel}`"
+          v-if="editedItem.imageBase64 || image"
+          :src="editedItem.imageBase64 || image"
+          :alt="`Nuværende billede af ${editedItem.title}`"
           class="detalje-billede"
         />
         <br />
@@ -274,12 +274,12 @@ export default {
           type="file"
           accept="image/*"
           aria-label="Skift billede af genstand"
-          @change="haandterBilledeUpload"
+          @change="handleImageUpload"
         />
       </div>
 
       <!-- Statusmærke placeret over billedet -->
-      <span class="detalje-status" :class="statusKlasse">
+      <span class="detalje-status" :class="statusClass">
         <span class="detalje-status-prik" aria-hidden="true"></span>
         {{ status }}
       </span>
@@ -289,21 +289,21 @@ export default {
     <!-- Titel og metadata -->
     <section class="detalje-info">
 
-      <!-- Visningsitlstand: statisk tekst -->
-      <h1 v-if="!redigerer" class="detalje-titel">{{ title }}</h1>
+      <!-- Visningstilstand: statisk tekst -->
+      <h1 v-if="!isEditing" class="detalje-titel">{{ title }}</h1>
       <v-text-field
         v-else
         class="detalje-input"
-        v-model="redigertGenstand.titel"
+        v-model="editedItem.title"
         label="Navn på genstand"
         variant="outlined"
         rounded="xl"
         color="var(--color-primary)"
         hide-details="auto"
-        :error-messages="fejl.titel ? [fejl.titel] : []"
+        :error-messages="errors.title ? [errors.title] : []"
       />
 
-      <p v-if="!redigerer" class="detalje-meta">
+      <p v-if="!isEditing" class="detalje-meta">
         {{ category }}
         <span v-if="brand"> · {{ brand }}</span>
         <span v-if="condition"> · {{ condition }}</span>
@@ -311,10 +311,10 @@ export default {
 
       <!-- Redigeringstilstand: inputfelter til kategori, mærke og stand -->
       <div v-else class="detalje-meta detalje-meta-rediger">
-        <v-text-field class="detalje-input" v-model="redigertGenstand.kategori"  label="Kategori" variant="outlined" rounded="xl" color="var(--color-primary)" hide-details="auto" :error-messages="fejl.kategori ? [fejl.kategori] : []" />
-        <v-text-field class="detalje-input" v-model="redigertGenstand.maerke"    label="Mærke"    variant="outlined" rounded="xl" color="var(--color-primary)" hide-details="auto" />
-        <v-text-field class="detalje-input" v-model="redigertGenstand.stand"     label="Stand"    variant="outlined" rounded="xl" color="var(--color-primary)" hide-details="auto" :error-messages="fejl.stand ? [fejl.stand] : []" />
-        <v-text-field class="detalje-input" v-model="redigertGenstand.tilbehoer" label="Tilbehør" placeholder="Eksempel: oplader, ekstra batteri" variant="outlined" rounded="xl" color="var(--color-primary)" hide-details="auto" />
+        <v-text-field class="detalje-input" v-model="editedItem.category"   label="Kategori" variant="outlined" rounded="xl" color="var(--color-primary)" hide-details="auto" :error-messages="errors.category ? [errors.category] : []" />
+        <v-text-field class="detalje-input" v-model="editedItem.brand"      label="Mærke"    variant="outlined" rounded="xl" color="var(--color-primary)" hide-details="auto" />
+        <v-text-field class="detalje-input" v-model="editedItem.condition"  label="Stand"    variant="outlined" rounded="xl" color="var(--color-primary)" hide-details="auto" :error-messages="errors.condition ? [errors.condition] : []" />
+        <v-text-field class="detalje-input" v-model="editedItem.accessories" label="Tilbehør" placeholder="Eksempel: oplader, ekstra batteri" variant="outlined" rounded="xl" color="var(--color-primary)" hide-details="auto" />
       </div>
 
     </section>
@@ -325,11 +325,11 @@ export default {
       <!-- Låneperiode-boks -->
       <div class="detalje-boks">
         <span class="detalje-boks-label-top">Maks låne</span>
-        <span v-if="!redigerer" class="detalje-boks-tal">{{ maxDays }}</span>
+        <span v-if="!isEditing" class="detalje-boks-tal">{{ maxDays }}</span>
         <v-text-field
           v-else
           class="detalje-input"
-          v-model="redigertGenstand.maksLaaneDage"
+          v-model="editedItem.maxRentDays"
           type="number"
           min="1"
           label="Dage"
@@ -337,7 +337,7 @@ export default {
           rounded="xl"
           color="var(--color-primary)"
           hide-details="auto"
-          :error-messages="fejl.maksLaaneDage ? [fejl.maksLaaneDage] : []"
+          :error-messages="errors.maxRentDays ? [errors.maxRentDays] : []"
         />
         <span class="detalje-boks-enhed">dage</span>
       </div>
@@ -350,11 +350,11 @@ export default {
         </div>
         <div class="detalje-chips">
           <span
-            v-for="element in tilbehoerListe"
-            :key="element"
+            v-for="el in accessoriesList"
+            :key="el"
             class="detalje-chip"
           >
-            {{ element }}
+            {{ el }}
           </span>
         </div>
       </div>
@@ -391,21 +391,21 @@ export default {
 
     <!-- Bekræftelsesdialog til sletning – åbnes kun via sletknappen -->
     <ConfirmDialog
-      v-model="visSletter"
+      v-model="showDeleteDialog"
       :title="'Slet ' + title + '?'"
       message="Denne handling kan ikke fortrydes og genstanden vil blive fjernet permanent."
       confirm-label="Slet genstand"
-      :loading="sletter"
-      @confirm="sletGenstand"
-      @cancel="annullerSletning"
+      :loading="isDeleting"
+      @confirm="deleteItem"
+      @cancel="cancelDeletion"
     />
 
     <!-- Handlingsknapper vist i bunden under redigering -->
-    <section v-if="redigerer" class="rediger-handlinger">
-      <button class="slet-knap" @click="aabneSlettDialog">
+    <section v-if="isEditing" class="rediger-handlinger">
+      <button class="slet-knap" @click="openDeleteDialog">
         <v-icon>mdi-trash-can</v-icon>Slet genstand
       </button>
-      <button class="gem-knap" @click="gemRedigering">
+      <button class="gem-knap" @click="saveEditing">
         <v-icon>mdi-check</v-icon>Gem ændringer
       </button>
     </section>

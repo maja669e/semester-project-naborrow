@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const db = require("../models");
 
 const User = db.users;
+const Login = db.logins;
 
 // Opret en ny bruger
 exports.create = async (req, res) => {
@@ -23,10 +24,16 @@ exports.create = async (req, res) => {
             });
         }
 
-        // Hash adgangskoden før gemning i databasen
+        // Hash adgangskoden før gemning i Login-tabellen
         const hashetAdgangskode = await bcrypt.hash(req.body.Password, 10);
 
-        const user = await User.create({ ...req.body, Password: hashetAdgangskode });
+        // Opret bruger uden adgangskode
+        const { Password, ...userData } = req.body;
+        const user = await User.create(userData);
+
+        // Opret login-række med det hashede password
+        await Login.create({ UserID: user.UserID, PasswordHash: hashetAdgangskode });
+
         res.status(201).send(user);
     } catch (err) {
         res.status(500).send({ message: err.message });
@@ -62,13 +69,19 @@ exports.findOne = async (req, res) => {
 exports.update = async (req, res) => {
     const id = req.params.id;
     try {
-        const opdateringsData = { ...req.body };
+        const { Password, ...opdateringsData } = req.body;
+
+        // Tjek at brugeren eksisterer
+        const eksisterendeBruger = await User.findByPk(id);
+        if (!eksisterendeBruger) {
+            return res.status(404).send({ message: "Bruger ikke fundet med id " + id });
+        }
 
         // Hvis adgangskoden opdateres — validér styrke og hash den
-        if (opdateringsData.Password) {
+        if (Password) {
             const [styrkeResultat] = await db.sequelize.query(
                 "SELECT VALIDATE_PASSWORD_STRENGTH(:password) AS strength",
-                { replacements: { password: opdateringsData.Password }, type: db.Sequelize.QueryTypes.SELECT }
+                { replacements: { password: Password }, type: db.Sequelize.QueryTypes.SELECT }
             );
 
             if (styrkeResultat.strength < 50) {
@@ -78,18 +91,16 @@ exports.update = async (req, res) => {
                 });
             }
 
-            opdateringsData.Password = await bcrypt.hash(opdateringsData.Password, 10);
+            const hashetAdgangskode = await bcrypt.hash(Password, 10);
+            await Login.update({ PasswordHash: hashetAdgangskode }, { where: { UserID: id } });
         }
 
-        const [updated] = await User.update(opdateringsData, {
-            where: { UserID: id }
-        });
-        if (updated) {
-            const updatedUser = await User.findByPk(id);
-            res.send(updatedUser);
-        } else {
-            res.status(404).send({ message: "Bruger ikke fundet med id " + id });
+        if (Object.keys(opdateringsData).length > 0) {
+            await User.update(opdateringsData, { where: { UserID: id } });
         }
+
+        const opdateretBruger = await User.findByPk(id);
+        res.send(opdateretBruger);
     } catch (err) {
         res.status(500).send({ message: err.message });
     }
@@ -111,5 +122,3 @@ exports.delete = async (req, res) => {
         res.status(500).send({ message: err.message });
     }
 };
-
-

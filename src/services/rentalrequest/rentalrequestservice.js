@@ -2,7 +2,6 @@
 const BASE_URL = "http://localhost:8080";
 
 
-
 // Opret låneanmodning
 export const createRentalRequest = async (rentalData) => {
 
@@ -40,4 +39,45 @@ export const getAllRentalRequests = async () => {
     }
 
     return response.json();
+};
+
+
+// Get pending count for owner dashboard box
+export const getPendingCountByOwner = async (userId) => {
+  const res = await fetch(`${BASE_URL}/api/rentalRequests/owner/${userId}/pending-count`);
+
+  if (!res.ok) throw new Error("Fejl ved hentning af pending count");
+
+  return res.json();
+};
+
+// Get all pending requests for owner (for page later)
+export const getPendingRequestsByOwner = async (userId) => {
+  const res = await fetch(`${BASE_URL}/api/rentalRequests/owner/${userId}/pending`);
+
+  if (!res.ok) throw new Error("Fejl ved hentning af requests");
+
+  return res.json();
+};
+
+// Accept request
+export const acceptRentalRequest = async (id) => {
+  const res = await fetch(`${BASE_URL}/api/rentalRequests/${id}/accept`, {
+    method: "PUT",
+  });
+
+  if (!res.ok) throw new Error("Fejl ved accept");
+
+  return res.json();
+};
+
+// Reject request
+export const rejectRentalRequest = async (id) => {
+  const res = await fetch(`${BASE_URL}/api/rentalRequests/${id}/reject`, {
+    method: "PUT",
+  });
+
+  if (!res.ok) throw new Error("Fejl ved reject");
+
+  return res.json();
 };
