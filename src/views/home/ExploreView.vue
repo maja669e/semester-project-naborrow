@@ -4,7 +4,7 @@ import ItemDetailCard from '@/components/items/ItemDetailCard.vue'
 
 
 export default {
-    name: 'Homepage',
+    name: 'ExploreView',
 
     data() {
         return {
@@ -17,9 +17,7 @@ export default {
     ItemDetailCard
     },
 
-    inject: ['authStore'],
-    
-    emits: ['startRental'],
+    inject: ['authStore', 'startRentalFlow'],
 
     methods: {
         resolveImageUrl(rawUrl) {
@@ -76,7 +74,7 @@ export default {
             }
         },
         openRentalFlow() {
-            this.$emit('startRental', this.selectedItem)
+            this.startRentalFlow(this.selectedItem)
         },
     },
 

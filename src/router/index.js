@@ -1,12 +1,12 @@
 // Routerkonfiguration for naborrow SPA.
 // Alle ruter bruger hash-historik (#) så serveren aldrig modtager
 // under-stier direkte, og appen altid kan deployes statisk.
-import { createRouter, createWebHashHistory } from "vue-router";
+import { createRouter, createWebHistory } from "vue-router";
 import { authStore } from "@/stores/auth.js";
 
 import LoginView        from "@/views/auth/LoginView.vue";
 import HomeView         from "@/views/home/HomeView.vue";
-import Homepage         from "@/views/home/Homepage.vue";
+import ExploreView      from "@/views/home/ExploreView.vue";
 import ItemOverviewView from "@/views/items/ItemOverviewView.vue";
 import CreateItemView   from "@/views/items/CreateItemView.vue";
 import RentalPageOne    from "@/views/rentals/RentalPageOne.vue";
@@ -17,7 +17,7 @@ import RequestsView      from "@/views/rentals/RequestsView.vue";
 const routes = [
   { path: "/login",           name: "login",          component: LoginView,         meta: { isPublic: true } },
   { path: "/",                name: "home",           component: HomeView },
-  { path: "/fællesskab",      name: "community",      component: Homepage },
+  { path: "/fællesskab",      name: "community",      component: ExploreView },
   { path: "/genstande",       name: "items",          component: ItemOverviewView },
   { path: "/genstande/opret", name: "create-item",    component: CreateItemView },
   { path: "/laan/trin-1",     name: "rental-step-1",  component: RentalPageOne },
@@ -27,7 +27,7 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHashHistory(),
+  history: createWebHistory(),
   routes,
 });
 

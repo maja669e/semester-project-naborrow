@@ -13,13 +13,7 @@ export default {
     FormBottomBar,
   },
 
-  props: {
-    currentStep: Number,
-     item: {
-    type: Object,
-    required: true,
-  },
-  },
+  inject: ["rental", "saveRentalStep2"],
 
   data() {
     return {
@@ -29,13 +23,12 @@ export default {
   },
 
   methods: {
-    // Gemmer tilbehør og besked i App.vue og navigerer til bekræftelsestrinnet
+    // Kalder den injekterede saveRentalStep2 fra App.vue og navigerer til bekræftelse
     next() {
-      this.$emit("save-rental-details", {
+      this.saveRentalStep2({
         accessories:     this.accessories,
         messageToLender: this.messageToLender,
       });
-      this.$emit("go-to-rental-confirm");
     },
   },
 };
@@ -47,7 +40,7 @@ export default {
 
     <!-- Stepper -->
     <Stepper
-      :currentStep="currentStep"
+      :currentStep="2"
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
 
@@ -57,7 +50,7 @@ export default {
     <!-- Accessories -->
     <PickAccessories
       v-model="accessories"
-      :accessories="item.accessories"
+      :accessories="rental.item?.accessories"
     />
 
     <v-textarea
@@ -73,7 +66,7 @@ export default {
     <!-- Bundbar med tilbage og næste -->
     <FormBottomBar
       :above-nav="true"
-      @back="$emit('goBack')"
+      @back="$router.push({ name: 'rental-step-1' })"
       @next="next"
     />
 

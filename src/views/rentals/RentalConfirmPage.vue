@@ -19,22 +19,7 @@ export default {
     SuccessDialog,
   },
 
-  inject: ["authStore"],
- 
-
-  props: {
-    currentStep: Number,
-
-    rental: {
-      type: Object,
-      required: true,
-    },
-
-     item: {
-    type: Object,
-    required: true
-  }
-  },
+  inject: ["authStore", "rental"],
 
   data() {
     return {
@@ -58,7 +43,7 @@ export default {
 
       try {
         const rentalData = {
-          ItemID:              this.item.id,
+          ItemID:              this.rental.item.id,
           RenterUserID:        this.authStore.user.value.userID,
           StartDate:           this.rental.startDate,
           EndDate:             this.rental.endDate,
@@ -76,14 +61,12 @@ export default {
       }
     },
 
-    // Lukker success-dialogen og sender brugeren tilbage til oversigten
+    // Lukker success-dialogen og navigerer til community
     handleSuccessBack() {
       this.showSuccessDialog = false;
-      this.$emit("rental-confirmed");
+      this.$router.push({ name: "community" });
     },
   },
-
-  emits: ["goBack", "rental-confirmed"],
 };
 </script>
 
@@ -93,7 +76,7 @@ export default {
 
     <!-- Stepper -->
     <Stepper
-      :currentStep="currentStep"
+      :currentStep="3"
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
   
@@ -107,7 +90,7 @@ export default {
     <!-- Summary card -->
     <RentalSummaryCard
       :rental="rental"
-       :item="item"
+      :item="rental.item"
     />
 
     <!-- Terms -->
@@ -138,7 +121,7 @@ export default {
     <FormBottomBar
       next-label="Bekræft lån"
       :above-nav="true"
-      @back="$emit('goBack')"
+      @back="$router.push({ name: 'rental-step-2' })"
       @next="confirmRental"
     />
      <SuccessDialog

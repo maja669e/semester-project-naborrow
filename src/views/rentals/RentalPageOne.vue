@@ -17,13 +17,7 @@ export default {
     FormBottomBar,
   },
 
-  props: {
-    currentStep: Number,
-    item: {
-    type: Object,
-    default: () => ({}),
-  },
-  },
+  inject: ["rental", "saveRentalStep1"],
 
   data() {
     return {
@@ -63,19 +57,19 @@ export default {
 
       const diffDays = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
 
-      if (this.item?.maxDays && diffDays > this.item.maxDays) {
-        this.errors.dates = `Maks ${this.item.maxDays} dage`;
+      if (this.rental.item?.maxDays && diffDays > this.rental.item.maxDays) {
+        this.errors.dates = `Maks ${this.rental.item.maxDays} dage`;
         return false;
       }
 
       return true;
     },
 
-    // Validerer og sender datoer og tidspunkter videre til App.vue via emit
+    // Validerer og kalder den injekterede saveRentalStep1 fra App.vue
     next() {
       if (!this.validate()) return;
 
-      this.$emit("go-to-rental-page-two", {
+      this.saveRentalStep1({
         startDate:  this.startDate,
         endDate:    this.endDate,
         pickupTime: this.pickupTime,
@@ -92,7 +86,7 @@ export default {
   <v-container class="pa-4 page">
 
     <Stepper
-      :currentStep="currentStep"
+      :currentStep="1"
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
 
@@ -101,14 +95,13 @@ export default {
     <CalendarPicker
       v-model:startDate="startDate"
       v-model:endDate="endDate"
-      :maxDays="item?.maxDays"
+      :maxDays="rental.item?.maxDays"
     />
 
-  
     <PeriodSummary
       :startDate="startDate"
       :endDate="endDate"
-       :maxDays="item?.maxDays"
+      :maxDays="rental.item?.maxDays"
     />
     <p v-if="errors.dates" role="alert" class="error-text">
       {{ errors.dates }}

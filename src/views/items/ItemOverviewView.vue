@@ -2,14 +2,11 @@
 // Genstandsoversigt – viser alle brugerens genstande som en kortliste.
 // Understøtter statusfiltrering via ItemFilterTabs og åbner ItemDetailView
 // når brugeren klikker på et kort.
-//
-// Tidligere modtog denne komponent reloadKey og selectItemId som props fra App.vue.
-// Nu injekterer den items-objektet og goToCreate-metoden direkte fra App.vue
-// via provide/inject – præcis som vist i "Løsningen: Provide & inject"-slidet.
+// Injekterer items-objektet og authStore fra App.vue via provide/inject.
+// Navigation til opret og anmodninger sker via RouterLink (:to).
 import ItemCard       from "@/components/items/ItemCard.vue";
 import ItemDetailView from "@/components/items/ItemDetailView.vue";
 import ItemFilterTabs from "@/components/items/ItemFilterTabs.vue";
-import { authStore } from "@/stores/auth.js";
 import { getItemsByUser } from "@/services/items/itemservice.js";
 import { getPendingCountByOwner } from "@/services/rentalRequest/rentalRequestService";
 
@@ -19,9 +16,9 @@ export default {
   components: { ItemCard, ItemDetailView, ItemFilterTabs },
 
   // Injekterer fra App.vue's provide():
-  //   items       – reaktivt objekt med reloadKey og shownItemId
-  //   goToCreate  – navigationsmetode til opret-genstand-ruten
-  inject: ["items", "goToCreate"],
+  //   items     – reaktivt objekt med reloadKey og shownItemId
+  //   authStore – den loggede brugers data og login-status
+  inject: ["items", "authStore"],
 
   data() {
     return {
@@ -146,9 +143,6 @@ export default {
       }
     },
 
-    goToPendingRequests() {
-      this.$router.push({ name: "requests" });
-    },
   },
 
   mounted() {
@@ -218,7 +212,7 @@ export default {
       <h1 class="side-titel">Mine ting</h1>
       <v-row class="status-row">
   <v-col cols="6">
-    <v-card class="status-card" @click="goToPendingRequests">
+    <v-card class="status-card" :to="{ name: 'requests' }">
       <div class="status-number">
         {{ pendingRequests }}
       </div>
@@ -290,13 +284,13 @@ export default {
       </p>
     </section>
 
-    <!-- Fast bundknap til oprettelse af ny genstand – kalder injekteret metode -->
+    <!-- Fast bundknap til oprettelse af ny genstand -->
     <footer v-if="!selectedItem" class="opret-knap-wrapper">
       <v-btn
         color="primary"
         rounded="lg"
         class="opret-knap"
-        @click="goToCreate()"
+        :to="{ name: 'create-item' }"
       >
         Opret ny genstand
       </v-btn>

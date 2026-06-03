@@ -1,14 +1,9 @@
 <script>
 // Velkomstside – første visning brugeren ser ved opstart.
 // Indeholder et velkomstbillede og navigation til genstandsoversigt og lån.
-// goToItems injekteres fra App.vue via provide/inject i stedet for $emit,
-// så komponenten ikke behøver at kende til sin forælder.
+// Navigation sker via RouterLink (:to) direkte på knapperne.
 export default {
   name: "HomeView",
-
-  // Injekter navigationsmetoden fra App.vue.
-  // App.vue provides goToItems via sin provide()-funktion.
-  inject: ["goToItems"],
 };
 </script>
 
@@ -34,12 +29,12 @@ export default {
       <nav aria-label="Hovednavigation">
         <v-row>
 
-          <!-- Naviger til brugerens egne genstande via injekteret metode -->
+          <!-- Naviger til brugerens egne genstande via RouterLink -->
           <v-col cols="12">
             <v-btn
               class="genstande-knap mt-15"
               size="large"
-              @click="goToItems()"
+              :to="{ name: 'items' }"
             >
               Dine genstande
             </v-btn>
