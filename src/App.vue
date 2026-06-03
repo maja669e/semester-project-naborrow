@@ -1,10 +1,9 @@
 <script>
-// Rod-komponent for naborrow SPA.
+// Rod-komponent for LÅKAL SPA.
 // Ansvaret er:
-//   1. Vise den aktuelle rute via <router-view>
-//   2. Levere tværgående tilstand til de redigerede views via provide()
-//   3. Videregive props/events til de urørte lån- og community-views via routeProps/routeListeners
-//   4. Vise AppBottomNav og SuccessDialog uden for ruterne
+//   1. Vise den aktuelle rute via <RouterView>
+//   2. Levere tværgående tilstand til alle views via provide()
+//   3. Vise AppBottomNav og SuccessDialog uden for ruterne
 import AppBottomNav  from "@/components/layout/AppBottomNav.vue";
 import SuccessDialog from "@/components/SuccessDialog.vue";
 import { authStore }  from "@/stores/auth.js";
@@ -28,16 +27,14 @@ export default {
         shownItemId: null, // Id der fremhæves og scrolles til efter oprettelse
       },
 
-      // ── Udlejnings-flow (bruges stadig via routeProps/routeListeners) ──
-      // Den genstand brugeren valgte at leje
-      selectedRentalItem: null,
-      // Samler datoer og detaljer på tværs af laan-trin-1 og laan-trin-2
-      rentalDetails: {
+      // ── Udlejnings-flow (provides til rental-views via provide/inject) ──
+      // Ét objekt der deles med alle rental-views — mutations slår reaktivt igennem
+      rental: {
+        item:            null,
         startDate:       "",
         endDate:         "",
-        pickupTime:      "",
+        pickupTime:      [],
         accessories:     [],
-        acceptedTerms:   false,
         messageToLender: "",
       },
     };
@@ -47,10 +44,13 @@ export default {
     return {
       items: this.items,
 
-      goToItems:   this.goToItems,
-      goToCreate:  this.goToCreate,
       itemCreated: this.onItemCreated,
-      goToHome:    this.goToHome,
+
+      // Udlejnings-flow – delt objekt og metoder til rental-views
+      rental:          this.rental,
+      startRentalFlow: this.startRentalFlow,
+      saveRentalStep1: this.saveRentalStep1,
+      saveRentalStep2: this.saveRentalStep2,
 
       // Auth – tilgængeligt i alle descendant-komponenter
       authStore,
@@ -70,74 +70,19 @@ export default {
       return map[this.$route?.name] || "";
     },
 
-    // Bundnavigationen vises kun på de tre primære sider (ikke på login)
+    // Bundnavigationen vises kun på de primære sider (ikke på login)
     showBottomNav() {
       return ["home", "community", "items", "rental-step-1", "rental-step-2", "rental-confirm", "requests"].includes(this.$route?.name)
         && authStore.isLoggedIn.value;
-    },
-
-    // Props der sendes til de urørte lån- og community-views via router-view slot.
-    // HomeView, ItemOverviewView og CreateItemView bruger nu provide/inject i stedet.
-    routeProps() {
-      const name = this.$route?.name;
-      if (name === "rental-step-1") {
-        return { item: this.selectedRentalItem, currentStep: 1 };
-      }
-      if (name === "rental-step-2") {
-        return { item: this.selectedRentalItem, currentStep: 2 };
-      }
-      if (name === "rental-confirm") {
-        return { item: this.selectedRentalItem, rental: this.rentalDetails, currentStep: 3 };
-      }
-      return {};
-    },
-
-    // Event-lyttere til de urørte lån- og community-views.
-    // HomeView, ItemOverviewView og CreateItemView bruger provide/inject og har ingen lyttere her.
-    routeListeners() {
-      const name = this.$route?.name;
-      const l    = {};
-
-      if (name === "community") {
-        l.startRental = this.startRentalFlow;
-      }
-      if (name === "rental-step-1") {
-        l["go-to-rental-page-two"] = this.goToRentalStepTwo;
-      }
-      if (name === "rental-step-2") {
-        l["save-rental-details"]  = this.saveRentalDetails;
-        l["go-to-rental-confirm"] = this.goToRentalConfirm;
-        l.goBack                  = this.goToRentalStepOne;
-      }
-      if (name === "rental-confirm") {
-        l.goBack              = () => this.$router.push({ name: "rental-step-2" });
-        l["rental-confirmed"] = () => this.$router.push({ name: "community" });
-      }
-
-      return l;
     },
   },
 
   methods: {
     // ── Generel navigation ───────────────────────────────────
-    // Oversæt AppBottomNav-fanepnøgle til et rutenavn og naviger.
-    // "profil" åbner bundmenuen i stedet for at navigere til en ny rute.
     navigateTo(key) {
       if (key === "profil") { this.showProfileMenu = true; return; }
       const map = { home: "home", homepage: "community", itemOverview: "items" };
       if (map[key]) this.$router.push({ name: map[key] });
-    },
-
-    goToItems() {
-      this.$router.push({ name: "items" });
-    },
-
-    goToCreate() {
-      this.$router.push({ name: "create-item" });
-    },
-
-    goToHome() {
-      this.$router.push({ name: "home" });
     },
 
     // ── Opret-genstand flow ──────────────────────────────────
@@ -155,30 +100,23 @@ export default {
       this.items.shownItemId = null;
     },
 
-    // ── Udlejnings-flow (kaldt via routeListeners fra lån-views) ────────────
+    // ── Udlejnings-flow (kaldt via inject fra rental-views) ──────────────────
     startRentalFlow(item) {
-      this.selectedRentalItem = item;
+      this.rental.item = item;
       this.$router.push({ name: "rental-step-1" });
     },
 
-    goToRentalStepTwo(data) {
-      this.rentalDetails.startDate  = data.startDate;
-      this.rentalDetails.endDate    = data.endDate;
-      this.rentalDetails.pickupTime = data.pickupTime;
+    saveRentalStep1(data) {
+      this.rental.startDate  = data.startDate;
+      this.rental.endDate    = data.endDate;
+      this.rental.pickupTime = data.pickupTime;
       this.$router.push({ name: "rental-step-2" });
     },
 
-    saveRentalDetails(data) {
-      this.rentalDetails.messageToLender = data.messageToLender;
-      this.rentalDetails.accessories     = data.accessories;
-    },
-
-    goToRentalConfirm() {
+    saveRentalStep2(data) {
+      this.rental.accessories     = data.accessories;
+      this.rental.messageToLender = data.messageToLender;
       this.$router.push({ name: "rental-confirm" });
-    },
-
-    goToRentalStepOne() {
-      this.$router.push({ name: "rental-step-1" });
     },
 
     // Logger brugeren ud, lukker profilmenuen og sender til login-siden
@@ -195,16 +133,7 @@ export default {
   <v-app>
     <v-main>
 
-      <!-- Router-view med slot til de urørte lån-/community-views der stadig
-           modtager data via routeProps og routeListeners.
-           HomeView, ItemOverviewView og CreateItemView bruger provide/inject. -->
-      <router-view v-slot="{ Component }">
-        <component
-          :is="Component"
-          v-bind="routeProps"
-          v-on="routeListeners"
-        />
-      </router-view>
+      <RouterView />
 
     </v-main>
 

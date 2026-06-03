@@ -1,13 +1,13 @@
 <script>
 // Login-side for LÅKAL.
 // Brugeren logger ind med email og adgangskode.
-// authStore og goToHome injekteres fra App.vue via provide/inject –
-// præcis som goToItems i HomeView og goToCreate i ItemOverviewView.
+// authStore injekteres fra App.vue via provide/inject.
+// Efter vellykket login navigeres direkte via $router.push.
 // Router-vagten i router/index.js sender ikke-loggede brugere hertil automatisk.
 export default {
   name: "LoginView",
 
-  inject: ["authStore", "goToHome"],
+  inject: ["authStore"],
 
   data() {
     return {
@@ -58,7 +58,7 @@ export default {
       this.isLoading = true;
       try {
         await this.authStore.login(this.email, this.password);
-        this.goToHome();
+        this.$router.push({ name: "home" });
       } catch (err) {
         this.showError = err.message;
       } finally {

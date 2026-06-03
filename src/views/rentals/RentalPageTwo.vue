@@ -1,6 +1,8 @@
 <script>
-import Stepper from "@/components/Stepper.vue";
+// Trin 2 i låneanmodnings-flowet — vælg tilbehør og skriv besked til udlåner.
+import Stepper         from "@/components/Stepper.vue";
 import PickAccessories from "@/components/rentals/PickAccessories.vue";
+import FormBottomBar   from "@/components/layout/FormBottomBar.vue";
 
 export default {
   name: "RentalPageTwo",
@@ -8,16 +10,10 @@ export default {
   components: {
     Stepper,
     PickAccessories,
-    
+    FormBottomBar,
   },
 
-  props: {
-    currentStep: Number,
-     item: {
-    type: Object,
-    required: true,
-  },
-  },
+  inject: ["rental", "saveRentalStep2"],
 
   data() {
     return {
@@ -27,18 +23,12 @@ export default {
   },
 
   methods: {
-  next() {
-      this.$emit("save-rental-details", {
-        accessories: this.accessories,
+    // Kalder den injekterede saveRentalStep2 fra App.vue og navigerer til bekræftelse
+    next() {
+      this.saveRentalStep2({
+        accessories:     this.accessories,
         messageToLender: this.messageToLender,
       });
-
-    console.log({
-    accessories: this.accessories,
-    messageToLender: this.messageToLender,
-});
-
-      this.$emit("go-to-rental-confirm");
     },
   },
 };
@@ -50,7 +40,7 @@ export default {
 
     <!-- Stepper -->
     <Stepper
-      :currentStep="currentStep"
+      :currentStep="2"
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
 
@@ -60,7 +50,7 @@ export default {
     <!-- Accessories -->
     <PickAccessories
       v-model="accessories"
-      :accessories="item.accessories"
+      :accessories="rental.item?.accessories"
     />
 
     <v-textarea
@@ -73,33 +63,12 @@ export default {
   class="mt-6"
 />
 
-    <!-- Buttons -->
-    <div class="bottom-bar">
-
-      <v-btn
-        variant="tonal"
-        rounded="lg"
-        color="grey-darken-2"
-        class="back-button"
-        @click="$emit('goBack')"
-      >
-        <v-icon start size="18">
-          mdi-chevron-left
-        </v-icon>
-
-        Tilbage
-      </v-btn>
-
-      <v-btn
-        color="primary"
-        rounded="lg"
-        class="create-button"
-        @click="next"
-      >
-        Næste
-      </v-btn>
-
-    </div>
+    <!-- Bundbar med tilbage og næste -->
+    <FormBottomBar
+      :above-nav="true"
+      @back="$router.push({ name: 'rental-step-1' })"
+      @next="next"
+    />
 
   </v-container>
 
@@ -107,40 +76,6 @@ export default {
 
 <style scoped>
 
-.bottom-bar {
-  position: fixed;
-  bottom: 64px;
-  left: 0;
-  right: 0;
-
-  background: white;
-  border-top: 1px solid #e5e7eb;
-
-  padding: 16px;
-
-  display: flex;
-  gap: 12px;
-}
-
-
-
-.back-button {
-  flex: 1;
-  text-transform: none;
-  height: 48px !important;
-}
-
-.create-button {
-  flex: 3;
-  text-transform: none;
-  height: 48px !important;
-}
-
-.error-text {
-  color: #B00020;
-  font-size: 14px;
-  margin-top: 4px;
-}
 .page {
   padding-bottom: 100px;
 }

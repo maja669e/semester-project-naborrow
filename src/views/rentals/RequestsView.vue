@@ -1,5 +1,6 @@
 <script>
-import { authStore } from "@/stores/auth.js";
+// Visning af indkommende låneanmodninger for den loggede udlåner.
+// Henter kun anmodninger med status "pending" for udlånerens egne genstande.
 import {
   getPendingRequestsByOwner,
   acceptRentalRequest,
@@ -8,6 +9,8 @@ import {
 
 export default {
   name: "RequestsView",
+
+  inject: ["authStore"],
 
   data() {
     return {
@@ -42,21 +45,23 @@ export default {
       await this.loadRequests();
     },
 
-    // Ændrer backend statuskoder til dansk på hjemmesiden
+    // Oversætter backend-statuskoder til dansk.
+    // 'approved' matcher SQL CHECK-constraint — ikke 'accepted'
     formatStatus(status) {
-      if (status === "pending") return "Afventer";
-      if (status === "accepted") return "Godkendt";
+      if (status === "pending")  return "Afventer";
+      if (status === "approved") return "Godkendt";
       if (status === "rejected") return "Afvist";
       return status;
     },
 
-    // Ændrer farve baseret på dens status
+    // Returnerer Vuetify-farve baseret på status
     statusColor(status) {
-      if (status === "pending") return "orange";
-      if (status === "accepted") return "green";
+      if (status === "pending")  return "orange";
+      if (status === "approved") return "green";
       if (status === "rejected") return "red";
       return "grey";
-    }
+    },
+
   }
 };
 </script>
@@ -92,7 +97,7 @@ export default {
     <v-row v-else dense>
       <v-col
         v-for="req in requests"
-        :key="req.RequestID"
+        :key="req.RentalRequestID"
         cols="12"
       >
         <v-card
@@ -101,70 +106,66 @@ export default {
           elevation="0"
         >
 
-          <!-- TOP CONTENT -->
-<div class="d-flex align-start">
+          <!-- Avatar, brugernavn, genstand og status -->
+          <div class="d-flex align-start">
 
-  <!-- LEFT AVATAR -->
-  <v-avatar
-    size="52"
-    color="#dfe8c8"
-    class="mr-4"
-  >
-    <span class="font-weight-bold text-black">
-      {{ req.renter.firstName?.charAt(0) }}
-    </span>
-  </v-avatar>
+            <v-avatar size="52" color="#dfe8c8" class="mr-4">
+              <span class="font-weight-bold text-black">
+                {{ req.renter.Username?.charAt(0) }}
+              </span>
+            </v-avatar>
 
-  <!-- INFO -->
-  <div class="flex-grow-1">
+            <div class="flex-grow-1">
 
-    <div class="text-subtitle-1 font-weight-bold text-grey-darken-4">
-      Bob Test
-    </div>
+              <div class="text-subtitle-1 font-weight-bold text-grey-darken-4">
+                {{ req.renter.Username }}
+              </div>
 
-  
-    <div class="text-body-2 text-grey-darken-1">
-      {{ req.item.ItemName }}
-    </div>
+              <div class="text-body-2 text-grey-darken-1">
+                {{ req.item.ItemName }}
+              </div>
 
-    <!-- STATUS CHIP -->
-    <v-chip
-      size="x-small"
-      :color="statusColor(req.Status)"
-      class="mt-2"
-      variant="tonal"
-    >
-      {{ formatStatus(req.Status) }}
-    </v-chip>
+              <!-- Beskrivelse fra låneren — vises kun hvis udfyldt -->
+              <p v-if="req.MessageToLender" class="description-text mt-1">
+                "{{ req.MessageToLender }}"
+              </p>
 
-  </div>
+              <v-chip
+                size="x-small"
+                :color="statusColor(req.Status)"
+                class="mt-2"
+                variant="tonal"
+              >
+                {{ formatStatus(req.Status) }}
+              </v-chip>
 
-</div>
+            </div>
+          </div>
 
-<!-- BUTTONS UNDER CONTENT -->
-<div class="d-flex mt-5 button-actions">
+          <!-- Godkend / Afvis -->
+          <div class="d-flex mt-5 button-actions">
 
-  <v-btn
-    color="error"
-    variant="outlined"
-    size="small"
-    class="action-btn reject-btn mr-3"
-    @click="reject(req.RequestID)"
-  >
-    Afvis
-  </v-btn>
+            <v-btn
+              color="error"
+              variant="outlined"
+              size="small"
+              class="action-btn reject-btn mr-3"
+              @click="reject(req.RentalRequestID)"
+            >
+              Afvis
+            </v-btn>
 
-  <v-btn
-    color="success"
-    variant="flat"
-    size="small"
-    class="action-btn approve-btn"
-    @click="accept(req.RequestID)"
-  >
-    ✓ Godkend
-  </v-btn>
+            <v-btn
+              color="success"
+              variant="flat"
+              size="small"
+              class="action-btn approve-btn"
+              @click="accept(req.RentalRequestID)"
+            >
+              ✓ Godkend
+            </v-btn>
 
-</div>
+          </div>
 
         </v-card>
       </v-col>
@@ -189,10 +190,6 @@ export default {
   line-height: 1.4;
 }
 
-.button-row {
-  gap: 10px;
-}
-
 .action-btn {
   text-transform: none;
   font-weight: 700;
@@ -214,5 +211,12 @@ export default {
 
 .v-chip {
   font-weight: 600;
+}
+
+.description-text {
+  font-size: 13px;
+  color: #666;
+  font-style: italic;
+  margin: 0;
 }
 </style>

@@ -1,7 +1,7 @@
 <script>
 // Fast bundhandlingsbar der bruges på hvert trin i en flertrinsformular.
-// Udtrukket for at undgå at gentage det samme to-knapslayout i
-// ItemBasicInfoStep, ItemDetailsStep og ConfirmItemScreen.
+// Udtrukket for at undgå at gentage det samme to-knapslayout på tværs af
+// ItemBasicInfoStep, ItemDetailsStep, ConfirmItemScreen og rental-flowet.
 export default {
   name: "FormBottomBar",
 
@@ -15,8 +15,15 @@ export default {
     // Viser en indlæsningsindikator på den primære knap under en asynkron handling
     nextLoading: { type: Boolean, default: false },
 
-    // Deaktiverer tilbage-knappen (fx på første trin hvor det at gå tilbage vil afslutte flowet)
+    // Deaktiverer tilbage-knappen (fx på første trin)
     backDisabled: { type: Boolean, default: false },
+
+    // Skjuler tilbage-knappen helt — bruges når siden kun har én handling
+    showBack: { type: Boolean, default: true },
+
+    // Løfter baren 64px op over AppBottomNav — bruges i flows
+    // hvor bundnavigationen er synlig (fx rental-flowet)
+    aboveNav: { type: Boolean, default: false },
   },
 
   emits: [
@@ -28,11 +35,16 @@ export default {
 
 <template>
   <!-- Fast bar i bunden; sider skal tilføje padding-bottom
-       så indhold ikke gemmes bag den -->
-  <div class="bundbar">
+       så indhold ikke gemmes bag den.
+       :style binder bottom dynamisk: 64px over AppBottomNav eller 0. -->
+  <div
+    class="bundbar"
+    :style="{ bottom: aboveNav ? '64px' : '0' }"
+  >
 
-    <!-- Sekundær: naviger til forrige trin -->
+    <!-- Sekundær: naviger til forrige trin (skjules hvis showBack er false) -->
     <v-btn
+      v-if="showBack"
       variant="tonal"
       rounded="lg"
       color="grey-darken-2"
@@ -49,6 +61,7 @@ export default {
       color="primary"
       rounded="lg"
       class="bundbar__naeste"
+      :class="{ 'bundbar__naeste--fuld': !showBack }"
       :loading="nextLoading"
       @click="$emit('next')"
     >
@@ -60,10 +73,8 @@ export default {
 
 <style scoped>
 /* ─── Barens container ───────────────────────────────────── */
-/* Fast placeret så den altid er synlig mens brugeren scroller i formularen */
 .bundbar {
   position: fixed;
-  bottom: 0;
   left: 0;
   right: 0;
   background: white;
@@ -82,11 +93,14 @@ export default {
 }
 
 /* ─── Primær næste-knap ──────────────────────────────────── */
-/* flex: 3 giver den tre fjerdedele af barens bredde
-   og gør den til den tydelige primære handling */
+/* flex: 3 giver den tre fjerdedele — eller fuld bredde hvis der er ingen tilbage-knap */
 .bundbar__naeste {
   flex: 3;
   text-transform: none;
   height: 48px !important;
+}
+
+.bundbar__naeste--fuld {
+  flex: 1;
 }
 </style>

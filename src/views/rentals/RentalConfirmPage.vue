@@ -1,9 +1,11 @@
 <script>
-import Stepper from "@/components/Stepper.vue";
+// Trin 3 i låneanmodnings-flowet — vis opsummering, accepter vilkår og send anmodning.
+import Stepper           from "@/components/Stepper.vue";
 import RentalSummaryCard from "@/components/rentals/RentalSummaryCard.vue";
-import TermsDialog from "@/components/feedback/TermsDialog.vue";
+import TermsDialog       from "@/components/feedback/TermsDialog.vue";
+import FormBottomBar     from "@/components/layout/FormBottomBar.vue";
+import SuccessDialog     from "@/components/SuccessDialog.vue";
 import { createRentalRequest } from "@/services/rentalrequest/rentalrequestservice.js";
-import SuccessDialog from "@/components/SuccessDialog.vue";
 
 
 export default {
@@ -13,23 +15,11 @@ export default {
     Stepper,
     RentalSummaryCard,
     TermsDialog,
+    FormBottomBar,
     SuccessDialog,
   },
- 
 
-  props: {
-    currentStep: Number,
-
-    rental: {
-      type: Object,
-      required: true,
-    },
-
-     item: {
-    type: Object,
-    required: true
-  }
-  },
+  inject: ["authStore", "rental"],
 
   data() {
     return {
@@ -41,63 +31,42 @@ export default {
   },
 
   methods: {
+    // Validerer vilkårsaccept, bygger request-objektet og sender det til backend.
+    // Arrays serialiseres som JSON-tekst da databasen ikke gemmer arrays direkte.
     async confirmRental() {
-    console.log("ITEM:", this.item);
+      if (!this.acceptedTerms) {
+        this.error = "Du skal acceptere vilkår og betingelser";
+        return;
+      }
 
-    if (!this.acceptedTerms) {
-      this.error = "Du skal acceptere vilkår og betingelser";
-      return;
-    }
+      this.error = "";
 
-    this.error = "";
+      try {
+        const rentalData = {
+          ItemID:              this.rental.item.id,
+          RenterUserID:        this.authStore.user.value.userID,
+          StartDate:           this.rental.startDate,
+          EndDate:             this.rental.endDate,
+          Status:              "pending",
+          MessageToLender:     this.rental.messageToLender || null,
+          SelectedAccessories: JSON.stringify(this.rental.accessories ?? []),
+          PickupTimes:         JSON.stringify(this.rental.pickupTime ?? []),
+        };
 
-    try {
+        await createRentalRequest(rentalData);
+        this.showSuccessDialog = true;
+      } catch (err) {
+        console.error(err);
+        this.error = "Kunne ikke sende låneanmodning";
+      }
+    },
 
-      const rentalData = {
-       ItemID: this.item.id,
-        RenterUserID: 2,
-
-      StartDate: this.rental.startDate,
-     EndDate: this.rental.endDate,
-
-     Status: "pending",
-      };
-
-     await createRentalRequest(rentalData);
-
-this.showSuccessDialog = true;
-
-    } catch (err) {
-      console.error(err);
-
-      this.error =
-        "Kunne ikke sende låneanmodning";
-    }
+    // Lukker success-dialogen og navigerer til community
+    handleSuccessBack() {
+      this.showSuccessDialog = false;
+      this.$router.push({ name: "community" });
+    },
   },
-  handleSuccessBack() {
-  this.showSuccessDialog = false;
-  this.$emit("rental-confirmed");
-},
-
-   
-/*   confirmRental() {
-    if (!this.acceptedTerms) {
-        console.log("CONFIRM CLICKED"); // <-- add this first
-      this.error = "Du skal acceptere vilkår og betingelser";
-      return;
-    }
-
-    this.error = "";
-
-    console.log("Rental confirmed:", this.rental);
-
-    // instead of alert:
-    this.$emit("rental-confirmed");
-  }, */
-
-  },
-
-  emits: ["goBack", "rental-confirmed"],
 };
 </script>
 
@@ -107,7 +76,7 @@ this.showSuccessDialog = true;
 
     <!-- Stepper -->
     <Stepper
-      :currentStep="currentStep"
+      :currentStep="3"
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
   
@@ -121,7 +90,7 @@ this.showSuccessDialog = true;
     <!-- Summary card -->
     <RentalSummaryCard
       :rental="rental"
-       :item="item"
+      :item="rental.item"
     />
 
     <!-- Terms -->
@@ -144,40 +113,17 @@ this.showSuccessDialog = true;
 
 
     <!-- Error -->
-    <div
-      v-if="error"
-      class="error-text"
-    >
+    <p v-if="error" role="alert" class="error-text">
       {{ error }}
-    </div>
+    </p>
 
-    <!-- Buttons -->
-    <div class="bottom-bar">
-
-      <v-btn
-        variant="tonal"
-        rounded="lg"
-        color="grey-darken-2"
-        class="back-button"
-        @click="$emit('goBack')"
-      >
-        <v-icon start size="18">
-          mdi-chevron-left
-        </v-icon>
-
-        Tilbage
-      </v-btn>
-
-      <v-btn
-        color="primary"
-        rounded="lg"
-        class="create-button"
-        @click="confirmRental"
-      >
-        Bekræft lån
-      </v-btn>
-
-    </div>
+    <!-- Bundbar — "Bekræft lån" kalder confirmRental der validerer og sender anmodningen -->
+    <FormBottomBar
+      next-label="Bekræft lån"
+      :above-nav="true"
+      @back="$router.push({ name: 'rental-step-2' })"
+      @next="confirmRental"
+    />
      <SuccessDialog
   v-model="showSuccessDialog"
   title="Låneanmodning sendt!"
@@ -192,32 +138,6 @@ this.showSuccessDialog = true;
 
 <style scoped>
 
-.bottom-bar {
-  position: fixed;
-  bottom: 64px;
-  left: 0;
-  right: 0;
-  background: white;
-  border-top: 1px solid #e5e7eb;
-
-  padding: 16px;
-
-  display: flex;
-  gap: 12px;
-}
-
-.back-button {
-  flex: 1;
-  text-transform: none;
-  height: 48px !important;
-}
-
-.create-button {
-  flex: 3;
-  text-transform: none;
-  height: 48px !important;
-}
-
 .error-text {
   color: #B00020;
   font-size: 14px;
@@ -229,6 +149,7 @@ this.showSuccessDialog = true;
   text-decoration: underline;
   cursor: pointer;
 }
+
 .page {
   padding-bottom: 180px;
 }

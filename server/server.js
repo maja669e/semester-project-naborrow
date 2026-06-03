@@ -55,7 +55,7 @@ db.sequelize.authenticate()
   });
 
 // Sync database
-db.sequelize.sync()
+db.sequelize.sync({ alter: true })
   .then(() => {
     console.log("Synced db.");
   })

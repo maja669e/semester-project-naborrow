@@ -1,9 +1,12 @@
 <script>
+// Flervalgs-tidsvælger til afhentning.
+// Bruger v-model med et array — klik på en tidsblok tilføjer eller fjerner den fra valget.
 export default {
   name: "PickupTimeSelector",
 
   props: {
-    modelValue: String,
+    // Arrayet af valgte tidsblokke, styret af forælderen via v-model
+    modelValue: Array,
   },
 
   emits: ["update:modelValue"],
@@ -11,17 +14,22 @@ export default {
   data() {
     return {
       options: [
-        { label: "Morgen", time: "Kl. 6:00–9:00" },
-        { label: "Formiddag", time: "Kl. 9:00–12:00" },
+        { label: "Morgen",      time: "Kl. 6:00–9:00"   },
+        { label: "Formiddag",   time: "Kl. 9:00–12:00"  },
         { label: "Eftermiddag", time: "Kl. 12:00–17:00" },
-        { label: "Aften", time: "Kl. 17:00–21:00" },
+        { label: "Aften",       time: "Kl. 17:00–21:00" },
       ],
     };
   },
 
   methods: {
+    // Tilføjer eller fjerner tidsblokken fra arrayet — toggler valget
     select(option) {
-      this.$emit("update:modelValue", option.label);
+      const current = this.modelValue ?? [];
+      const updated = current.includes(option.label)
+        ? current.filter((l) => l !== option.label)
+        : [...current, option.label];
+      this.$emit("update:modelValue", updated);
     },
   },
 };
@@ -34,13 +42,13 @@ export default {
       v-for="option in options"
       :key="option.label"
       class="pickup-card"
-      :class="{ active: modelValue === option.label }"
+      :class="{ active: modelValue?.includes(option.label) }"
       @click="select(option)"
       rounded="xl"
       elevation="1"
     >
-      <div class="title">{{ option.label }}</div>
-      <div class="subtitle">{{ option.time }}</div>
+      <p class="title">{{ option.label }}</p>
+      <p class="subtitle">{{ option.time }}</p>
     </v-card>
 
   </div>
