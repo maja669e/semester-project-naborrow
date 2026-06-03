@@ -57,7 +57,7 @@ export default {
     async fetchItems() {
       this.isLoading = true;
       try {
-        const userId = authStore.user.value.userID;
+        const userId = this.authStore.user.value.userID;
         const data = await getItemsByUser(userId);
         this.itemsList = data.map((item) => ({
           id:          item.ItemID,
@@ -135,7 +135,7 @@ export default {
 
     async loadDashboardCounts() {
       try {
-        const userId = authStore.user.value.userID;
+        const userId = this.authStore.user.value.userID;
         const pending = await getPendingCountByOwner(userId);
         this.pendingRequests = pending.count;
       } catch (err) {
