@@ -1,9 +1,14 @@
+// Controller til genstande — håndterer oprettelse, hentning, opdatering og sletning.
+// findByUser inkluderer låneanmodninger og udlejninger for at beregne isCurrentlyRented,
+// så frontend kan vise korrekt status (Tilgængelig / Udlånt / Inaktiv).
 const db = require("../models");
 
-const Item = db.items;
-const ItemImage = db.itemImages;
-const Category = db.categories;
+const Item          = db.items;
+const ItemImage     = db.itemImages;
+const Category      = db.categories;
 const ItemAccessory = db.itemAccessories;
+const RentalRequest = db.rentalRequests;
+const Rental        = db.rentals;
 
 // CREATE item (optionally with images)
 exports.create = async (req, res) => {
@@ -61,7 +66,7 @@ exports.findAll = async (req, res) => {
 };
 
 
-//Find all items by a specific user (with images)
+//Find all items by a specific user (with images + active rental status)
 exports.findByUser = async (req, res) => {
   const userId = req.params.userId;
 
@@ -83,11 +88,33 @@ exports.findByUser = async (req, res) => {
         {
           model: ItemAccessory,
           as: "accessories"
+        },
+        {
+          model: RentalRequest,
+          as: "rentalRequests",
+          required: false,
+          include: [
+            {
+              model: Rental,
+              as: "rental",
+              required: false
+            }
+          ]
         }
       ]
     });
 
-    res.send(items);
+    // Beregn isCurrentlyRented for hver genstand:
+    // true hvis der findes en godkendt anmodning med et aktivt lån
+    const result = items.map(item => {
+      const data = item.toJSON();
+      const isCurrentlyRented = data.rentalRequests?.some(
+        req => req.Status === "approved" && req.rental?.Status === "active"
+      );
+      return { ...data, isCurrentlyRented };
+    });
+
+    res.send(result);
 
   } catch (err) {
     res.status(500).send({

@@ -1,37 +1,51 @@
 <script>
 // Trin 1 i låneanmodnings-flowet — vælg låneperiode og afhentningstidspunkt.
-import Stepper            from "@/components/Stepper.vue";
-import CalendarPicker     from "@/components/rentals/CalendarPicker.vue";
-import PeriodSummary      from "@/components/rentals/PeriodSummary.vue";
-import PickupTimeSelector from "@/components/rentals/PickupTimeSelector.vue";
-import FormBottomBar      from "@/components/layout/FormBottomBar.vue";
+// Modtager item og initialData fra RentalView så formularen gendannes
+// korrekt hvis brugeren trykker tilbage fra trin 2.
+import MultiStepFormHeader from "@/components/layout/MultiStepFormHeader.vue";
+import CalendarPicker      from "@/components/rentals/CalendarPicker.vue";
+import PeriodSummary       from "@/components/rentals/PeriodSummary.vue";
+import PickupTimeSelector  from "@/components/rentals/PickupTimeSelector.vue";
+import FormBottomBar       from "@/components/layout/FormBottomBar.vue";
 
 export default {
-  name: "RentalPageOne",
+  name: "RentalStepOne",
 
   components: {
-    Stepper,
+    MultiStepFormHeader,
     CalendarPicker,
     PeriodSummary,
     PickupTimeSelector,
     FormBottomBar,
   },
 
-  inject: ["rental", "saveRentalStep1"],
+  props: {
+    // Det aktuelle trin sendt videre til MultiStepFormHeader
+    currentStep: { type: Number, default: 1 },
+
+    // Genstanden der ønskes lånt — bruges til maxDays-validering
+    item: { type: Object, default: () => ({}) },
+
+    // Tidligere udfyldte data fra RentalView.
+    // Bruges til at gendanne formens tilstand hvis brugeren går tilbage.
+    initialData: { type: Object, default: () => ({}) },
+  },
 
   data() {
     return {
-      startDate: "",
-      endDate: "",
-      pickupTime: [],
+      // Gendannes fra initialData hvis brugeren er vendt tilbage fra trin 2
+      startDate:  this.initialData.startDate  || "",
+      endDate:    this.initialData.endDate    || "",
+      pickupTime: this.initialData.pickupTime?.length
+        ? [...this.initialData.pickupTime]
+        : [],
 
       errors: {
-        dates: "",
+        dates:      "",
         pickupTime: "",
       },
     };
   },
-
 
   methods: {
     // Validerer at datoer og mindst ét afhentningstidspunkt er valgt,
@@ -47,29 +61,27 @@ export default {
         return false;
       }
 
-      this.errors.dates = "";
+      this.errors.dates      = "";
       this.errors.pickupTime = "";
 
       const s = new Date(this.startDate);
       s.setHours(0, 0, 0, 0);
       const e = new Date(this.endDate);
       e.setHours(0, 0, 0, 0);
-
       const diffDays = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
 
-      if (this.rental.item?.maxDays && diffDays > this.rental.item.maxDays) {
-        this.errors.dates = `Maks ${this.rental.item.maxDays} dage`;
+      if (this.item?.maxDays && diffDays > this.item.maxDays) {
+        this.errors.dates = `Maks ${this.item.maxDays} dage`;
         return false;
       }
 
       return true;
     },
 
-    // Validerer og kalder den injekterede saveRentalStep1 fra App.vue
+    // Validerer og sender data op til RentalView via emit
     next() {
       if (!this.validate()) return;
-
-      this.saveRentalStep1({
+      this.$emit("next-step", {
         startDate:  this.startDate,
         endDate:    this.endDate,
         pickupTime: this.pickupTime,
@@ -77,51 +89,55 @@ export default {
     },
   },
 };
-
-
 </script>
 
 <template>
 
-  <v-container class="pa-4 page">
+  <v-container class="pa-4 laanflow-container">
 
-    <Stepper
-      :currentStep="1"
+    <!-- Formularhoved med titel og trinindikator -->
+    <MultiStepFormHeader
+      title="Låneanmodning"
+      :currentStep="currentStep"
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
 
     <h2>Vælg låneperiode</h2>
 
-    <CalendarPicker
-      v-model:startDate="startDate"
-      v-model:endDate="endDate"
-      :maxDays="rental.item?.maxDays"
-    />
+    <!-- Datoperiode -->
+    <section aria-labelledby="periode-overskrift">
+      <h3 id="periode-overskrift" class="sr-only">Datoperiode</h3>
 
-    <PeriodSummary
-      :startDate="startDate"
-      :endDate="endDate"
-      :maxDays="rental.item?.maxDays"
-    />
-    <p v-if="errors.dates" role="alert" class="error-text">
-      {{ errors.dates }}
-    </p>
+      <CalendarPicker
+        v-model:startDate="startDate"
+        v-model:endDate="endDate"
+        :maxDays="item?.maxDays"
+      />
 
-    
-<section class="pickuptime">
-  <h3>Vælg afhentningstidspunkt</h3>
-  <p>Vælg det tidspunkt der passer dig</p>
-<PickupTimeSelector
-  v-model="pickupTime"
-/>
+      <PeriodSummary
+        :startDate="startDate"
+        :endDate="endDate"
+        :maxDays="item?.maxDays"
+      />
 
-<p v-if="errors.pickupTime" role="alert" class="error-text">
-  {{ errors.pickupTime }}
-</p>
-</section>
+      <p v-if="errors.dates" role="alert" class="fejltekst">
+        {{ errors.dates }}
+      </p>
+    </section>
 
+    <!-- Afhentningstidspunkt -->
+    <section aria-labelledby="afhentning-overskrift" class="mt-8">
+      <h3 id="afhentning-overskrift">Vælg afhentningstidspunkt</h3>
+      <p>Vælg det tidspunkt der passer dig</p>
 
-    <!-- Bundbar uden tilbage-knap — brugeren kom hertil ved at trykke på en genstand -->
+      <PickupTimeSelector v-model="pickupTime" />
+
+      <p v-if="errors.pickupTime" role="alert" class="fejltekst">
+        {{ errors.pickupTime }}
+      </p>
+    </section>
+
+    <!-- Bundbar uden tilbage-knap — brugeren kom hertil fra en genstandsside -->
     <FormBottomBar
       next-label="Næste"
       :show-back="false"
@@ -134,17 +150,26 @@ export default {
 </template>
 
 <style scoped>
+/* padding-bottom sikrer at indhold ikke skjules bag den faste FormBottomBar og AppBottomNav */
+.laanflow-container {
+  padding-bottom: calc(128px + env(safe-area-inset-bottom));
+}
 
-.error-text {
+/* Skjuler tekst visuelt men beholder den for skærmlæsere */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.fejltekst {
   color: #B00020;
   font-size: 14px;
   margin-top: 4px;
-}
-
-.pickuptime {
-  margin-top: 32px;
-}
-.page {
-  padding-bottom: 200px; /* space for bottom button */
 }
 </style>

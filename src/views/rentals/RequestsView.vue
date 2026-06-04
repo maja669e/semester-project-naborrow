@@ -77,7 +77,7 @@ export default {
       </v-col>
     </v-row>
 
-    <!-- LOADING -->
+    <!-- Indlæsningsindikator -->
     <v-row v-if="loading">
       <v-col cols="12" class="text-center">
         <v-progress-circular indeterminate color="primary" />
@@ -93,7 +93,7 @@ export default {
       </v-col>
     </v-row>
 
-    <!-- LIST -->
+    <!-- Liste af anmodninger -->
     <v-row v-else dense>
       <v-col
         v-for="req in requests"

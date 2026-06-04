@@ -1,13 +1,16 @@
 <script>
+// Tilbehørsvælger til låneanmodnings-flowet.
+// Viser genstandens tilbehør som klikbare knapper og toggler valget via v-model.
 export default {
   name: "PickAccessories",
 
   props: {
+    // Array af allerede valgte tilbehørsnavn — styres via v-model
     modelValue: {
       type: Array,
       default: () => [],
     },
-
+    // Alle tilgængelige tilbehørsmuligheder for den valgte genstand
     accessories: {
       type: Array,
       default: () => [],
@@ -19,6 +22,7 @@ export default {
   ],
 
   methods: {
+    // Tilføj eller fjern tilbehør fra det valgte array
     toggleAccessory(accessory) {
       const updated = [...this.modelValue];
 
@@ -33,6 +37,7 @@ export default {
       this.$emit("update:modelValue", updated);
     },
 
+    // Returnerer om et bestemt tilbehør er valgt
     isSelected(accessory) {
       return this.modelValue.includes(accessory);
     },

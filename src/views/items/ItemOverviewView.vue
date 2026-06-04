@@ -67,7 +67,10 @@ export default {
             item.category?.CategoryName ||
             String(item.CategoryID),
           brand:       item.Brand,
-          status:      item.IsActive ? "Tilgængelig" : "Inaktiv",
+          // Tre-vejs status: ejer deaktiveret → Inaktiv, aktivt udlånt → Udlånt, ellers → Tilgængelig
+          status:      !item.IsActive         ? "Inaktiv"
+                     : item.isCurrentlyRented ? "Udlånt"
+                     :                          "Tilgængelig",
           image:       this.resolveImageUrl(item.images?.[0]?.ImageURL),
           rawImage:    item.images?.[0]?.ImageURL,
           condition:   item.Condition,

@@ -1,4 +1,7 @@
 <script>
+// Udforsk-visning der viser genstande tilhørende alle andre brugere.
+// Egne genstande filtreres fra så brugeren ikke kan låne af sig selv.
+// Klik på et kort åbner detaljeskærmen med mulighed for at starte låneanmodning.
 import { getAllItems } from '@/services/items/itemservice.js'
 import ItemDetailCard from '@/components/items/ItemDetailCard.vue'
 
@@ -10,7 +13,7 @@ export default {
         return {
             items: [],
             error: null,
-            selectedItem: null,
+            selectedItem: null,  // Den genstand der vises i detaljeskærmen
         }
     },
     components: {
@@ -20,12 +23,13 @@ export default {
     inject: ['authStore', 'startRentalFlow'],
 
     methods: {
+        // Bygger en fuld billed-URL fra en rå server-sti eller base64-streng
         resolveImageUrl(rawUrl) {
             if (!rawUrl) {
                 return 'https://placehold.co/400x300'
                 }
-                
-                // BASE64 billeder
+
+                // BASE64-billeder returneres direkte
                 if (rawUrl.startsWith('data:')) {
                     return rawUrl
                 }
@@ -35,15 +39,15 @@ export default {
                     return rawUrl
                 }
 
-                // Lokale uploads
+                // Lokale uploads samles med backend-baseurl
                 return `http://localhost:8080/${rawUrl.replace(/^\/+/, '')}`
         },
 
+        // Hent alle genstande og filtrer brugerens egne fra
         async fetchItems() {
 
             try {
                 const data = await getAllItems()
-                console.log(data)
 
                 const myId = this.authStore.user.value.userID;
                 this.items = data
@@ -54,10 +58,11 @@ export default {
                 }))
                 } catch (err) {
                     console.error(err)
-                    this.error = 'Kunne ikke hente items'
-                } 
+                    this.error = 'Kunne ikke hente genstande'
+                }
         },
 
+        // Map API-data til det format ItemDetailCard forventer og åbn detaljeskærmen
         openItem(item) {
             this.selectedItem = {
                 id: item.ItemID,
@@ -73,6 +78,7 @@ export default {
                 ) || [],
             }
         },
+        // Start låneanmodnings-flowet med den aktuelt valgte genstand
         openRentalFlow() {
             this.startRentalFlow(this.selectedItem)
         },
@@ -87,7 +93,7 @@ export default {
 
 <main class="page">
 
-    <!-- DETAIL PAGE -->
+    <!-- Detaljeside for den valgte genstand -->
     <section v-if="selectedItem">
 
         <v-btn
@@ -104,7 +110,7 @@ export default {
 
     </section>
 
-    <!-- OVERVIEW PAGE -->
+    <!-- Oversigtsside med kortgitter af genstande -->
     <section v-else>
 
         <h1 class="page-title">

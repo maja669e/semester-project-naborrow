@@ -42,7 +42,7 @@ export const getAllRentalRequests = async () => {
 };
 
 
-// Get pending count for owner dashboard box
+// Hent antal afventende anmodninger til dashboard-boksen på ejers oversigt
 export const getPendingCountByOwner = async (userId) => {
   const res = await fetch(`${BASE_URL}/api/rentalRequests/owner/${userId}/pending-count`);
 
@@ -51,7 +51,7 @@ export const getPendingCountByOwner = async (userId) => {
   return res.json();
 };
 
-// Get all pending requests for owner (for page later)
+// Hent alle afventende anmodninger for ejeren — bruges på anmodningssiden
 export const getPendingRequestsByOwner = async (userId) => {
   const res = await fetch(`${BASE_URL}/api/rentalRequests/owner/${userId}/pending`);
 
@@ -60,7 +60,7 @@ export const getPendingRequestsByOwner = async (userId) => {
   return res.json();
 };
 
-// Accept request
+// Godkend en låneanmodning
 export const acceptRentalRequest = async (id) => {
   const res = await fetch(`${BASE_URL}/api/rentalRequests/${id}/accept`, {
     method: "PUT",
@@ -71,7 +71,7 @@ export const acceptRentalRequest = async (id) => {
   return res.json();
 };
 
-// Reject request
+// Afvis en låneanmodning
 export const rejectRentalRequest = async (id) => {
   const res = await fetch(`${BASE_URL}/api/rentalRequests/${id}/reject`, {
     method: "PUT",

@@ -1,13 +1,18 @@
 <script>
+// Detaljekort for en enkelt genstand i Udforsk-visningen.
+// Viser billede, titel, stand, maks låneperiode og tilbehør.
+// showRentalButton styrer om "Anmod om lån"-knappen er synlig
+// (true i ExploreView, false i egne genstande).
 export default {
     name: 'ItemDetailCard',
 
   props: {
+    // Genstandsobjektet med alle felter (title, image, status m.fl.)
     item: {
         type: Object,
         required: true
     },
-
+    // Viser "Anmod om lån"-knappen når true
     showRentalButton: {
         type: Boolean,
         default: false
@@ -16,6 +21,7 @@ export default {
 emits: ['requestLoan'],
 
     computed: {
+        // Oversætter status-tekst til CSS-modifikatorklasse for farvekodning
         statusClass() {
             if (this.item.status === 'Tilgængelig') return 'status-tilgaengelig'
             if (this.item.status === 'Udlånt') return 'status-udlaant'
@@ -24,7 +30,8 @@ emits: ['requestLoan'],
             return ''
         },
 
-     accessoriesList() {
+        // Returnerer tilbehørslisten eller et tomt array
+        accessoriesList() {
         return this.item.accessories || []
         }
     }
@@ -35,7 +42,7 @@ emits: ['requestLoan'],
 
 <article class="detail-card">
 
-    <!-- IMAGE -->
+    <!-- Billede og statusmærke -->
     <figure class="image-wrapper">
 
         <img
@@ -50,7 +57,7 @@ emits: ['requestLoan'],
 
     </figure>
 
-    <!-- CONTENT -->
+    <!-- Titel og metadata -->
     <section class="detail-content">
 
         <h1 class="detail-title">
@@ -68,10 +75,10 @@ emits: ['requestLoan'],
         </p>
 
     </section>
-<!-- TOP INFO BOXES -->
+<!-- Infobokse: maks låneperiode og stand -->
 <section class="detail-boxes">
 
-    <!-- MAX DAYS -->
+    <!-- Maks låneperiode -->
     <div class="detail-box">
 
         <span class="detail-box-label">
@@ -88,7 +95,7 @@ emits: ['requestLoan'],
 
     </div>
 
-    <!-- CONDITION -->
+    <!-- Stand -->
     <div
         v-if="item.condition"
         class="detail-box"
@@ -106,7 +113,7 @@ emits: ['requestLoan'],
 
 </section>
 
-<!-- ACCESSORIES -->
+<!-- Tilbehørsliste (vises kun hvis genstanden har tilbehør) -->
 <section
     v-if="accessoriesList.length"
     class="detail-accessories"
@@ -132,7 +139,7 @@ emits: ['requestLoan'],
 
 </article>
 
-<!-- RENTAL BUTTON -->
+<!-- Låneanmodningsknap (vises kun i Udforsk-visningen) -->
 <section
     v-if="showRentalButton"
     class="rental-action"

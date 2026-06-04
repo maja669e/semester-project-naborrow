@@ -1,17 +1,13 @@
-/**
- * plugins/vuetify.js
- *
- * Framework documentation: https://vuetifyjs.com`
- */
+// plugins/vuetify.js
+// Konfigurerer Vuetify med LÅKALs designtema og farvepalette.
 
-// Composables
+// Vuetify fabriksfunktion
 import { createVuetify } from 'vuetify'
-// Styles
+// MDI-ikoner
 import '@mdi/font/css/materialdesignicons.css'
-
+// Vuetify basestile
 import 'vuetify/styles'
 
-// https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
 export default createVuetify({
   theme: {
     defaultTheme: 'light',

@@ -1,9 +1,11 @@
 <script>
+// Til/fra-knap der styrer om en genstand er synlig for lejere.
+// v-model bruger Number (1/0) da databasen gemmer feltet som tinyint.
 export default {
   name: 'ToggleButton',
   props: {
     modelValue: {
-      type: Number, // 1 or 0 from backend (active/inactive da vi bruger tinyint)
+      type: Number, // 1 = aktiv (synlig), 0 = inaktiv (skjult) — tinyint fra databasen
       required: true
     }
   },
@@ -24,7 +26,7 @@ export default {
 <template>
   <v-card class="pa-3 d-flex align-center justify-space-between" rounded="xl" elevation="0">
     
-    <!-- LEFT SIDE -->
+    <!-- Venstre side: ikon og hjælpetekst -->
     <div class="d-flex align-center ga-3">
       
       <!-- Øjeikon skifter om aktivt eller ej -->
@@ -44,7 +46,7 @@ export default {
 
     </div>
 
-    <!-- The toggle button/switch (vuetify object)-->
+    <!-- Til/fra-knap (Vuetify v-switch) -->
     <v-switch
       v-model="isActive"
       inset

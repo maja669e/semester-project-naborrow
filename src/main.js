@@ -1,19 +1,16 @@
-/**
- * main.ts
- *
- * Bootstraps Vuetify and other plugins then mounts the App`
- */
+// Startpunkt for LÅKAL SPA.
+// Registrerer alle plugins og monterer rod-komponenten i DOM'en.
 
-// Composables
+// Vue kernebibliotek
 import { createApp } from 'vue'
 
-// Plugins
+// Plugin-registrering (Vuetify, router m.fl.)
 import { registerPlugins } from '@/plugins/index.js'
 
-// Components
+// Rod-komponent
 import App from './App.vue'
 
-// Styles
+// Fonte
 import 'unfonts.css'
 
 // Design system CSS variabler

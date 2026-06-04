@@ -1,13 +1,15 @@
 <script>
-import Stepper from "@/components/Stepper.vue";
+import MultiStepFormHeader from "@/components/layout/MultiStepFormHeader.vue";
+import FormBottomBar       from "@/components/layout/FormBottomBar.vue";
 import { createItem, createAccessory } from "../services/items/itemservice.js";
 import { authStore } from "@/stores/auth.js";
 
 export default {
   name: "ConfirmItemScreen",
-  emits: ["goBack", "createItem", "goToGenstandPage", "item-created"],
+  emits: ["goBack", "item-created"],
   components: {
-    Stepper,
+    MultiStepFormHeader,
+    FormBottomBar,
   },
   props: {
     currentStep: {
@@ -96,12 +98,12 @@ export default {
                 AccessoryName: extra,
               });
             } catch (accErr) {
-              // accessory creation failed for this item — continue with others
+              // Tilbehørsoprettelse fejlede — fortsæt med de øvrige
             }
           }
         }
 
-        // Succes - emit new item id so parent can show it
+        // Succes – udløs event med det nye genstandsid til forælderen
         this.$emit("item-created", newItemId);
 
       } catch (err) {
@@ -116,21 +118,16 @@ export default {
 </script>
 
 <template>
-  <v-container class="pa-4">
-    <!-- Top bar -->
-    <v-toolbar flat color="white" class="top-toolbar">
-      <v-toolbar-title class="text-center font-weight-bold">
-        Opret ny genstand
-      </v-toolbar-title>
-      <div style="width: 40px"></div>
-    </v-toolbar>
+  <v-container class="pa-4 bekraeft-container">
 
-    <v-divider />
+    <!-- Formularhoved med titel og trinindikator -->
+    <MultiStepFormHeader
+      title="Opret ny genstand"
+      :currentStep="currentStep"
+      :steps="['Grundinfo', 'Detaljer', 'Forhåndsvisning']"
+    />
 
-    <!-- Stepper -->
-    <Stepper :currentStep="currentStep" :steps="['Grundinfo', 'Detaljer', 'Forhåndsvisning']" />
-
-    <!-- Content -->
+    <!-- Indhold: genstandsoplysninger til forhåndsvisning -->
     <v-card-text class="px-5 pt-2 pb-8 text">
       <h2 class="text-h6 font-weight-bold mb-1">Tjek og bekræft</h2>
       <p class="text-body-2 text-medium-emphasis mb-5 text-body">
@@ -138,10 +135,10 @@ export default {
         felter direkte.
       </p>
 
-      <!-- Error besked -->
+      <!-- Fejlbesked -->
       <div v-if="error" class="error-text mb-4">{{ error }}</div>
 
-      <!-- Images -->
+      <!-- Billeder -->
       <div class="section-title mb-3">Billeder</div>
       <div class="image-row mb-5">
         <div v-if="item?.images?.length">
@@ -160,7 +157,7 @@ export default {
         </div>
       </div>
 
-      <!-- Info cards -->
+      <!-- Informationskort med genstandsfelter -->
       <div class="info-list">
         <v-card
           v-for="field in fields"
@@ -182,50 +179,22 @@ export default {
       </div>
     </v-card-text>
 
-    <!-- Bottom buttons -->
-    <div class="bottom-bar">
-      <v-btn
-        variant="tonal"
-        rounded="lg"
-        color="grey-darken-2"
-        class="back-button"
-        @click="$emit('goBack')"
-        :disabled="loading"
-      >
-        <v-icon start size="18">mdi-chevron-left</v-icon>
-        Tilbage
-      </v-btn>
+    <!-- Bundknapper: tilbage og opret -->
+    <FormBottomBar
+      next-label="Opret genstand"
+      :next-loading="loading"
+      :back-disabled="loading"
+      @back="$emit('goBack')"
+      @next="handleCreate"
+    />
 
-      <v-btn
-        color="primary"
-        rounded="lg"
-        class="create-button"
-        @click="handleCreate"
-        :loading="loading"
-      >
-        Opret genstand
-      </v-btn>
-    </div>
   </v-container>
 </template>
 
 <style scoped>
-.preview-page {
-  padding: 16px;
-  background: #f5f5f5;
-}
-
-.preview-card {
-  width: 100%;
-  background: #fff;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: none;
-  min-height: auto;
-}
-
-.top-toolbar {
-  min-height: 56px;
+/* padding-bottom sikrer at indhold ikke skjules bag den faste FormBottomBar */
+.bekraeft-container {
+  padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
 .section-title {
@@ -279,30 +248,6 @@ export default {
   font-weight: 500;
 }
 
-.bottom-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: white;
-  border-top: 1px solid #e5e7eb;
-  padding: 16px;
-  display: flex;
-  gap: 12px;
-
-}
-
-.back-button {
-  flex: 1;
-  text-transform: none;
-  height: 48px !important;
-}
-
-.create-button {
-  flex: 3;
-  text-transform: none;
-  height: 48px !important;
-}
 .text {
   font-family: "Roboto", sans-serif;
   color: #000000;

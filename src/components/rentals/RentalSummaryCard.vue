@@ -58,7 +58,7 @@ export default {
   const startDate = new Date(start);
   const endDate = new Date(end);
 
-  // normalize to remove time differences
+  // Nulstil tidspunkt til midnat for at undgå tidszoneforskydninger
   startDate.setHours(0, 0, 0, 0);
   endDate.setHours(0, 0, 0, 0);
 
@@ -82,7 +82,7 @@ export default {
   >
 
     <v-card-text>
-      <!-- ITEM SUMMARY -->
+      <!-- Genstandsresumé: billede, titel og kategori -->
 
 <div class="item-summary">
 

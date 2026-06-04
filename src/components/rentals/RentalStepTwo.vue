@@ -1,31 +1,46 @@
 <script>
 // Trin 2 i låneanmodnings-flowet — vælg tilbehør og skriv besked til udlåner.
-import Stepper         from "@/components/Stepper.vue";
-import PickAccessories from "@/components/rentals/PickAccessories.vue";
-import FormBottomBar   from "@/components/layout/FormBottomBar.vue";
+// Modtager item og initialData fra RentalView så formularen gendannes
+// korrekt hvis brugeren trykker tilbage fra trin 3.
+import MultiStepFormHeader from "@/components/layout/MultiStepFormHeader.vue";
+import PickAccessories     from "@/components/rentals/PickAccessories.vue";
+import FormBottomBar       from "@/components/layout/FormBottomBar.vue";
 
 export default {
-  name: "RentalPageTwo",
+  name: "RentalStepTwo",
 
   components: {
-    Stepper,
+    MultiStepFormHeader,
     PickAccessories,
     FormBottomBar,
   },
 
-  inject: ["rental", "saveRentalStep2"],
+  props: {
+    // Det aktuelle trin sendt videre til MultiStepFormHeader
+    currentStep: { type: Number, default: 2 },
+
+    // Genstanden der ønskes lånt — bruges til at hente tilgængeligt tilbehør
+    item: { type: Object, default: () => ({}) },
+
+    // Tidligere udfyldte data fra RentalView.
+    // Bruges til at gendanne formens tilstand hvis brugeren går tilbage.
+    initialData: { type: Object, default: () => ({}) },
+  },
 
   data() {
     return {
-      accessories: [],
-      messageToLender: "",
+      // Gendannes fra initialData hvis brugeren er vendt tilbage fra trin 3
+      accessories:     this.initialData.accessories?.length
+        ? [...this.initialData.accessories]
+        : [],
+      messageToLender: this.initialData.messageToLender || "",
     };
   },
 
   methods: {
-    // Kalder den injekterede saveRentalStep2 fra App.vue og navigerer til bekræftelse
+    // Sender valgt tilbehør og besked op til RentalView via emit
     next() {
-      this.saveRentalStep2({
+      this.$emit("next-step", {
         accessories:     this.accessories,
         messageToLender: this.messageToLender,
       });
@@ -36,37 +51,46 @@ export default {
 
 <template>
 
-  <v-container class="pa-4">
+  <v-container class="pa-4 laanflow-container">
 
-    <!-- Stepper -->
-    <Stepper
-      :currentStep="2"
+    <!-- Formularhoved med titel og trinindikator -->
+    <MultiStepFormHeader
+      title="Låneanmodning"
+      :currentStep="currentStep"
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
 
     <h2>Afhentning</h2>
 
-   <h3>Vælg ønsket tilbehør</h3>
-    <!-- Accessories -->
-    <PickAccessories
-      v-model="accessories"
-      :accessories="rental.item?.accessories"
-    />
+    <!-- Tilbehørsvalg -->
+    <section aria-labelledby="tilbehoer-overskrift">
+      <h3 id="tilbehoer-overskrift">Vælg ønsket tilbehør</h3>
 
-    <v-textarea
-  v-model="messageToLender"
-  label="Besked til udlåner"
-  placeholder="Skriv en besked..."
-  variant="outlined"
-  rounded="xl"
-  rows="4"
-  class="mt-6"
-/>
+      <PickAccessories
+        v-model="accessories"
+        :accessories="item?.accessories"
+      />
+    </section>
+
+    <!-- Besked til udlåner -->
+    <section aria-labelledby="besked-overskrift" class="mt-6">
+      <h3 id="besked-overskrift">Besked til udlåner</h3>
+
+      <v-textarea
+        v-model="messageToLender"
+        label="Besked til udlåner"
+        placeholder="Skriv en besked..."
+        variant="outlined"
+        rounded="xl"
+        rows="4"
+        class="mt-2"
+      />
+    </section>
 
     <!-- Bundbar med tilbage og næste -->
     <FormBottomBar
       :above-nav="true"
-      @back="$router.push({ name: 'rental-step-1' })"
+      @back="$emit('go-back')"
       @next="next"
     />
 
@@ -75,9 +99,8 @@ export default {
 </template>
 
 <style scoped>
-
-.page {
-  padding-bottom: 100px;
+/* padding-bottom sikrer at indhold ikke skjules bag den faste FormBottomBar og AppBottomNav */
+.laanflow-container {
+  padding-bottom: calc(128px + env(safe-area-inset-bottom));
 }
-
 </style>

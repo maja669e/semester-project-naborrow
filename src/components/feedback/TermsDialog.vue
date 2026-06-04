@@ -1,8 +1,11 @@
 <script>
+// Lånebetingelsesdialog der kræver at brugeren scroller til bunden
+// inden acceptknappen aktiveres — sikrer at vilkårene er blevet læst.
 export default {
   name: "TermsDialog",
 
   props: {
+    // Styrer om dialogen er åben via v-model
     modelValue: {
       type: Boolean,
       default: false,
@@ -13,13 +16,13 @@ export default {
 
   data() {
     return {
-      canClose: false,
+      canClose: false,  // Aktiveres når brugeren har scrollet til bunden
     };
   },
 
   watch: {
     modelValue(val) {
-      // reset every time dialog opens
+      // Nulstil rul-tilstand hver gang dialogen åbnes
       if (val) {
         this.$nextTick(() => {
           this.canClose = false;
@@ -58,12 +61,12 @@ export default {
     <v-card class="terms-dialog">
 
 
-        <!-- HEADER -->
+        <!-- Dialogoverskrift -->
       <header class="header">
         <h1 class="title">Vilkår for lån</h1>
         <p class="subtitle">Sidst opdateret: 18. maj 2026</p>
       </header>
-   <!-- CONTENT -->
+   <!-- Rulleindhold med vilkårene — acceptknap aktiveres ved bunden -->
       <section class="content" @scroll="handleScroll">
 
         <p>
@@ -154,7 +157,7 @@ export default {
 
       </section>
 
-        <!-- BUTTON -->
+        <!-- Acceptknap — deaktiveret indtil brugeren har scrollet til bunden -->
          <footer class="footer-actions">
        <v-btn
          color="primary"
@@ -174,7 +177,7 @@ export default {
 </template>
 
 <style scoped>
-/* MAIN CARD — matches SuccessDialog */
+/* Kortcontainer — matcher SuccessDialog's skygge og afrunding */
 .terms-dialog {
   background: #ffffff;
   border-radius: 12px;
@@ -189,7 +192,7 @@ export default {
   overflow: hidden;
 }
 
-/* HEADER */
+/* Overskriftssektion */
 .header {
   text-align: center;
   padding: 20px 20px 10px;
@@ -208,7 +211,7 @@ export default {
   margin: 6px 0 0;
 }
 
-/* SCROLL AREA */
+/* Rulleområde med vilkårenes tekst */
 .content {
   padding: 0 20px;
   max-height: 55vh;
@@ -223,14 +226,14 @@ export default {
   font-weight: 600;
 }
 
-/* FOOTER */
+/* Bundtekst med kontaktoplysninger */
 .footer {
   margin-top: 20px;
   font-size: 13px;
   color: #666;
 }
 
-/* BUTTON AREA */
+/* Knapområde i bunden af dialogen */
 .footer-actions {
   padding: 16px 20px 20px;
 }

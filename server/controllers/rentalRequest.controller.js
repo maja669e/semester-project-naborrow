@@ -1,6 +1,10 @@
+// Controller til låneanmodninger — håndterer oprettelse, hentning, godkendelse og afvisning.
+// Når en anmodning godkendes oprettes samtidig en Rental-record så genstandens status
+// kan beregnes korrekt i item.controller.js (isCurrentlyRented).
 const db = require("../models");
 const RentalRequest = db.rentalRequests;
-const Item = db.items;
+const Item          = db.items;
+const Rental        = db.rentals;
 
 
 exports.create = (req, res) => {
@@ -52,29 +56,50 @@ exports.getPendingCountByOwner = async (req, res) => {
 };
  
 
-// Godkend anmodning — sætter status til 'approved' (matcher SQL CHECK-constraint)
+// Godkend anmodning — sætter status til 'approved' og opretter et aktivt Rental.
+// findOrCreate bruges i stedet for create så dobbeltklik ikke kaster en UNIQUE-fejl
+// (RequestID er UNIQUE i Rental-tabellen — ét lån per anmodning).
 exports.accept = async (req, res) => {
   try {
     const id = req.params.id;
+
     await RentalRequest.update(
       { Status: "approved" },
       { where: { RentalRequestID: id } }
     );
+
     const updated = await RentalRequest.findByPk(id);
+
+    // findOrCreate: opret kun en Rental hvis den ikke allerede eksisterer
+    await Rental.findOrCreate({
+      where:    { RequestID: id },
+      defaults: { Status: "active" }
+    });
+
     res.send(updated);
   } catch (err) {
     res.status(500).send({ message: err.message });
   }
 };
 
-// Afvis anmodning — sætter status til 'rejected'
+// Afvis anmodning — sætter status til 'rejected'.
+// Hvis der allerede er oprettet en Rental (fx ved fejl), sættes den til 'cancelled'
+// så genstanden ikke forbliver markeret som udlånt.
 exports.reject = async (req, res) => {
   try {
     const id = req.params.id;
+
     await RentalRequest.update(
       { Status: "rejected" },
       { where: { RentalRequestID: id } }
     );
+
+    // Annullér eventuel aktiv Rental knyttet til denne anmodning
+    await Rental.update(
+      { Status: "cancelled" },
+      { where: { RequestID: id, Status: "active" } }
+    );
+
     const updated = await RentalRequest.findByPk(id);
     res.send(updated);
   } catch (err) {

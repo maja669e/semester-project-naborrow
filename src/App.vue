@@ -27,15 +27,10 @@ export default {
         shownItemId: null, // Id der fremhæves og scrolles til efter oprettelse
       },
 
-      // ── Udlejnings-flow (provides til rental-views via provide/inject) ──
-      // Ét objekt der deles med alle rental-views — mutations slår reaktivt igennem
+      // ── Udlejnings-flow (provides til RentalView via provide/inject) ──
+      // Kun item gemmes her — formdata akkumuleres lokalt i RentalView
       rental: {
-        item:            null,
-        startDate:       "",
-        endDate:         "",
-        pickupTime:      [],
-        accessories:     [],
-        messageToLender: "",
+        item: null,
       },
     };
   },
@@ -46,11 +41,9 @@ export default {
 
       itemCreated: this.onItemCreated,
 
-      // Udlejnings-flow – delt objekt og metoder til rental-views
+      // Udlejnings-flow – item deles med RentalView; flowet styres internt deri
       rental:          this.rental,
       startRentalFlow: this.startRentalFlow,
-      saveRentalStep1: this.saveRentalStep1,
-      saveRentalStep2: this.saveRentalStep2,
 
       // Auth – tilgængeligt i alle descendant-komponenter
       authStore,
@@ -72,7 +65,7 @@ export default {
 
     // Bundnavigationen vises kun på de primære sider (ikke på login)
     showBottomNav() {
-      return ["home", "community", "items", "rental-step-1", "rental-step-2", "rental-confirm", "requests"].includes(this.$route?.name)
+      return ["home", "community", "items", "rental", "requests"].includes(this.$route?.name)
         && authStore.isLoggedIn.value;
     },
   },
@@ -103,20 +96,7 @@ export default {
     // ── Udlejnings-flow (kaldt via inject fra rental-views) ──────────────────
     startRentalFlow(item) {
       this.rental.item = item;
-      this.$router.push({ name: "rental-step-1" });
-    },
-
-    saveRentalStep1(data) {
-      this.rental.startDate  = data.startDate;
-      this.rental.endDate    = data.endDate;
-      this.rental.pickupTime = data.pickupTime;
-      this.$router.push({ name: "rental-step-2" });
-    },
-
-    saveRentalStep2(data) {
-      this.rental.accessories     = data.accessories;
-      this.rental.messageToLender = data.messageToLender;
-      this.$router.push({ name: "rental-confirm" });
+      this.$router.push({ name: "rental" });
     },
 
     // Logger brugeren ud, lukker profilmenuen og sender til login-siden

@@ -9,10 +9,8 @@ import HomeView         from "@/views/home/HomeView.vue";
 import ExploreView      from "@/views/home/ExploreView.vue";
 import ItemOverviewView from "@/views/items/ItemOverviewView.vue";
 import CreateItemView   from "@/views/items/CreateItemView.vue";
-import RentalPageOne    from "@/views/rentals/RentalPageOne.vue";
-import RentalPageTwo    from "@/views/rentals/RentalPageTwo.vue";
-import RentalConfirmPage from "@/views/rentals/RentalConfirmPage.vue";
-import RequestsView      from "@/views/rentals/RequestsView.vue";
+import RentalView    from "@/views/rentals/RentalView.vue";
+import RequestsView  from "@/views/rentals/RequestsView.vue";
 
 const routes = [
   { path: "/login",           name: "login",          component: LoginView,         meta: { isPublic: true } },
@@ -20,9 +18,7 @@ const routes = [
   { path: "/fællesskab",      name: "community",      component: ExploreView },
   { path: "/genstande",       name: "items",          component: ItemOverviewView },
   { path: "/genstande/opret", name: "create-item",    component: CreateItemView },
-  { path: "/laan/trin-1",     name: "rental-step-1",  component: RentalPageOne },
-  { path: "/laan/trin-2",     name: "rental-step-2",  component: RentalPageTwo },
-  { path: "/laan/bekraeft",   name: "rental-confirm", component: RentalConfirmPage },
+  { path: "/laan",             name: "rental",         component: RentalView },
   { path: "/anmodninger",     name: "requests",       component: RequestsView },
 ];
 

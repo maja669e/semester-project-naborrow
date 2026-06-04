@@ -1,31 +1,38 @@
 <script>
+// Succesdialog der vises efter en vellykket handling (fx oprettelse af genstand).
+// Lukkes automatisk efter autoCloseDuration ms, eller manuelt via knappen.
 export default {
     name: 'SuccessDialog',
     data() {
         return {
             isOpen: this.modelValue,
-            autoCloseTimer: null
+            autoCloseTimer: null  // Reference til auto-luk-timeren så den kan aflyses
         }
     },
     props: {
+        // Styrer om dialogen er åben via v-model
         modelValue: {
             type: Boolean,
             default: false
         },
+        // Primær overskrift i dialogen
         title: {
             type: String,
             required: true
         },
+        // Supplerende besked under overskriften
         message: {
             type: String,
             required: true
         },
+        // Millisekunder før dialogen lukkes automatisk
         autoCloseDuration: {
             type: Number,
             default: 5000
         }
     },
     watch: {
+        // Start eller stop auto-luk-timeren når dialogen åbnes/lukkes
         modelValue(newValue) {
             this.isOpen = newValue
             if (newValue) {
@@ -36,20 +43,24 @@ export default {
         }
     },
     methods: {
+        // Luk dialogen og opdater v-model
         close() {
             this.isOpen = false
             this.$emit('update:modelValue', false)
             this.clearAutoClose()
         },
+        // Udløst af "Tilbage til oversigt"-knappen
         handleBackClick() {
             this.$emit('back-to-overview')
             this.close()
         },
+        // Start auto-luk-timer
         startAutoClose() {
             this.autoCloseTimer = setTimeout(() => {
                 this.close()
             }, this.autoCloseDuration)
         },
+        // Afbryd auto-luk-timeren
         clearAutoClose() {
             if (this.autoCloseTimer) {
                 clearTimeout(this.autoCloseTimer)
@@ -57,6 +68,7 @@ export default {
             }
         }
     },
+    // Ryd timeren så der ikke udløses opdateringer efter komponenten er fjernet
     beforeUnmount() {
         this.clearAutoClose()
     },

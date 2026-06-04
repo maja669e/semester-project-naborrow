@@ -1,4 +1,6 @@
 <script>
+// Genanvendelig bekræftelsesdialog til destruktive handlinger (fx sletning).
+// Styres via v-model (modelValue) og udsender 'confirm' eller 'cancel'.
 export default {
     name: 'ConfirmDialog',
     data() {
@@ -7,40 +9,49 @@ export default {
         }
     },
     props: {
+        // Styrer om dialogen er åben via v-model
         modelValue: {
             type: Boolean,
             default: false
         },
+        // Overskrift vist i dialogen
         title: {
             type: String,
             required: true
         },
+        // Forklarende tekst under overskriften
         message: {
             type: String,
             required: true
         },
+        // Tekst på bekræftelsesknappen
         confirmLabel: {
             type: String,
             default: 'Bekræft'
         },
+        // Viser indlæsningsindikator på bekræftelsesknappen under en asynkron handling
         loading: {
             type: Boolean,
             default: false
         }
     },
     watch: {
+        // Synkroniser intern tilstand med modelValue-prop'en
         modelValue(newValue) {
             this.isOpen = newValue
         }
     },
     methods: {
+        // Luk dialogen og opdater v-model
         close() {
             this.isOpen = false
             this.$emit('update:modelValue', false)
         },
+        // Udsend 'confirm' — forælderen afgør hvad der skal ske
         handleConfirm() {
             this.$emit('confirm')
         },
+        // Annuller og luk dialogen
         handleCancel() {
             this.$emit('cancel')
             this.close()

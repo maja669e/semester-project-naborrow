@@ -1,10 +1,14 @@
 <script>
+// Kalender-komponent til valg af låneperiode som et datointerval.
+// Bruger Vuetify v-date-picker i "range"-tilstand og validerer
+// at perioden ikke overskrider genstandens maksimale låneperiode.
 export default {
   name: "CalendarPicker",
 
   props: {
     startDate: String,
     endDate: String,
+    // Maksimal antal låndage fra genstandens data — bruges til validering
     maxDays: Number,
   },
 
@@ -12,18 +16,20 @@ export default {
 
   data() {
     return {
-      range: [],
+      range: [],  // Vuetify-datepickerens interne intervalarray
       error: "",
     };
   },
 
   methods: {
+    // Forhindrer valg af datoer i fortiden
     isAllowedDate(date) {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       return new Date(date) >= today;
     },
 
+    // Behandler valgt interval og validerer mod maksimal låneperiode
     handleRange(val) {
       if (!val?.length) return;
 
@@ -57,6 +63,7 @@ export default {
       this.$emit("update:endDate", end);
     },
 
+    // Konverterer en Date-værdi til ISO 8601-streng (YYYY-MM-DD)
     toIsoDate(date) {
       if (!date) return null;
       const d = new Date(date);
@@ -67,6 +74,7 @@ export default {
       ].join("-");
     },
 
+    // Returnerer perioderollen for en given dato: 'start', 'end', 'middle' eller null
     dayRangeRole(isoDate) {
       if (this.range.length === 0) return null;
       const start = this.toIsoDate(this.range[0]);
@@ -78,6 +86,7 @@ export default {
       return null;
     },
 
+    // Returnerer ændrede knap-props til dage i midten af perioden
     dayBtnProps(dayProps, isoDate) {
       if (this.dayRangeRole(isoDate) !== "middle") return dayProps;
       return { ...dayProps, variant: "text", color: "primary" };
@@ -147,7 +156,7 @@ export default {
   max-width: 340px;
 }
 
-/* Custom < Month Year > header */
+/* Brugerdefineret < Måned År >-header */
 .calendar-wrapper :deep(.v-date-picker-controls) {
   display: flex;
   align-items: center;
@@ -164,7 +173,7 @@ export default {
   color: inherit;
 }
 
-/* Remove default today indicator */
+/* Fjern standardmarkering for dags dato */
 .calendar-wrapper :deep(.v-date-picker-month__day-btn[aria-current="date"]) {
   box-shadow: none !important;
   border: none !important;
@@ -179,12 +188,12 @@ export default {
   background-color: rgba(84, 106, 65, 0.2) !important;
 }
 
-/* Position context for range background strips */
+/* Positioneringskontekst for periodebaggrundsstriper */
 .calendar-wrapper :deep(.v-date-picker-month__day) {
   position: relative;
 }
 
-/* Decorative strip behind the day button for range visualization */
+/* Dekorativ baggrundsstribe der visualiserer den valgte periode */
 .calendar-wrapper :deep(.range-bg) {
   position: absolute;
   top: 0;
@@ -209,20 +218,20 @@ export default {
   right: 0;
 }
 
-/* Day button sits above the range background */
+/* Dagsknap placeres over baggrundsstriberne via z-index */
 .calendar-wrapper :deep(.v-date-picker-month__day-btn) {
   position: relative;
   z-index: 1;
 }
 
-/* Start and end dates: enforce the same solid dark circle */
+/* Start- og slutdato: ensartet fyldt mørk cirkel */
 .calendar-wrapper :deep(.range-bg--start ~ .v-date-picker-month__day-btn),
 .calendar-wrapper :deep(.range-bg--end ~ .v-date-picker-month__day-btn) {
   background-color: #546a41 !important;
   color: white !important;
 }
 
-/* Middle-range days: no circle, plain number in primary color */
+/* Dage i perioden: ingen cirkel, kun tal i primærfarve */
 .calendar-wrapper :deep(.range-bg--middle ~ .v-date-picker-month__day-btn) {
   background: transparent !important;
   color: #546a41 !important;
@@ -233,7 +242,7 @@ export default {
   opacity: 0 !important;
 }
 
-/* In-range hover: subtle tint that keeps the number readable */
+/* Hover på periodedag: svag toning der bevarer læselighed */
 .calendar-wrapper :deep(.range-bg--middle ~ .v-date-picker-month__day-btn:hover) {
   background-color: rgba(84, 106, 65, 0.15) !important;
 }
