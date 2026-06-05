@@ -63,22 +63,33 @@ exports.accept = async (req, res) => {
   try {
     const id = req.params.id;
 
-    await RentalRequest.update(
-      { Status: "approved" },
-      { where: { RentalRequestID: id } }
-    );
+    const request = await RentalRequest.findByPk(id);
 
-    const updated = await RentalRequest.findByPk(id);
+    if (!request) {
+      return res.status(404).send({
+        message: "Låneanmodning ikke fundet."
+      });
+    }
 
-    // findOrCreate: opret kun en Rental hvis den ikke allerede eksisterer
-    await Rental.findOrCreate({
-      where:    { RequestID: id },
-      defaults: { Status: "active" }
+    await request.update({
+      Status: "approved"
     });
 
-    res.send(updated);
+    await Rental.findOrCreate({
+      where: {
+        RequestID: id
+      },
+      defaults: {
+        Status: "active"
+      }
+    });
+
+    res.send(request);
+
   } catch (err) {
-    res.status(500).send({ message: err.message });
+    res.status(500).send({
+      message: err.message
+    });
   }
 };
 
