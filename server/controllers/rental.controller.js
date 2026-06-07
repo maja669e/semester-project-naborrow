@@ -34,13 +34,23 @@ exports.findAll = async (req, res) => {
             include: [
                 {
                     model: RentalRequest,
-                    as: "rentalRequest"
+                    as: "rentalRequest",
+                    include: [
+                        {
+                            model: db.items,
+                            as: "item"
+                        }
+                    ]
                 }
             ]
         });
+
         res.send(rentals);
+
     } catch (err) {
-        res.status(500).send({ message: err.message });
+        res.status(500).send({
+            message: err.message
+        });
     }
 };
 
@@ -118,4 +128,36 @@ exports.deleteAll = async (req, res) => {
     } catch (err) {
         res.status(500).send({ message: err.message || "Fejl ved sletning af alle udlejninger." });
     }
+};
+
+// HENT ALLE udlejninger for en specifik bruger (via RentalRequest's UserID)
+exports.getByUser = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+
+    const rentals = await Rental.findAll({
+      include: [
+        {
+          model: RentalRequest,
+          as: "rentalRequest",
+          where: {
+            RenterUserID: userId
+          },
+          include: [
+            {
+              model: db.items,
+              as: "item"
+            }
+          ]
+        }
+      ]
+    });
+
+    res.send(rentals);
+
+  } catch (err) {
+    res.status(500).send({
+      message: err.message
+    });
+  }
 };

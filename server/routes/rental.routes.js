@@ -4,7 +4,8 @@ module.exports = app => {
 
   // Hent alle udlejninger
   router.get("/", rentals.findAll);
-
+  // Hent alle udlejninger for en specifik bruger
+  router.get("/user/:userId", rentals.getByUser);
   // Hent én udlejning via ID
   router.get("/:id", rentals.findOne);
 
@@ -19,6 +20,8 @@ module.exports = app => {
 
   // Slet alle udlejninger
   router.delete("/", rentals.deleteAll);
+  
+
 
   app.use("/api/rentals", router);
 };

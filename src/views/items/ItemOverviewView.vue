@@ -227,7 +227,7 @@ export default {
   </v-col>
 
   <v-col cols="6">
-    <v-card class="status-card">
+    <v-card class="status-card" :to="{ name: 'loans' }">
       <div class="status-number">
         {{ activeRentals }}
       </div>

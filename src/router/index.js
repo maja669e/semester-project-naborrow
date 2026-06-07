@@ -11,6 +11,7 @@ import ItemOverviewView from "@/views/items/ItemOverviewView.vue";
 import CreateItemView   from "@/views/items/CreateItemView.vue";
 import RentalView    from "@/views/rentals/RentalView.vue";
 import RequestsView  from "@/views/rentals/RequestsView.vue";
+import LoansView     from "@/views/rentals/LoansView.vue";
 
 const routes = [
   { path: "/login",           name: "login",          component: LoginView,         meta: { isPublic: true } },
@@ -18,8 +19,9 @@ const routes = [
   { path: "/fællesskab",      name: "community",      component: ExploreView },
   { path: "/genstande",       name: "items",          component: ItemOverviewView },
   { path: "/genstande/opret", name: "create-item",    component: CreateItemView },
-  { path: "/laan",             name: "rental",         component: RentalView },
+  { path: "/laan",            name: "rental",         component: RentalView },
   { path: "/anmodninger",     name: "requests",       component: RequestsView },
+  { path: "/aktive-lån",      name: "loans",          component: LoansView },
 ];
 
 const router = createRouter({
