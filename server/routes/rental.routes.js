@@ -2,10 +2,16 @@ module.exports = app => {
   const rentals = require("../controllers/rental.controller.js");
   const router = require("express").Router();
 
+  // Afslut udløbne lån manuelt — kun til testbrug
+  router.post("/complete-expired", rentals.completeExpired);
+
   // Hent alle udlejninger
   router.get("/", rentals.findAll);
-  // Hent alle udlejninger for en specifik bruger
+  // Hent alle udlejninger for en specifik låner (renter-perspektiv)
   router.get("/user/:userId", rentals.getByUser);
+  // Hent alle udlejninger på genstande ejet af en bruger (udlåner-perspektiv)
+  // Skal stå før /:id for at undgå at "owner" matches som et id
+  router.get("/owner/:userId", rentals.getByOwner);
   // Hent én udlejning via ID
   router.get("/:id", rentals.findOne);
 

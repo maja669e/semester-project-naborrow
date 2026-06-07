@@ -1,9 +1,33 @@
 const db = require("../models");
 
-const Rental = db.rentals;
+const Rental        = db.rentals;
 const RentalRequest = db.rentalRequests;
+const Op            = db.Sequelize.Op;
 
+// Sætter aktive lån til "completed" hvis EndDate ligger før dags dato.
+// Kaldes inden data returneres i getByUser og getByOwner, så frontend altid
+// ser korrekte statuser uden at kræve en separat cronjob.
+async function autoCompleteExpiredRentals() {
+  // ISO-datostreng (YYYY-MM-DD) undgår timezone-forskydning ved sammenligning
+  // med DATEONLY-kolonnen i databasen — fx "2026-06-07"
+  const today = new Date().toISOString().split("T")[0];
 
+  // Find alle anmodninger hvis slutdato er overskredet
+  const expired = await RentalRequest.findAll({
+    where: { EndDate: { [Op.lt]: today } },
+    attributes: ["RentalRequestID"]
+  });
+
+  if (expired.length === 0) return;
+
+  const ids = expired.map(r => r.RentalRequestID);
+
+  // Opdater kun aktive lån — undgår at overskrive cancelled
+  await Rental.update(
+    { Status: "completed" },
+    { where: { RequestID: ids, Status: "active" } }
+  );
+}
 
 // OPRET en ny udlejning (kun hvis RentalRequest eksisterer og er godkendt)
 exports.create = async (req, res) => {
@@ -130,9 +154,39 @@ exports.deleteAll = async (req, res) => {
     }
 };
 
+// AFSLUT UDLØBNE LÅN manuelt — kun til testbrug.
+// Kalder autoCompleteExpiredRentals og returnerer antal opdaterede poster.
+exports.completeExpired = async (req, res) => {
+  try {
+    const today = new Date().toISOString().split("T")[0];
+
+    const expired = await RentalRequest.findAll({
+      where: { EndDate: { [Op.lt]: today } },
+      attributes: ["RentalRequestID"]
+    });
+
+    if (expired.length === 0) {
+      return res.send({ updated: 0 });
+    }
+
+    const ids = expired.map(r => r.RentalRequestID);
+
+    const [updated] = await Rental.update(
+      { Status: "completed" },
+      { where: { RequestID: ids, Status: "active" } }
+    );
+
+    res.send({ updated });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
+};
+
 // HENT ALLE udlejninger for en specifik bruger (via RentalRequest's UserID)
 exports.getByUser = async (req, res) => {
   try {
+    await autoCompleteExpiredRentals();
+
     const userId = req.params.userId;
 
     const rentals = await Rental.findAll({
@@ -147,6 +201,47 @@ exports.getByUser = async (req, res) => {
             {
               model: db.items,
               as: "item"
+            }
+          ]
+        }
+      ]
+    });
+
+    res.send(rentals);
+
+  } catch (err) {
+    res.status(500).send({
+      message: err.message
+    });
+  }
+};
+
+// HENT ALLE udlejninger for genstande ejet af en specifik bruger (udlåner-perspektiv).
+// Returnerer også lånerens brugernavn så frontend kan vise hvem der låner.
+exports.getByOwner = async (req, res) => {
+  try {
+    await autoCompleteExpiredRentals();
+
+    const userId = req.params.userId;
+
+    const rentals = await Rental.findAll({
+      include: [
+        {
+          model: RentalRequest,
+          as: "rentalRequest",
+          // required: true laver INNER JOIN — uden det returnerer Sequelize
+          // alle Rentals inkl. dem uden matchende anmodning (rentalRequest: null)
+          required: true,
+          include: [
+            {
+              model: db.items,
+              as: "item",
+              where: { UserID: userId }, // kun genstande ejet af denne bruger
+              required: true
+            },
+            {
+              model: db.users,
+              as: "renter" // lånerens oplysninger til visning i frontend
             }
           ]
         }

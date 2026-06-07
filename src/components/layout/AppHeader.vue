@@ -32,7 +32,7 @@ export default {
   <!-- Sidebanner-landmark – skærmlæsere annoncerer dette som "banner" -->
   <header class="app-header" role="banner">
 
-    <!-- Venstre: tilbage-knap eller usynlig spacer for at holde titlen centreret -->
+    <!-- Venstre: tilbage-knap emitter "back" — forælderen beslutter navigation -->
     <button
       v-if="showBack"
       class="app-header__tilbage"
@@ -63,33 +63,33 @@ export default {
 <style scoped>
 /* ─── Header-container ───────────────────────────────────── */
 /* space-between placerer venstre slot, titlen og højre slot jævnt.
-   De ensartede spacere holder titlen visuelt centreret. */
+   De ensartede spacere holder titlen visuelt centreret.
+   Højde på 64px giver 21px luft over og under 22px-titlen. */
 .app-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
-  padding: 0 16px;
-  background: white;
-  border-bottom: 1px solid var(--color-border);
+  height: 64px;
+  padding: 0 var(--space-4);
+  background: transparent;
 }
 
 /* ─── Sidetitel ──────────────────────────────────────────── */
 .app-header__titel {
-  font-family: var(--font-body);
-  font-size: var(--text-body);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: var(--text-h2);
+  font-weight: 600;
   color: var(--color-neutral);
 }
 
 /* ─── Tilbage-knap (venstre) ─────────────────────────────── */
-/* min 44×44 px trykflade opfylder WCAG 2.5.5 */
+/* 44×44 px trykflade opfylder WCAG 2.5.5 Success Criterion */
 .app-header__tilbage {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background: transparent;
   border: none;
   border-radius: var(--radius-full);
@@ -108,8 +108,8 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   background: transparent;
   border: none;
   border-radius: var(--radius-full);
@@ -123,9 +123,9 @@ export default {
 }
 
 /* ─── Spacer ─────────────────────────────────────────────── */
-/* Matcher knapbredden så titlen forbliver centreret,
+/* Matcher knapbredden (44px) så titlen forbliver centreret,
    når der ikke vises en knap på den pågældende side */
 .app-header__spacer {
-  width: 40px;
+  width: 44px;
 }
 </style>

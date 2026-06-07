@@ -9,6 +9,7 @@ import ItemDetailView from "@/components/items/ItemDetailView.vue";
 import ItemFilterTabs from "@/components/items/ItemFilterTabs.vue";
 import { getItemsByUser } from "@/services/items/itemservice.js";
 import { getPendingCountByOwner } from "@/services/rentalRequest/rentalRequestService";
+import { getRentalsByOwner }     from "@/services/rental/rentalservice.js";
 
 
 export default {
@@ -139,8 +140,15 @@ export default {
     async loadDashboardCounts() {
       try {
         const userId = this.authStore.user.value.userID;
-        const pending = await getPendingCountByOwner(userId);
+
+        // Henter begge tællere parallelt for hurtigere indlæsning
+        const [pending, lentRentals] = await Promise.all([
+          getPendingCountByOwner(userId),
+          getRentalsByOwner(userId),
+        ]);
+
         this.pendingRequests = pending.count;
+        this.activeRentals   = lentRentals.filter(r => r.Status === "active").length;
       } catch (err) {
         console.error(err);
       }

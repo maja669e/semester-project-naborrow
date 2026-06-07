@@ -37,11 +37,8 @@ router.beforeEach((to, from) => {
 
   // Ved sideopdatering sendes brugeren kun til forsiden fra beskyttede ruter –
   // ikke fra login-siden, da det ville skabe en unødvendig dobbelt-omdirigering
-  if (from.name) return;
-  const navEntry = performance.getEntriesByType?.("navigation")?.[0];
-  if (navEntry?.type === "reload" && to.path !== "/" && !to.meta.isPublic) {
-    return { path: "/" };
-  }
+  // Ingen reload-redirect — Vite dev-serveren og en korrekt konfigureret
+  // produktionsserver sender alle stier til index.html, så reload virker på alle ruter
 });
 
 export default router;
