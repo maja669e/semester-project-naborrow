@@ -13,6 +13,7 @@ export default {
 
   data() {
     return {
+        showRentalSuccess: false,
       // ── Profil / logout ──────────────────────────────────
       showProfileMenu: false,
 
@@ -44,6 +45,8 @@ export default {
       // Udlejnings-flow – item deles med RentalView; flowet styres internt deri
       rental:          this.rental,
       startRentalFlow: this.startRentalFlow,
+
+       triggerRentalSuccess: this.triggerRentalSuccess, 
 
       // Auth – tilgængeligt i alle descendant-komponenter
       authStore,
@@ -87,6 +90,12 @@ export default {
       this.showSuccess = true;
       this.$router.push({ name: "items" });
     },
+      triggerRentalSuccess() {
+    this.showRentalSuccess = true;
+
+    // immediate background redirect (same as item flow)
+    this.$router.push({ name: "community" });
+  },
 
     handleSuccessBack() {
       this.showSuccess = false;
@@ -124,7 +133,11 @@ export default {
       message="Din genstand er nu oprettet og klar"
       @back-to-overview="handleSuccessBack"
     />
-
+<SuccessDialog
+  v-model="showRentalSuccess"
+  title="Låneanmodning sendt!"
+  message="Din låneanmodning er nu sendt til udlåner"
+/>
     <!-- Bundnavigation vises kun på de primære sider når brugeren er logget ind -->
     <AppBottomNav
       v-if="showBottomNav"
