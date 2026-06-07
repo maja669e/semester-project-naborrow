@@ -65,7 +65,7 @@ export default {
 
     // Bundnavigationen vises kun på de primære sider (ikke på login)
     showBottomNav() {
-      return ["home", "community", "items", "rental", "requests"].includes(this.$route?.name)
+      return ["home", "community", "items", "rental", "requests", "loans"].includes(this.$route?.name)
         && authStore.isLoggedIn.value;
     },
   },
