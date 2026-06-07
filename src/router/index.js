@@ -11,6 +11,7 @@ import ItemOverviewView from "@/views/items/ItemOverviewView.vue";
 import CreateItemView   from "@/views/items/CreateItemView.vue";
 import RentalView    from "@/views/rentals/RentalView.vue";
 import RequestsView  from "@/views/rentals/RequestsView.vue";
+import LoansView     from "@/views/rentals/LoansView.vue";
 
 const routes = [
   { path: "/login",           name: "login",          component: LoginView,         meta: { isPublic: true } },
@@ -18,8 +19,9 @@ const routes = [
   { path: "/fællesskab",      name: "community",      component: ExploreView },
   { path: "/genstande",       name: "items",          component: ItemOverviewView },
   { path: "/genstande/opret", name: "create-item",    component: CreateItemView },
-  { path: "/laan",             name: "rental",         component: RentalView },
+  { path: "/laan",            name: "rental",         component: RentalView },
   { path: "/anmodninger",     name: "requests",       component: RequestsView },
+  { path: "/aktive-lån",      name: "loans",          component: LoansView },
 ];
 
 const router = createRouter({
@@ -35,11 +37,8 @@ router.beforeEach((to, from) => {
 
   // Ved sideopdatering sendes brugeren kun til forsiden fra beskyttede ruter –
   // ikke fra login-siden, da det ville skabe en unødvendig dobbelt-omdirigering
-  if (from.name) return;
-  const navEntry = performance.getEntriesByType?.("navigation")?.[0];
-  if (navEntry?.type === "reload" && to.path !== "/" && !to.meta.isPublic) {
-    return { path: "/" };
-  }
+  // Ingen reload-redirect — Vite dev-serveren og en korrekt konfigureret
+  // produktionsserver sender alle stier til index.html, så reload virker på alle ruter
 });
 
 export default router;

@@ -1,6 +1,7 @@
 <script>
 // Visning af indkommende låneanmodninger for den loggede udlåner.
 // Henter kun anmodninger med status "pending" for udlånerens egne genstande.
+import AppHeader from "@/components/layout/AppHeader.vue";
 import {
   getPendingRequestsByOwner,
   acceptRentalRequest,
@@ -9,6 +10,8 @@ import {
 
 export default {
   name: "RequestsView",
+
+  components: { AppHeader },
 
   inject: ["authStore"],
 
@@ -67,15 +70,15 @@ export default {
 </script>
 
 <template>
-  <v-container class="py-6 requests-page">
+  <div>
 
-    <v-row class="mb-4">
-      <v-col cols="12">
-        <h1 class="text-h5 font-weight-bold">
-          Afventende anmodninger
-        </h1>
-      </v-col>
-    </v-row>
+    <AppHeader
+      title="Afventende anmodninger"
+      :show-back="true"
+      @back="$router.back()"
+    />
+
+  <v-container class="py-6 requests-page">
 
     <!-- Indlæsningsindikator -->
     <v-row v-if="loading">
@@ -172,6 +175,8 @@ export default {
     </v-row>
 
   </v-container>
+
+  </div>
 </template>
 
 <style scoped>
