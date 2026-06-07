@@ -20,7 +20,6 @@ export default {
     return {
       // Aktivt trin i formularen (1 = periode, 2 = afhentning, 3 = bekræftelse)
       step: 1,
-
       // Akkumuleret formdata fra begge formtrin
       rentalData: {
         startDate:       "",
@@ -50,6 +49,7 @@ export default {
 
     // Låneanmodning bekræftet — navigér til fællesskabssiden
     handleConfirmed() {
+       // show modal instantly
       this.$router.push({ name: "community" });
     },
   },
