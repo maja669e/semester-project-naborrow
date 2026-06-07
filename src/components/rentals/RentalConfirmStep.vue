@@ -41,42 +41,40 @@ export default {
       showSuccessDialog: false,
     };
   },
-
+inject: ["authStore", "triggerRentalSuccess"],
   methods: {
     // Validerer vilkårsaccept, bygger request-objektet og sender det til backend
-    async confirmRental() {
-      if (!this.acceptedTerms) {
-        this.error = "Du skal acceptere vilkår og betingelser";
-        return;
-      }
+async confirmRental() {
+  if (!this.acceptedTerms) {
+    this.error = "Du skal acceptere vilkår og betingelser";
+    return;
+  }
 
-      this.error = "";
+  this.error = "";
 
-      try {
-        const payload = {
-          ItemID:              this.item.id,
-          RenterUserID:        this.authStore.user.value.userID,
-          StartDate:           this.rentalData.startDate,
-          EndDate:             this.rentalData.endDate,
-          Status:              "pending",
-          MessageToLender:     this.rentalData.messageToLender || null,
-          SelectedAccessories: JSON.stringify(this.rentalData.accessories ?? []),
-          PickupTimes:         JSON.stringify(this.rentalData.pickupTime  ?? []),
-        };
+  try {
+    const payload = {
+      ItemID: this.item.id,
+      RenterUserID: this.authStore.user.value.userID,
+      StartDate: this.rentalData.startDate,
+      EndDate: this.rentalData.endDate,
+      Status: "pending",
+      MessageToLender: this.rentalData.messageToLender || null,
+      SelectedAccessories: JSON.stringify(this.rentalData.accessories ?? []),
+      PickupTimes: JSON.stringify(this.rentalData.pickupTime ?? []),
+    };
 
-        await createRentalRequest(payload);
-        this.showSuccessDialog = true;
-      } catch (err) {
-        console.error(err);
-        this.error = "Kunne ikke sende låneanmodning";
-      }
-    },
+    await createRentalRequest(payload);
 
-    // Lukker success-dialogen og sender begivenheden op til RentalView
-    handleSuccessBack() {
-      this.showSuccessDialog = false;
-      this.$emit("rental-confirmed");
-    },
+    this.triggerRentalSuccess();
+
+  } catch (err) {
+    console.error(err);
+    this.error = "Kunne ikke sende låneanmodning";
+  }
+},
+
+  
   },
 };
 </script>
@@ -135,12 +133,11 @@ export default {
       @next="confirmRental"
     />
 
-    <SuccessDialog
-      v-model="showSuccessDialog"
-      title="Låneanmodning sendt!"
-      message="Din låneanmodning er nu sendt til udlåner"
-      @back-to-overview="handleSuccessBack"
-    />
+   <SuccessDialog
+  v-model="showSuccessDialog"
+  title="Låneanmodning sendt!"
+  message="Din låneanmodning er nu sendt til udlåner"
+/>
 
   </v-container>
 
