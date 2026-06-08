@@ -16,12 +16,12 @@ import LoansView     from "@/views/rentals/LoansView.vue";
 const routes = [
   { path: "/login",           name: "login",          component: LoginView,         meta: { isPublic: true } },
   { path: "/",                name: "home",           component: HomeView },
-  { path: "/fællesskab",      name: "community",      component: ExploreView },
+  { path: "/faellesskab",      name: "community",      component: ExploreView },
   { path: "/genstande",       name: "items",          component: ItemOverviewView },
   { path: "/genstande/opret", name: "create-item",    component: CreateItemView },
   { path: "/laan",            name: "rental",         component: RentalView },
   { path: "/anmodninger",     name: "requests",       component: RequestsView },
-  { path: "/aktive-lån",      name: "loans",          component: LoansView },
+  { path: "/aktive-laan",      name: "loans",          component: LoansView },
 ];
 
 const router = createRouter({
