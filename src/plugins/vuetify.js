@@ -27,6 +27,7 @@ export default createVuetify({
           error: '#861E1E',
           info: '#004D40',
           'on-surface': '#2C2C25',
+          'login-field': '#FFFFFF',
         }
       },
       dark: {
@@ -43,6 +44,7 @@ export default createVuetify({
           error: '#E89898',
           info: '#80CBC4',
           'on-surface': '#F6F5F0',
+          'login-field': '#FFFFFF',
         }
       }
     }

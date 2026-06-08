@@ -93,8 +93,9 @@ export default {
              undgå falsk fejl under Face ID / biometrisk autofyld -->
         <v-text-field
           v-model="email"
-          label="Email"
+          placeholder="Email"
           variant="outlined"
+          bg-color="login-field"
           prepend-inner-icon="mdi-email-outline"
           autocomplete="email"
           type="email"
@@ -107,8 +108,9 @@ export default {
 
         <v-text-field
           v-model="password"
-          label="Adgangskode"
+          placeholder="Adgangskode"
           variant="outlined"
+          bg-color="login-field"
           prepend-inner-icon="mdi-lock-outline"
           :type="showPassword ? 'text' : 'password'"
           :append-inner-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
@@ -179,6 +181,20 @@ export default {
   font-size: var(--text-body);
   color: var(--color-on-grad);
   text-align: center;
+}
+
+/* Fjern browserens native fokus-ring på input-elementet inde i feltet */
+:deep(input:focus-visible) {
+  outline: none;
+}
+
+/* Browsere overskriver baggrunden ved autofyld med deres egen farve.
+   Box-shadow-tricket er den eneste pålidelige måde at neutralisere det på. */
+:deep(input:-webkit-autofill),
+:deep(input:-webkit-autofill:hover),
+:deep(input:-webkit-autofill:focus) {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-on-grad) inset !important;
+  box-shadow: 0 0 0 1000px var(--color-on-grad) inset !important;
 }
 
 /* Invers knap — baggrund og farve sættes via :style inline på v-btn.
