@@ -47,6 +47,18 @@ export default {
     };
   },
 
+  computed: {
+    // Beregner om formen er gyldig uden at sætte fejlbeskeder.
+    // Spejler validate()-logikken og låser næste-knappen via :nextDisabled.
+    isFormValid() {
+      return (
+        this.startDate !== "" &&
+        this.endDate !== "" &&
+        this.pickupTime.length > 0
+      );
+    },
+  },
+
   methods: {
     // Validerer at datoer og mindst ét afhentningstidspunkt er valgt,
     // og at perioden ikke overskrider genstandens maksimale låneperiode
@@ -142,6 +154,7 @@ export default {
       next-label="Næste"
       :show-back="false"
       :above-nav="true"
+      :nextDisabled="!isFormValid"
       @next="next"
     />
 
@@ -168,7 +181,7 @@ export default {
 }
 
 .fejltekst {
-  color: #B00020;
+  color: var(--color-error);
   font-size: 14px;
   margin-top: 4px;
 }

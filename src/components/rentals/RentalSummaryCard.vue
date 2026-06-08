@@ -172,7 +172,7 @@ export default {
 
   padding: 12px 0;
 
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid var(--color-border);
 }
 
 .summary-row:last-child {
@@ -204,7 +204,7 @@ export default {
 
 .item-info p {
   margin: 4px 0 0;
-  color: #666;
+  color: var(--color-secondary);
 }
 
 </style>

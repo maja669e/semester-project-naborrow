@@ -24,7 +24,7 @@ export default {
 
     <!-- Toolbar med centreret titel og fast-bredde spacer til højre
          for at holde titlen visuelt centreret -->
-    <v-toolbar flat color="white">
+    <v-toolbar flat color="surface">
       <v-toolbar-title class="text-center font-weight-bold">
         {{ title }}
       </v-toolbar-title>
@@ -45,7 +45,7 @@ export default {
           }"
         >
           <div class="step-circle">
-            <v-icon v-if="index + 1 < currentStep" size="16">mdi-check</v-icon>
+            <v-icon v-if="index + 1 < currentStep" size="16" icon="mdi-check" />
             <span v-else>{{ index + 1 }}</span>
           </div>
           <span>{{ step }}</span>
@@ -78,7 +78,7 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-secondary);
 }
 
 .step-circle {
@@ -95,7 +95,7 @@ export default {
 .step-item.done .step-circle,
 .step-item.active .step-circle {
   background: var(--color-primary);
-  color: white;
+  color: var(--color-surface);
 }
 
 .step-item.active span {

@@ -128,6 +128,7 @@ export default {
 
                 <v-img
                     :src="item.image"
+                    :alt="item.ItemName"
                     height="220"
                     cover
                 />

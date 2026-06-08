@@ -147,12 +147,12 @@ export default {
             :key="index"
             class="image-preview"
           >
-            <v-img :src="img" cover width="72" height="72" class="rounded-lg" />
+            <v-img :src="img" :alt="`Genstandsbillede ${index + 1}`" cover width="72" height="72" class="rounded-lg" />
           </div>
         </div>
         <div v-else class="text-grey">Ingen billeder valgt</div>
         <div class="add-image-box">
-          <v-icon size="18" color="grey">mdi-camera-outline</v-icon>
+          <v-icon size="18" color="grey" icon="mdi-camera-outline" />
           <span>Tilføj</span>
         </div>
       </div>
@@ -171,8 +171,13 @@ export default {
               <div class="field-label mb-2">{{ field.label }}</div>
               <div class="field-value">{{ field.value }}</div>
             </div>
-            <v-btn icon variant="text" size="small">
-              <v-icon size="16" color="grey-darken-1">mdi-pencil-outline</v-icon>
+            <v-btn
+              icon
+              variant="text"
+              size="small"
+              :aria-label="`Rediger ${field.label}`"
+            >
+              <v-icon size="16" color="grey-darken-1" icon="mdi-pencil-outline" />
             </v-btn>
           </v-card-text>
         </v-card>
@@ -222,38 +227,38 @@ export default {
 .add-image-box {
   width: 72px;
   height: 72px;
-  border: 1px dashed #c9c9c9;
+  border: 1px dashed var(--color-border);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  color: #7a7a7a;
+  color: var(--color-secondary);
   font-size: 12px;
 }
 
 .info-card {
-  border-color: #e5e7eb;
+  border-color: var(--color-border);
 }
 
 .field-label {
   font-size: 12px;
-  color: #6b7280;
+  color: var(--color-secondary);
 }
 
 .field-value {
   font-size: 15px;
-  color: #111827;
+  color: var(--color-neutral);
   font-weight: 500;
 }
 
 .text {
-  font-family: "Roboto", sans-serif;
-  color: #000000;
+  font-family: var(--font-body);
+  color: var(--color-neutral);
 }
 .text-body {
-  font-family: "Roboto", sans-serif;
-  color: grey;
+  font-family: var(--font-body);
+  color: var(--color-secondary);
 }
 </style>

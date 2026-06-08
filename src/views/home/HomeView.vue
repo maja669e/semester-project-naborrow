@@ -32,7 +32,8 @@ export default {
           <!-- Naviger til brugerens egne genstande via RouterLink -->
           <v-col cols="12">
             <v-btn
-              class="genstande-knap mt-15"
+              color="primary"
+              class="navigations-knap mt-15"
               size="large"
               :to="{ name: 'items' }"
             >
@@ -42,7 +43,7 @@ export default {
 
           <!-- Naviger til brugerens aktive lån -->
           <v-col cols="12">
-            <v-btn class="laan-knap" size="large">Dine lån</v-btn>
+            <v-btn color="primary" class="navigations-knap" size="large">Dine lån</v-btn>
           </v-col>
 
         </v-row>
@@ -65,12 +66,8 @@ export default {
 }
 
 /* ─── Navigationsknapper ─────────────────────────────────── */
-.genstande-knap,
-.laan-knap {
-  background-color: var(--color-primary);
-  color: white;
-  font-weight: normal;
+/* Farve håndteres af Vuetify via color="primary" — kun layout her */
+.navigations-knap {
   min-width: 200px;
-  border-radius: var(--radius-md);
 }
 </style>

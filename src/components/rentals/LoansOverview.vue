@@ -121,12 +121,12 @@ export default {
 
           <!-- Vises kun i udlåner-perspektiv: hvem der låner genstanden -->
           <div v-if="showRenter" class="laankort__meta">
-            <v-icon size="13" class="mr-1">mdi-account-outline</v-icon>
+            <v-icon size="13" class="mr-1" icon="mdi-account-outline" />
             {{ loan.rentalRequest?.renter?.Username }}
           </div>
 
           <div class="laankort__meta">
-            <v-icon size="13" class="mr-1">mdi-calendar-outline</v-icon>
+            <v-icon size="13" class="mr-1" icon="mdi-calendar-outline" />
             {{ formatDate(loan.rentalRequest?.StartDate) }} –
             {{ formatDate(loan.rentalRequest?.EndDate) }}
           </div>

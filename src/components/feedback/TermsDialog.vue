@@ -179,7 +179,7 @@ export default {
 <style scoped>
 /* Kortcontainer — matcher SuccessDialog's skygge og afrunding */
 .terms-dialog {
-  background: #ffffff;
+  background: var(--color-surface);
   border-radius: 12px;
   width: min(92vw, 520px);
 
@@ -202,12 +202,12 @@ export default {
   font-size: 18px;
   font-weight: 600;
   margin: 0;
-  color: #1a1a1a;
+  color: var(--color-neutral);
 }
 
 .subtitle {
   font-size: 13px;
-  color: #666;
+  color: var(--color-secondary);
   margin: 6px 0 0;
 }
 
@@ -217,7 +217,7 @@ export default {
   max-height: 55vh;
   overflow-y: auto;
   line-height: 1.6;
-  color: #333;
+  color: var(--color-neutral);
 }
 
 .content h3 {
@@ -230,7 +230,7 @@ export default {
 .footer {
   margin-top: 20px;
   font-size: 13px;
-  color: #666;
+  color: var(--color-secondary);
 }
 
 /* Knapområde i bunden af dialogen */

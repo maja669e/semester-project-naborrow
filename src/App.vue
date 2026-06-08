@@ -5,7 +5,7 @@
 //   2. Levere tværgående tilstand til alle views via provide()
 //   3. Vise AppBottomNav og SuccessDialog uden for ruterne
 import AppBottomNav  from "@/components/layout/AppBottomNav.vue";
-import SuccessDialog from "@/components/SuccessDialog.vue";
+import SuccessDialog from "@/components/feedback/SuccessDialog.vue";
 import { authStore }  from "@/stores/auth.js";
 
 export default {
@@ -16,6 +16,14 @@ export default {
         showRentalSuccess: false,
       // ── Profil / logout ──────────────────────────────────
       showProfileMenu: false,
+
+      // ── Tema (lys/mørk) ──────────────────────────────────
+      // Initialiseres fra localStorage, falder tilbage på systemindstilling
+      isDark: (() => {
+        const saved = localStorage.getItem("lakal-theme");
+        if (saved) return saved === "dark";
+        return window.matchMedia("(prefers-color-scheme: dark)").matches;
+      })(),
 
       // ── Opret-genstand flow ──────────────────────────────
       showSuccess: false,
@@ -59,6 +67,11 @@ export default {
       return authStore.user.value;
     },
 
+    // Oversætter isDark til Vuetifys tema-streng — bindes direkte på <v-app :theme>
+    currentTheme() {
+      return this.isDark ? "dark" : "light";
+    },
+
     // Oversæt den aktuelle rute til en AppBottomNav-fanepnøgle
     activePage() {
       if (this.showProfileMenu) return "profil";
@@ -70,6 +83,13 @@ export default {
     showBottomNav() {
       return ["home", "community", "items", "rental", "requests", "loans"].includes(this.$route?.name)
         && authStore.isLoggedIn.value;
+    },
+  },
+
+  watch: {
+    // Gem tema-valg i localStorage når brugeren skifter
+    isDark(val) {
+      localStorage.setItem("lakal-theme", val ? "dark" : "light");
     },
   },
 
@@ -119,7 +139,7 @@ export default {
 </script>
 
 <template>
-  <v-app>
+  <v-app :theme="currentTheme">
     <v-main>
 
       <RouterView />
@@ -147,17 +167,37 @@ export default {
 
     <!-- Profilmenu – vises som bundark når brugeren trykker på Profil-fanen -->
     <v-bottom-sheet v-model="showProfileMenu" max-width="600">
-      <v-sheet class="profil-ark">
+      <v-sheet class="profil-ark" color="surface">
 
         <!-- Brugerinfo øverst i arket -->
         <div class="profil-ark__bruger">
-          <v-icon size="48" color="var(--color-primary)">mdi-account-circle</v-icon>
+          <v-icon size="48" color="var(--color-primary)" icon="mdi-account-circle" />
           <div class="profil-ark__navn">
             <span class="profil-ark__fulde-navn">
               {{ loggedInUser?.firstName }} {{ loggedInUser?.lastName }}
             </span>
             <span class="profil-ark__email">{{ loggedInUser?.email }}</span>
           </div>
+        </div>
+
+        <v-divider class="mb-4" />
+
+        <!-- Tema-toggle: lys/mørk tilstand -->
+        <div class="profil-ark__theme-row">
+          <span class="profil-ark__theme-label">
+            <v-icon
+              size="18"
+              class="mr-2"
+              :icon="isDark ? 'mdi-weather-night' : 'mdi-weather-sunny'"
+            />
+            {{ isDark ? 'Mørk tilstand' : 'Lys tilstand' }}
+          </span>
+          <v-switch
+            v-model="isDark"
+            color="primary"
+            hide-details
+            density="compact"
+          />
         </div>
 
         <v-divider class="mb-4" />
@@ -178,7 +218,7 @@ export default {
         <!-- Luk-knap -->
         <v-btn
           block
-          variant="text"
+          variant="tonal"
           class="mt-2 profil-ark__luk"
           @click="showProfileMenu = false"
         >
@@ -190,6 +230,32 @@ export default {
 
   </v-app>
 </template>
+
+<style>
+/* Globale element-defaults — gælder hele appen */
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  line-height: 1.2;
+}
+
+/* Synlig fokus-ring (WCAG 2.2 SC 2.4.11) — kun ved tastaturnavigation */
+:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* Reduced motion (WCAG 2.3.3 + EAA) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
 
 <style scoped>
 .profil-ark {
@@ -221,5 +287,21 @@ export default {
   font-family: var(--font-body);
   font-size: 13px;
   color: var(--color-secondary);
+}
+
+.profil-ark__theme-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-2);
+}
+
+.profil-ark__theme-label {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  color: var(--color-neutral);
+  display: flex;
+  align-items: center;
 }
 </style>

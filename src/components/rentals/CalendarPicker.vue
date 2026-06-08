@@ -21,6 +21,16 @@ export default {
     };
   },
 
+  mounted() {
+    // Gendanner det visuelle interval fra props når brugeren vender tilbage fra trin 2.
+    // Uden dette ser v-date-picker kun range=[] og viser ingen markering.
+    if (this.startDate && this.endDate) {
+      this.range = [this.startDate, this.endDate];
+    } else if (this.startDate) {
+      this.range = [this.startDate];
+    }
+  },
+
   methods: {
     // Forhindrer valg af datoer i fortiden
     isAllowedDate(date) {
@@ -173,13 +183,19 @@ export default {
   color: inherit;
 }
 
-/* Fjern standardmarkering for dags dato */
+/* Dags dato: tynd ring i primærfarven — vises kun når datoen ikke er valgt */
 .calendar-wrapper :deep(.v-date-picker-month__day-btn[aria-current="date"]) {
+  border: 2px solid var(--color-primary) !important;
   box-shadow: none !important;
-  border: none !important;
-  color: inherit !important;
 }
 
+/* Fjern ringen når today er start eller slut på den valgte periode */
+.calendar-wrapper :deep(.range-bg--start ~ .v-date-picker-month__day-btn[aria-current="date"]),
+.calendar-wrapper :deep(.range-bg--end ~ .v-date-picker-month__day-btn[aria-current="date"]) {
+  border: none !important;
+}
+
+/* Fjern Vuetify's eget overlay-highlight for today */
 .calendar-wrapper :deep(.v-date-picker-month__day-btn[aria-current="date"] .v-btn__overlay) {
   opacity: 0 !important;
 }
@@ -252,7 +268,7 @@ export default {
 }
 
 .error-text {
-  color: #b00020;
+  color: var(--color-error);
   font-size: 14px;
   margin-top: 8px;
 }

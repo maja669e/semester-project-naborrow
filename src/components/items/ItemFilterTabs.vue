@@ -98,7 +98,7 @@ export default {
 /* ─── Aktiv/valgt fane ───────────────────────────────────── */
 .filterfane--aktiv {
   background: var(--color-primary) !important;
-  color: #ffffff !important;
+  color: var(--color-surface) !important;
   border-color: var(--color-primary) !important;
   padding: var(--space-2) var(--space-4) !important;
 }

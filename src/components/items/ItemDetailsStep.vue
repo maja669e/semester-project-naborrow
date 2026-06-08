@@ -43,6 +43,25 @@ export default {
     };
   },
 
+  computed: {
+    // Beregner om formen er gyldig uden at sætte fejlbeskeder.
+    // Spejler validate()-logikken og låser næste-knappen via :nextDisabled.
+    isFormValid() {
+      const accessoriesOk =
+        this.hasAccessories === false ||
+        (this.hasAccessories === true && this.accessoriesList.length > 0);
+      const periodOk =
+        this.maxLoanPeriod !== null &&
+        (this.maxLoanPeriod !== "Andet" || this.customPeriod.trim() !== "");
+      return (
+        this.hasAccessories !== null &&
+        accessoriesOk &&
+        this.condition !== null &&
+        periodOk
+      );
+    },
+  },
+
   methods: {
     // Gem om genstanden har tilbehør og ryd fejlbesked
     selectAccessories(value) {
@@ -50,10 +69,11 @@ export default {
       this.errors.hasAccessories = "";
     },
 
-    // Tilføj et nyt tilbehørsnavn til listen
+    // Tilføj et nyt tilbehørsnavn til listen — ignorér dubletter
     addAccessory() {
-      if (!this.accessoryName || !this.accessoryName.trim()) return;
-      this.accessoriesList.push(this.accessoryName.trim());
+      const name = this.accessoryName.trim();
+      if (!name || this.accessoriesList.includes(name)) return;
+      this.accessoriesList.push(name);
       this.accessoryName = "";
       this.errors.accessoriesList = "";
     },
@@ -212,24 +232,28 @@ export default {
           >
             <span
               v-for="(el, index) in accessoriesList"
-              :key="index"
+              :key="el"
               class="tag"
               role="listitem"
             >
               {{ el }}
-              <button
-                class="fjern-tag"
+              <v-btn
+                icon
+                variant="text"
+                size="x-small"
                 :aria-label="`Fjern ${el}`"
                 @click="removeAccessory(index)"
               >
-                ×
-              </button>
+                <v-icon size="14" icon="mdi-close" />
+              </v-btn>
             </span>
           </div>
 
           <!-- Inputfelt til at tilføje nyt tilbehør -->
+          <label for="tilbehoer-input" class="visuel-label">Tilbehørsnavn</label>
           <div class="input-wrapper">
             <input
+              id="tilbehoer-input"
               type="text"
               placeholder="F.eks. oplader, taske..."
               v-model="accessoryName"
@@ -296,8 +320,10 @@ export default {
       <!-- Fritekstfelt vises kun når "Andet" er valgt -->
       <v-row v-if="maxLoanPeriod === 'Andet'">
         <v-col cols="12">
+          <label for="periode-input" class="visuel-label">Antal dage</label>
           <div class="input-wrapper">
             <input
+              id="periode-input"
               type="text"
               placeholder="F.eks. 10 dage, 3 måneder..."
               v-model="customPeriod"
@@ -314,7 +340,7 @@ export default {
     </section>
 
     <!-- Bundnavigation: tilbage til trin 1, næste til bekræftelse -->
-    <FormBottomBar @back="back" @next="next" />
+    <FormBottomBar :nextDisabled="!isFormValid" @back="back" @next="next" />
 
   </v-container>
 </template>
@@ -328,9 +354,19 @@ export default {
 
 /* ─── Valideringsfejl ────────────────────────────────────── */
 .fejltekst {
-  color: #b00020;
+  color: var(--color-error);
   font-size: 14px;
   margin-top: 4px;
+}
+
+/* ─── Synlig label over rå input-felter ─────────────────── */
+.visuel-label {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  color: var(--color-secondary);
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-1);
 }
 
 /* ─── Tilbehørs- og standknapper ─────────────────────────── */
@@ -371,7 +407,7 @@ export default {
 /* ─── Tilføj-knap ────────────────────────────────────────── */
 .tilfoej-knap {
   background-color: var(--color-primary);
-  color: white;
+  color: var(--color-surface);
   width: 56px;
   height: 56px;
   border-radius: var(--radius-lg);
@@ -402,19 +438,10 @@ export default {
   font-weight: 500;
 }
 
-/* ─── Fjern-tag-knap ─────────────────────────────────────── */
-.fjern-tag {
-  background: transparent;
-  border: none;
-  color: black;
-  font-weight: bold;
-  margin-left: 6px;
-  cursor: pointer;
-}
 
 /* ─── Aktiv/valgt knapstil ───────────────────────────────── */
 .valgt {
   background-color: var(--color-primary) !important;
-  color: white !important;
+  color: var(--color-surface) !important;
 }
 </style>

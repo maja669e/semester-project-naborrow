@@ -16,39 +16,44 @@
 
 :root {
     /* ── Baggrunde ── */
-    --color-bg: #f5f3ef;
-    --color-surface: #ffffff;
-    --color-image-bg: #eae8e4;
+    --color-bg: #F6F5F0;
+    --color-surface: #FFFFFF;
+    --color-image-bg: #E9E8E2;
 
     /* ── Brand farver ── */
-    --color-primary: #546a41;
-    --color-primary-dark: #3d4f2e;
+    --color-primary: #2C3B1E;
+    --color-primary-dark: #1E2914;
+
+    /* ── Brand gradient (KUN splash, login, home hero) ── */
+    --brand-grad:    linear-gradient(135deg, #2C3B1E 0%, #004D40 100%);
+    --color-on-grad: #FFFFFF;  /* Tekst på gradienten — altid hvid, gradienten er altid mørk */
+    --color-brand:   #2C3B1E;  /* Fast brandfarve — skifter aldrig med dark mode */
 
     /* ── Tekst farver ── */
-    --color-neutral: #2d2b2a;
-    --color-secondary: #6b6763;
+    --color-neutral: #2C2C25;
+    --color-secondary: #5D5C54;
 
-    /* ── Accent ── */
-    --color-accent: #d98359;
+    /* ── Accent (bruges til "cancelled" i LoansOverview) ── */
+    --color-accent: #861E1E;
 
     /* ── Borders ── */
-    --color-border: #d5d2ce;
-    --color-input-border: #6b6763;
+    --color-border: #CCCBC3;
+    --color-input-border: #8E8E86;
 
     /* ── Status - Tilgængelig ── */
-    --color-tilgaengelig-bg: #e8f0e3;
-    --color-tilgaengelig-text: #2d4a1e;
-    --color-tilgaengelig-dot: #3d6b27;
+    --color-tilgaengelig-bg: #E6F4E6;
+    --color-tilgaengelig-text: #1A521A;
+    --color-tilgaengelig-dot: #1A521A;
 
     /* ── Status - Udlånt ── */
-    --color-udlaant-bg: #f7e8d8;
-    --color-udlaant-text: #7a3810;
-    --color-udlaant-dot: #a84f1a;
+    --color-udlaant-bg: #FDF4E0;
+    --color-udlaant-text: #714A00;
+    --color-udlaant-dot: #714A00;
 
     /* ── Status - Inaktiv ── */
-    --color-inaktiv-bg: #eceae8;
-    --color-inaktiv-text: #3a3836;
-    --color-inaktiv-dot: #5a5855;
+    --color-inaktiv-bg: #E9E8E2;
+    --color-inaktiv-text: #424239;
+    --color-inaktiv-dot: #5D5C54;
 
     /* ── Border radius ── */
     --radius-sm: 4px;
@@ -66,8 +71,8 @@
     --space-12: 48px;
 
     /* ── Fonte ── */
-    --font-display: 'Newsreader', Georgia, serif;
-    --font-body: 'Manrope', system-ui, sans-serif;
+    --font-display: Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-body: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif;
 
     /* ── Skriftstørrelser ── */
     --text-h1: 28px;
@@ -79,4 +84,45 @@
 
     /* ── Touch targets - minimum størrelse for tilgængelighed ── */
     --touch-target: 44px;
+}
+
+/* ─── Dark mode overrides ────────────────────────────────────
+   Vuetify sets .v-theme--dark on the root element automatically.
+   CSS variables inside this block override the :root values. */
+.v-theme--dark {
+    /* Baggrunde */
+    --color-bg:         #1F1F1A;
+    --color-surface:    #2C2C25;
+    --color-image-bg:   #3A3A34;
+
+    /* Brand */
+    --color-primary:      #A8BE8C;
+    --color-primary-dark: #8FA876;
+
+    /* Tekst */
+    --color-neutral:   #F6F5F0;
+    --color-secondary: #B0AFA8;
+
+    /* Borders */
+    --color-border:       #3F3F38;
+    --color-input-border: #6B6B64;
+
+    /* Fejl og accent */
+    --color-error:  #E89898;
+    --color-accent: #E89898;
+
+    /* Status - Tilgaengelig */
+    --color-tilgaengelig-bg:   #1A3D1A;
+    --color-tilgaengelig-text: #B4D080;
+    --color-tilgaengelig-dot:  #B4D080;
+
+    /* Status - Udlaant */
+    --color-udlaant-bg:   #3D2A00;
+    --color-udlaant-text: #E8C770;
+    --color-udlaant-dot:  #E8C770;
+
+    /* Status - Inaktiv */
+    --color-inaktiv-bg:   #383835;
+    --color-inaktiv-text: #A8A8A0;
+    --color-inaktiv-dot:  #6B6B64;
 }

@@ -8,7 +8,7 @@ import ItemCard       from "@/components/items/ItemCard.vue";
 import ItemDetailView from "@/components/items/ItemDetailView.vue";
 import ItemFilterTabs from "@/components/items/ItemFilterTabs.vue";
 import { getItemsByUser } from "@/services/items/itemservice.js";
-import { getPendingCountByOwner } from "@/services/rentalRequest/rentalRequestService";
+import { getPendingCountByOwner } from "@/services/rentalrequest/rentalrequestservice.js";
 import { getRentalsByOwner }     from "@/services/rental/rentalservice.js";
 
 
@@ -371,7 +371,7 @@ export default {
   left: 0;
   right: 0;
   padding: 16px;
-  background: white;
+  background: var(--color-surface);
   border-top: 1px solid var(--color-border);
 }
 
@@ -403,7 +403,7 @@ export default {
   left: var(--space-4);
   right: var(--space-4);
   background: var(--color-neutral);
-  color: #ffffff;
+  color: var(--color-surface);
   font-family: var(--font-body);
   font-size: var(--text-label);
   font-weight: 500;

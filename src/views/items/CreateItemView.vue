@@ -8,7 +8,7 @@
 // komponent ikke behøver at $emit op igennem router-view-slottet.
 import ItemBasicInfoStep from "@/components/items/ItemBasicInfoStep.vue";
 import ItemDetailsStep   from "@/components/items/ItemDetailsStep.vue";
-import ConfirmItemScreen from "@/components/ConfirmItemScreen.vue";
+import ConfirmItemScreen from "@/components/items/ConfirmItemScreen.vue";
 
 export default {
   name: "CreateItemView",

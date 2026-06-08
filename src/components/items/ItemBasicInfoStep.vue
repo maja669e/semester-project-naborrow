@@ -6,7 +6,7 @@
 import MultiStepFormHeader from "@/components/layout/MultiStepFormHeader.vue";
 import FormBottomBar       from "@/components/layout/FormBottomBar.vue";
 import { getAllCategories } from "@/services/items/itemservice.js";
-import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import ConfirmDialog from "@/components/feedback/ConfirmDialog.vue";
 
 export default {
   name: "ItemBasicInfoStep",
@@ -46,6 +46,21 @@ export default {
         itemName:         "",
       },
     };
+  },
+
+  computed: {
+    // Beregner om formen er gyldig uden at sætte fejlbeskeder.
+    // Spejler validate()-logikken og låser næste-knappen via :nextDisabled.
+    isFormValid() {
+      const categoryOk =
+        this.selectedCategory !== null &&
+        (this.selectedCategory !== "Andet" || this.customCategory.trim() !== "");
+      return (
+        this.uploadedImages.length > 0 &&
+        categoryOk &&
+        this.itemName.trim() !== ""
+      );
+    },
   },
 
   watch: {
@@ -210,7 +225,7 @@ hasEnteredData() {
         flat
       >
         <div class="ikon-wrapper mb-4">
-          <v-icon size="32" color="var(--color-primary)">mdi-camera</v-icon>
+          <v-icon size="32" color="var(--color-primary)" icon="mdi-camera" />
         </div>
         <div class="text-h6 font-weight-bold mb-2">Tilføj mindst ét billede</div>
         <div class="text-body-2 text-medium-emphasis">
@@ -233,7 +248,7 @@ hasEnteredData() {
       <div class="uploadede-billeder mt-4" v-if="uploadedImages.length">
         <v-img
           v-for="(img, index) in uploadedImages"
-          :key="index"
+          :key="img"
           :src="img"
           :alt="`Uploadet billede ${index + 1}`"
           max-width="150"
@@ -319,7 +334,7 @@ hasEnteredData() {
     </section>
 
     <!-- Bundnavigation: tilbage annullerer, næste validerer og går videre -->
-    <FormBottomBar @back="cancel" @next="next" />
+    <FormBottomBar :nextDisabled="!isFormValid" @back="cancel" @next="next" />
 
 
     <ConfirmDialog
@@ -342,7 +357,7 @@ hasEnteredData() {
 /* ─── Aktiv kategoriknap ─────────────────────────────────── */
 .kategori-toggle .v-btn--active {
   background-color: var(--color-primary) !important;
-  color: white !important;
+  color: var(--color-surface) !important;
 }
 
 /* ─── Kategoriknapper ────────────────────────────────────── */
@@ -380,20 +395,20 @@ hasEnteredData() {
 }
 
 .upload-kort:hover {
-  background-color: #e8f0e3;
+  background-color: var(--color-tilgaengelig-bg);
   border-color: var(--color-primary-dark);
 }
 
 /* ─── Kamera-ikon-wrapper ────────────────────────────────── */
 .ikon-wrapper {
-  background-color: #e8f0e3;
+  background-color: var(--color-tilgaengelig-bg);
   border-radius: 20px;
   padding: 16px;
 }
 
 /* ─── Valideringsfejl ────────────────────────────────────── */
 .fejltekst {
-  color: #b00020;
+  color: var(--color-error);
   font-size: 14px;
   margin-top: 4px;
 }

@@ -87,7 +87,7 @@ export default {
           :aria-pressed="activePerspective === 'renter'"
           @click="activePerspective = 'renter'"
         >
-          <v-icon class="perspektiv-knap__ikon">mdi-archive-arrow-down-outline</v-icon>
+          <v-icon class="perspektiv-knap__ikon" icon="mdi-archive-arrow-down-outline" />
           <span class="perspektiv-knap__titel">Lånt</span>
           <span class="perspektiv-knap__beskrivelse">Genstande jeg låner fra andre</span>
         </button>
@@ -98,7 +98,7 @@ export default {
           :aria-pressed="activePerspective === 'owner'"
           @click="activePerspective = 'owner'"
         >
-          <v-icon class="perspektiv-knap__ikon">mdi-archive-arrow-up-outline</v-icon>
+          <v-icon class="perspektiv-knap__ikon" icon="mdi-archive-arrow-up-outline" />
           <span class="perspektiv-knap__titel">Udlånt</span>
           <span class="perspektiv-knap__beskrivelse">Mine genstande hos andre</span>
         </button>
@@ -169,6 +169,13 @@ export default {
   min-height: var(--touch-target);
   text-align: left;
 }
+.perspektiv-knap:hover:not(.perspektiv-knap--aktiv) {
+  border-color: var(--color-primary);
+  color: var(--color-neutral);
+}
+.perspektiv-knap:active {
+  opacity: 0.8;
+}
 
 .perspektiv-knap__ikon {
   font-size: 20px !important;
@@ -193,7 +200,7 @@ export default {
 .perspektiv-knap--aktiv {
   background: var(--color-primary);
   border-color: var(--color-primary);
-  color: white;
+  color: var(--color-surface);
 }
 
 .test-knap {

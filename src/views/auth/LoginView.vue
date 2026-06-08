@@ -71,14 +71,14 @@ export default {
 
 <template>
   <!-- Sidens primære indhold – <main> sikrer korrekt landmark for skærmlæsere -->
-  <main class="login-baggrund">
+  <main class="login-background">
     <v-container class="login-container" max-width="400">
 
       <!-- Appens navn som primær overskrift -->
-      <h1 class="login-titel mb-2">LÅKAL</h1>
+      <h1 class="login-title mb-2">LÅKAL</h1>
 
       <!-- Beskrivelse af sidens formål – tilknyttet formularen via aria-describedby -->
-      <p id="login-beskrivelse" class="login-undertitel mb-8">
+      <p id="login-beskrivelse" class="login-subtitle mb-8">
         Log ind for at fortsætte
       </p>
 
@@ -139,7 +139,9 @@ export default {
           type="submit"
           block
           size="large"
-          class="login-knap"
+          variant="flat"
+          class="login-btn"
+          :style="{ background: 'var(--color-on-grad)', color: 'var(--color-brand)' }"
           :loading="isLoading"
           :aria-busy="isLoading"
         >
@@ -152,9 +154,10 @@ export default {
 </template>
 
 <style scoped>
-.login-baggrund {
+/* Baggrundsskærm med brand-gradient */
+.login-background {
   min-height: 100vh;
-  background-color: var(--color-bg);
+  background: var(--brand-grad);
   display: flex;
   align-items: center;
 }
@@ -163,23 +166,24 @@ export default {
   width: 100%;
 }
 
-.login-titel {
+/* Titel og undertitel er altid hvide — gradienten er altid mørk */
+.login-title {
   font-family: var(--font-display);
   font-size: var(--text-h1);
-  color: var(--color-neutral);
+  color: var(--color-on-grad);
   text-align: center;
 }
 
-.login-undertitel {
+.login-subtitle {
   font-family: var(--font-body);
   font-size: var(--text-body);
-  color: var(--color-secondary);
+  color: var(--color-on-grad);
   text-align: center;
 }
 
-.login-knap {
-  background-color: var(--color-primary);
-  color: white;
+/* Invers knap — baggrund og farve sættes via :style inline på v-btn.
+   var(--color-brand) er fast #2C3B1E og skifter ikke med dark mode. */
+.login-btn {
   font-family: var(--font-body);
   border-radius: var(--radius-md);
 }

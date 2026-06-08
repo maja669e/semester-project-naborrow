@@ -195,18 +195,18 @@ emits: ['requestLoan'],
 }
 
 .status-tilgaengelig {
-    background: #e8f0e3;
-    color: #2d4a1e;
+    background: var(--color-tilgaengelig-bg);
+    color: var(--color-tilgaengelig-text);
 }
 
 .status-udlaant {
-    background: #f7e8d8;
-    color: #7a3810;
+    background: var(--color-udlaant-bg);
+    color: var(--color-udlaant-text);
 }
 
 .status-inaktiv {
-    background: #eceae8;
-    color: #3a3836;
+    background: var(--color-inaktiv-bg);
+    color: var(--color-inaktiv-text);
 }
 
 .detail-title {
@@ -216,7 +216,7 @@ emits: ['requestLoan'],
 }
 
 .detail-meta {
-    color: #666;
+    color: var(--color-secondary);
     margin-bottom: 24px;
 }
 
@@ -228,8 +228,8 @@ emits: ['requestLoan'],
 .detail-box {
     flex: 1;
 
-    background: white;
-    border: 1px solid #ddd;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 18px;
 
     padding: 20px;
@@ -242,15 +242,15 @@ emits: ['requestLoan'],
 .detail-accessories {
     margin-top: 12px;
 
-    background: white;
-    border: 1px solid #ddd;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 18px;
 
     padding: 20px;
 }
 
 .detail-box-label {
-    color: #777;
+    color: var(--color-secondary);
     margin-bottom: 8px;
 }
 
@@ -260,7 +260,7 @@ emits: ['requestLoan'],
 }
 
 .detail-box-unit {
-    color: #777;
+    color: var(--color-secondary);
 }
 
 .detail-box-heading {
@@ -274,9 +274,9 @@ emits: ['requestLoan'],
 }
 
 .detail-chip {
-    background: #f3f3f3;
+    background: var(--color-image-bg);
     padding: 6px 12px;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
 }
 .rental-action {
     margin-top: 24px;

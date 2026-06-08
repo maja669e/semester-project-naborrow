@@ -31,9 +31,10 @@ export default {
       
       <!-- Øjeikon skifter om aktivt eller ej -->
       <div class="icon-circle">
-        <v-icon :color="isActive ? 'green' : 'grey'">
-          {{ isActive ? 'mdi-eye' : 'mdi-eye-off' }}
-        </v-icon>
+        <v-icon
+          :color="isActive ? 'green' : 'grey'"
+          :icon="isActive ? 'mdi-eye' : 'mdi-eye-off'"
+        />
       </div>
 
       <!-- Hjælpetekst -->
@@ -63,7 +64,7 @@ export default {
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  background: #eef3ea;
+  background: var(--color-tilgaengelig-bg);
   display: flex;
   align-items: center;
   justify-content: center;

@@ -33,28 +33,32 @@ export default {
   <header class="app-header" role="banner">
 
     <!-- Venstre: tilbage-knap emitter "back" — forælderen beslutter navigation -->
-    <button
+    <v-btn
       v-if="showBack"
-      class="app-header__tilbage"
+      icon
+      variant="text"
+      size="large"
       aria-label="Gå tilbage"
       @click="$emit('back')"
     >
-      <v-icon size="22">mdi-chevron-left</v-icon>
-    </button>
+      <v-icon size="22" icon="mdi-chevron-left" />
+    </v-btn>
     <div v-else class="app-header__spacer" aria-hidden="true"></div>
 
     <!-- Midten: sidens titel -->
     <span class="app-header__titel">{{ title }}</span>
 
     <!-- Højre: valgfri handlingsknap eller matchende spacer -->
-    <button
+    <v-btn
       v-if="actionIcon"
-      class="app-header__handling"
+      icon
+      variant="text"
+      size="large"
       :aria-label="actionLabel"
       @click="$emit('action')"
     >
-      <v-icon size="22">{{ actionIcon }}</v-icon>
-    </button>
+      <v-icon size="22" :icon="actionIcon" />
+    </v-btn>
     <div v-else class="app-header__spacer" aria-hidden="true"></div>
 
   </header>
@@ -80,46 +84,6 @@ export default {
   font-size: var(--text-h2);
   font-weight: 600;
   color: var(--color-neutral);
-}
-
-/* ─── Tilbage-knap (venstre) ─────────────────────────────── */
-/* 44×44 px trykflade opfylder WCAG 2.5.5 Success Criterion */
-.app-header__tilbage {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  color: var(--color-neutral);
-}
-
-.app-header__tilbage:focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-/* ─── Handlingsknap (højre) ──────────────────────────────── */
-/* Samme dimensioner som tilbage-knappen, så titlen forbliver centreret */
-.app-header__handling {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  color: var(--color-neutral);
-}
-
-.app-header__handling:focus-visible {
-  outline: 3px solid var(--color-primary);
-  outline-offset: 2px;
 }
 
 /* ─── Spacer ─────────────────────────────────────────────── */

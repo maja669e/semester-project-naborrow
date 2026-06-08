@@ -6,7 +6,7 @@ import MultiStepFormHeader from "@/components/layout/MultiStepFormHeader.vue";
 import RentalSummaryCard   from "@/components/rentals/RentalSummaryCard.vue";
 import TermsDialog         from "@/components/feedback/TermsDialog.vue";
 import FormBottomBar       from "@/components/layout/FormBottomBar.vue";
-import SuccessDialog       from "@/components/SuccessDialog.vue";
+import SuccessDialog       from "@/components/feedback/SuccessDialog.vue";
 import { createRentalRequest } from "@/services/rentalrequest/rentalrequestservice.js";
 
 export default {
@@ -150,13 +150,13 @@ async confirmRental() {
 }
 
 .fejltekst {
-  color: #B00020;
+  color: var(--color-error);
   font-size: 14px;
   margin-top: 4px;
 }
 
 .vilkaar-link {
-  color: #1B5E20;
+  color: var(--color-tilgaengelig-text);
   text-decoration: underline;
   cursor: pointer;
 }

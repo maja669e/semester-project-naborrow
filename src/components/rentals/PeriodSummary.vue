@@ -45,7 +45,7 @@ export default {
 <template>
   <v-card class="mt-4">
    <v-card-text>
-  <v-icon>mdi-calendar-month</v-icon>Valgt periode: {{ formattedStart }} <v-icon size="small">mdi-arrow-right</v-icon> {{ formattedEnd }} ({{ diffDays }} dage)
+  <v-icon icon="mdi-calendar-month" /> Valgt periode: {{ formattedStart }} <v-icon icon="mdi-arrow-right" size="small" /> {{ formattedEnd }} ({{ diffDays }} dage)
 </v-card-text>
   </v-card>
   
@@ -53,7 +53,7 @@ export default {
 
 <style scoped>
 .error-text {
-  color: #B00020;
+  color: var(--color-error);
   margin-top: 8px;
   font-size: 14px;
 }

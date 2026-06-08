@@ -24,6 +24,9 @@ export default {
     // Løfter baren 64px op over AppBottomNav — bruges i flows
     // hvor bundnavigationen er synlig (fx rental-flowet)
     aboveNav: { type: Boolean, default: false },
+
+    // Deaktiverer den primære knap — sættes via isFormValid computed i hvert trin
+    nextDisabled: { type: Boolean, default: false },
   },
 
   emits: [
@@ -52,7 +55,7 @@ export default {
       :disabled="backDisabled"
       @click="$emit('back')"
     >
-      <v-icon start size="18">mdi-chevron-left</v-icon>
+      <v-icon start size="18" icon="mdi-chevron-left" />
       {{ backLabel }}
     </v-btn>
 
@@ -63,6 +66,7 @@ export default {
       class="bundbar__naeste"
       :class="{ 'bundbar__naeste--fuld': !showBack }"
       :loading="nextLoading"
+      :disabled="nextDisabled"
       @click="$emit('next')"
     >
       {{ nextLabel }}
@@ -77,8 +81,8 @@ export default {
   position: fixed;
   left: 0;
   right: 0;
-  background: white;
-  border-top: 1px solid #e5e7eb;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
   padding: 16px;
   display: flex;
   gap: 12px;

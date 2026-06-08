@@ -50,9 +50,7 @@ export default {
       @click="!item.disabled && $emit('navigate', item.key)"
     >
       <!-- Skift mellem fyldt og omrids-ikon baseret på aktiv tilstand -->
-      <v-icon size="24">
-        {{ activePage === item.key ? item.activeIcon : item.icon }}
-      </v-icon>
+      <v-icon size="24" :icon="activePage === item.key ? item.activeIcon : item.icon" />
       <span class="bundnav__label">{{ item.label }}</span>
     </button>
 
@@ -69,7 +67,7 @@ export default {
   left: 0;
   right: 0;
   height: 64px;
-  background: white;
+  background: var(--color-surface);
   border-top: 1px solid var(--color-border);
   display: flex;
   align-items: stretch;
@@ -92,6 +90,13 @@ export default {
   cursor: pointer;
   color: var(--color-secondary);
   min-height: 44px;
+}
+
+.bundnav__element:hover:not(:disabled) {
+  background: rgba(44, 59, 30, 0.06);
+}
+.bundnav__element:active:not(:disabled) {
+  background: rgba(44, 59, 30, 0.12);
 }
 
 /* Fokusring – vises kun ved tastaturnavigation, ikke ved mus */

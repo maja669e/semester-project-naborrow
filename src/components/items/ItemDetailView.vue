@@ -5,7 +5,7 @@
 // Sletning sker via ConfirmDialog for at undgå utilsigtet sletning.
 import { deleteItem, updateItem } from "@/services/items/itemservice.js";
 import ToggleButton  from "@/components/ToggleButton.vue";
-import ConfirmDialog from "@/components/ConfirmDialog.vue";
+import ConfirmDialog from "@/components/feedback/ConfirmDialog.vue";
 
 export default {
   name: "ItemDetailView",
@@ -234,13 +234,23 @@ export default {
 
     <!-- Sidehoved: tilbage-knap og rediger-knap -->
     <header class="detalje-header">
-      <button class="tilbage-knap" @click="$emit('goBack')">
-        ← Tilbage
-      </button>
+      <v-btn
+        variant="text"
+        prepend-icon="mdi-chevron-left"
+        @click="$emit('goBack')"
+      >
+        Tilbage
+      </v-btn>
       <nav class="header-knapper" aria-label="Rediger eller slet genstand">
-        <button v-if="!isEditing" class="rediger-knap" @click="startEditing">
-          <v-icon start icon="mdi-pencil" />Rediger
-        </button>
+        <v-btn
+          v-if="!isEditing"
+          color="primary"
+          variant="tonal"
+          prepend-icon="mdi-pencil"
+          @click="startEditing"
+        >
+          Rediger
+        </v-btn>
       </nav>
     </header>
 
@@ -402,12 +412,23 @@ export default {
 
     <!-- Handlingsknapper vist i bunden under redigering -->
     <section v-if="isEditing" class="rediger-handlinger">
-      <button class="slet-knap" @click="openDeleteDialog">
-        <v-icon>mdi-trash-can</v-icon>Slet genstand
-      </button>
-      <button class="gem-knap" @click="saveEditing">
-        <v-icon>mdi-check</v-icon>Gem ændringer
-      </button>
+      <v-btn
+        block
+        variant="tonal"
+        color="error"
+        prepend-icon="mdi-trash-can"
+        @click="openDeleteDialog"
+      >
+        Slet genstand
+      </v-btn>
+      <v-btn
+        block
+        color="primary"
+        prepend-icon="mdi-check"
+        @click="saveEditing"
+      >
+        Gem ændringer
+      </v-btn>
     </section>
 
   </article>
@@ -430,33 +451,6 @@ export default {
   margin-bottom: var(--space-4);
 }
 
-/* ─── Tilbage-knap ───────────────────────────────────────── */
-/* min-height: 44px opfylder WCAG 2.5.5 trykfladekravet */
-.tilbage-knap {
-  background: transparent;
-  color: var(--color-neutral);
-  border: none;
-  font-family: var(--font-body);
-  font-size: var(--text-body);
-  font-weight: 500;
-  cursor: pointer;
-  padding: var(--space-3) 0;
-  min-height: 44px;
-}
-
-/* ─── Rediger-knap ───────────────────────────────────────── */
-.rediger-knap {
-  background: var(--color-primary);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-md);
-  font-family: var(--font-body);
-  font-size: var(--text-body);
-  font-weight: 500;
-  cursor: pointer;
-  padding: var(--space-3) var(--space-4);
-  min-height: 44px;
-}
 
 /* ─── Billedcontainer ────────────────────────────────────── */
 .detalje-billede-wrapper {
@@ -663,7 +657,7 @@ export default {
   height: 44px;
   border-radius: var(--radius-full);
   background: var(--color-primary);
-  color: #ffffff;
+  color: var(--color-surface);
   font-family: var(--font-body);
   font-size: var(--text-label);
   font-weight: 600;
@@ -744,29 +738,6 @@ export default {
   border-top: 1px solid var(--color-border);
 }
 
-.slet-knap {
-  width: 100%;
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  border: none;
-  background: rgba(185, 28, 28, 0.1);
-  color: #b91c1c;
-  font-weight: 600;
-  font-size: var(--text-body);
-  cursor: pointer;
-}
-
-.gem-knap {
-  width: 100%;
-  padding: var(--space-4);
-  border-radius: var(--radius-lg);
-  border: none;
-  background: var(--color-primary);
-  color: white;
-  font-weight: 600;
-  font-size: var(--text-body);
-  cursor: pointer;
-}
 
 /* ─── Hjælpeklasse til skjult tekst for skærmlæsere ─────── */
 /* Følger det anerkendte sr-only-mønster – elementet er usynligt

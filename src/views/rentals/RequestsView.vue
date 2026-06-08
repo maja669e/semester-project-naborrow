@@ -6,7 +6,7 @@ import {
   getPendingRequestsByOwner,
   acceptRentalRequest,
   rejectRentalRequest
-} from "@/services/rentalRequest/rentalRequestService";
+} from "@/services/rentalrequest/rentalrequestservice.js";
 
 export default {
   name: "RequestsView",
@@ -187,7 +187,7 @@ export default {
 
 .request-card {
   border: 1px solid #d9d9d9;
-  background-color: white;
+  background-color: var(--color-surface);
   padding: 18px;
 }
 
@@ -206,7 +206,7 @@ export default {
 .reject-btn {
   border: 1px solid #e3aaaa !important;
   color: #b23a3a !important;
-  background: white !important;
+  background: var(--color-surface) !important;
 }
 
 .approve-btn {
@@ -220,7 +220,7 @@ export default {
 
 .description-text {
   font-size: 13px;
-  color: #666;
+  color: var(--color-secondary);
   font-style: italic;
   margin: 0;
 }

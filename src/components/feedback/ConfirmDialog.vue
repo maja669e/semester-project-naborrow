@@ -104,7 +104,7 @@ export default {
     background: var(--color-surface);
     border-radius: var(--radius-lg) !important;
     overflow: hidden;
-    border-top: 3px solid #b91c1c;
+    border-top: 3px solid var(--color-error);
 }
 
 .confirm-dialog-indhold {

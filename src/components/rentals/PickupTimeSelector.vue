@@ -71,8 +71,8 @@ export default {
 }
 
 .pickup-card.active {
-  background-color: #2c3b1e;
-  color: white;
+  background-color: var(--color-primary);
+  color: var(--color-surface);
 }
 
 .title {
