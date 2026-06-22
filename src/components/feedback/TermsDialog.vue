@@ -66,8 +66,16 @@ export default {
         <h1 class="title">Vilkår for lån</h1>
         <p class="subtitle">Sidst opdateret: 18. maj 2026</p>
       </header>
-   <!-- Rulleindhold med vilkårene — acceptknap aktiveres ved bunden -->
-      <section class="content" @scroll="handleScroll">
+   <!-- Rulleindhold med vilkårene — acceptknap aktiveres ved bunden.
+        tabindex="0" gør området fokuserbart, så tastaturbrugere kan scrolle
+        med piletaster og dermed udløse scroll-handleren (WCAG 2.1.1). -->
+      <section
+        class="content"
+        tabindex="0"
+        role="region"
+        aria-label="Vilkår for lån"
+        @scroll="handleScroll"
+      >
 
         <p>
           Ved at sende en låneanmodning indgår du en aftale med udlåneren om et gratis lån af den valgte genstand.
@@ -207,7 +215,7 @@ export default {
 
 .subtitle {
   font-size: 13px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   margin: 6px 0 0;
 }
 
@@ -230,7 +238,7 @@ export default {
 .footer {
   margin-top: 20px;
   font-size: 13px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 /* Knapområde i bunden af dialogen */

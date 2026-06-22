@@ -32,6 +32,7 @@ export default {
       lentCompletedLoans: [],
 
       loading: false,
+      error: false,   // true hvis seneste hentning fejlede (adskilt fra "ingen lån")
     };
   },
 
@@ -42,6 +43,7 @@ export default {
   methods: {
     async loadRentals() {
       this.loading = true;
+      this.error = false;
 
       try {
         const userId = this.authStore.user.value.userID;
@@ -58,6 +60,10 @@ export default {
         this.lentActiveLoans    = lentRentals.filter(r => r.Status === "active");
         this.lentCompletedLoans = lentRentals.filter(r => r.Status !== "active");
 
+      } catch (err) {
+        // Uden dette ville en API-fejl vise tom-state, som om brugeren ingen lån har
+        console.error("Fejl ved hentning af lån:", err);
+        this.error = true;
       } finally {
         this.loading = false;
       }
@@ -109,6 +115,27 @@ export default {
       <div v-if="loading" class="laan-side__loader">
         <v-progress-circular indeterminate color="primary" />
       </div>
+
+      <!-- Hvis kaldet fejlede: synlig fejltilstand med mulighed for at prøve igen -->
+      <v-alert
+        v-else-if="error"
+        type="error"
+        variant="tonal"
+        role="alert"
+        class="mt-4"
+      >
+        Kunne ikke hente dine lån. Tjek din forbindelse og prøv igen.
+        <template #append>
+          <v-btn
+            size="small"
+            variant="text"
+            prepend-icon="mdi-refresh"
+            @click="loadRentals"
+          >
+            Prøv igen
+          </v-btn>
+        </template>
+      </v-alert>
 
       <!-- Lån-oversigt skifter med perspektiv -->
       <template v-else>
@@ -162,7 +189,7 @@ export default {
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: var(--color-surface);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   font-family: var(--font-body);
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s, color 0.2s;

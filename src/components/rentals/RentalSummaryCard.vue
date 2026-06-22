@@ -204,7 +204,7 @@ export default {
 
 .item-info p {
   margin: 4px 0 0;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 </style>

@@ -234,7 +234,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   font-size: 12px;
 }
 
@@ -244,7 +244,7 @@ export default {
 
 .field-label {
   font-size: 12px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 .field-value {
@@ -259,6 +259,6 @@ export default {
 }
 .text-body {
   font-family: var(--font-body);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 </style>

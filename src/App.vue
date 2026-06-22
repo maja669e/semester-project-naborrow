@@ -197,6 +197,7 @@ export default {
             color="primary"
             hide-details
             density="compact"
+            aria-label="Skift mellem lyst og mørkt tema"
           />
         </div>
 
@@ -286,7 +287,7 @@ h1, h2, h3, h4 {
 .profil-ark__email {
   font-family: var(--font-body);
   font-size: 13px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 .profil-ark__theme-row {

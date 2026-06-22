@@ -3,8 +3,13 @@
 // Bruges i ItemOverviewView til at liste alle genstande.
 // Udsender cardClicked med genstandens id når brugeren klikker eller
 // trykker Enter/Mellemrum, så tastaturbrugere har fuld adgang.
+import StatusBadge from "@/components/common/StatusBadge.vue";
+import { statusLabel } from "@/utils/itemStatus.js";
+
 export default {
   name: "ItemCard",
+
+  components: { StatusBadge },
 
   props: {
     id:       { type: Number, required: true },
@@ -12,17 +17,17 @@ export default {
     category: { type: String, required: true },
     // Mærke er valgfrit – vises kun hvis det er angivet
     brand:    { type: String, default: null },
+    // Kanonisk status-slug ("tilgaengelig" | "udlaant" | "inaktiv")
     status:   { type: String, required: true },
+    // Valgfri returdato til "udlaant"
+    statusDate: { type: String, default: "" },
     image:    { type: String, required: true },
   },
 
   computed: {
-    // Oversætter status-tekst til en CSS-modifikatorklasse for farvekodning
-    statusClass() {
-      if (this.status === "Tilgængelig") return "status-tilgaengelig";
-      if (this.status === "Udlånt")      return "status-udlaant";
-      if (this.status === "Inaktiv")     return "status-inaktiv";
-      return "";
+    // Dansk label til den tilgængelige aria-tekst (slug'en må ikke læses op)
+    statusText() {
+      return statusLabel(this.status);
     },
   },
 
@@ -44,7 +49,7 @@ export default {
     class="kort"
     role="button"
     tabindex="0"
-    :aria-label="`${title} — ${status}`"
+    :aria-label="`${title} — ${statusText}`"
     @click="handleClick"
     @keydown.enter.prevent="handleClick"
     @keydown.space.prevent="handleClick"
@@ -59,7 +64,7 @@ export default {
       <!-- Øverste række: titel til venstre, status til højre -->
       <div class="kort__top">
         <h2 class="kort__titel">{{ title }}</h2>
-        <span class="kort__status" :class="statusClass">{{ status }}</span>
+        <StatusBadge :status="status" :date="statusDate" />
       </div>
 
       <!-- Metadata: kategori og eventuelt mærke -->
@@ -128,35 +133,8 @@ export default {
 .kort__meta {
   font-family: var(--font-body);
   font-size: var(--text-label);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   margin: 0;
 }
 
-/* ─── Statusmærke ────────────────────────────────────────── */
-.kort__status {
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 5px 11px;
-  border-radius: var(--radius-full);
-  min-height: 32px;
-  display: flex;
-  align-items: center;
-}
-
-/* ─── Statusfarver ───────────────────────────────────────── */
-.status-tilgaengelig {
-  background: var(--color-tilgaengelig-bg);
-  color: var(--color-tilgaengelig-text);
-}
-
-.status-udlaant {
-  background: var(--color-udlaant-bg);
-  color: var(--color-udlaant-text);
-}
-
-.status-inaktiv {
-  background: var(--color-inaktiv-bg);
-  color: var(--color-inaktiv-text);
-}
 </style>

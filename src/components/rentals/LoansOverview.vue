@@ -3,11 +3,22 @@
 // sections-computed samler begge sektioner i ét array — undgår dobbelt template-kode.
 // showRenter: viser lånerens navn, slåes til i udlåner-perspektiv (owner-tab).
 import { completeRental } from "@/services/rental/rentalservice.js";
+import ConfirmDialog from "@/components/feedback/ConfirmDialog.vue";
 
 export default {
   name: "LoansOverview",
 
+  components: { ConfirmDialog },
+
   emits: ["loan-completed"],
+
+  data() {
+    return {
+      showCompleteDialog: false,  // Bekræftelsesdialog inden et lån afsluttes
+      completingLoan: null,       // Lånet der afventer bekræftelse
+      isCompleting: false,        // Indlæsningstilstand mens afslutningen kører
+    };
+  },
 
   props: {
     activeLoans: {
@@ -58,7 +69,7 @@ export default {
     // Returnerer CSS-farve baseret på Rental-status
     statusColor(status) {
       if (status === "active")    return "var(--color-primary)";
-      if (status === "completed") return "var(--color-secondary)";
+      if (status === "completed") return "var(--color-text-secondary)";
       if (status === "cancelled") return "var(--color-accent)";
       return "var(--color-border)";
     },
@@ -74,6 +85,32 @@ export default {
     async completeLoan(rentalId) {
       await completeRental(rentalId);
       this.$emit("loan-completed");
+    },
+
+    // Åbn bekræftelsesdialog i stedet for at afslutte med det samme,
+    // så et fejltryk ikke utilsigtet afslutter lånet
+    askComplete(loan) {
+      this.completingLoan = loan;
+      this.showCompleteDialog = true;
+    },
+
+    // Gennemfør afslutningen efter brugeren har bekræftet
+    async confirmComplete() {
+      if (!this.completingLoan) return;
+      this.isCompleting = true;
+      try {
+        await this.completeLoan(this.completingLoan.RentalID);
+        this.showCompleteDialog = false;
+        this.completingLoan = null;
+      } finally {
+        this.isCompleting = false;
+      }
+    },
+
+    // Luk dialogen uden at afslutte
+    cancelComplete() {
+      this.showCompleteDialog = false;
+      this.completingLoan = null;
     },
   },
 };
@@ -143,12 +180,12 @@ export default {
             {{ formatStatus(loan.Status) }}
           </span>
 
-          <!-- KUN TIL TEST: afslut ét enkelt aktivt lån manuelt -->
+          <!-- Afslut ét enkelt aktivt lån manuelt — bekræftes i dialog først -->
           <button
             v-if="section.canComplete"
             class="laankort__afslut"
             :aria-label="`Afslut lån: ${loan.rentalRequest?.item?.ItemName}`"
-            @click="completeLoan(loan.RentalID)"
+            @click="askComplete(loan)"
           >
             Afslut
           </button>
@@ -159,6 +196,19 @@ export default {
       </template>
 
     </div>
+
+    <!-- Bekræftelse inden et aktivt lån afsluttes -->
+    <ConfirmDialog
+      v-model="showCompleteDialog"
+      title="Afslut lån?"
+      :message="completingLoan
+        ? `Vil du afslutte lånet af ${completingLoan.rentalRequest?.item?.ItemName}? Det kan ikke fortrydes.`
+        : 'Vil du afslutte dette lån? Det kan ikke fortrydes.'"
+      confirm-label="Afslut lån"
+      :loading="isCompleting"
+      @confirm="confirmComplete"
+      @cancel="cancelComplete"
+    />
 
   </div>
 </template>
@@ -182,7 +232,7 @@ export default {
   font-family: var(--font-body);
   font-size: var(--text-label);
   font-weight: 700;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -192,7 +242,7 @@ export default {
   font-size: var(--text-meta);
   font-weight: 700;
   background: var(--color-image-bg);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   border-radius: var(--radius-full);
   padding: 1px 8px;
 }
@@ -200,7 +250,7 @@ export default {
 .laan-sektion__tom {
   font-family: var(--font-body);
   font-size: var(--text-label);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   padding: 16px 0;
 }
 
@@ -243,7 +293,7 @@ export default {
   align-items: center;
   font-family: var(--font-body);
   font-size: var(--text-meta);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 .laankort__hoejre {
@@ -261,12 +311,12 @@ export default {
   white-space: nowrap;
 }
 
-/* KUN TIL TEST */
+/* Afslut-knap på aktive lån */
 .laankort__afslut {
   font-family: var(--font-body);
   font-size: var(--text-meta);
   font-weight: 600;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   background: none;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);

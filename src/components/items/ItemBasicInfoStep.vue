@@ -277,7 +277,8 @@ hasEnteredData() {
             :key="category.CategoryID"
             :value="category.CategoryName"
             rounded="xl"
-            variant="#eeece8"
+            variant="flat"
+            color="var(--color-image-bg)"
           >
             {{ category.CategoryName }}
           </v-btn>

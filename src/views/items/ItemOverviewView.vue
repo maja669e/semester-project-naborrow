@@ -10,6 +10,7 @@ import ItemFilterTabs from "@/components/items/ItemFilterTabs.vue";
 import { getItemsByUser } from "@/services/items/itemservice.js";
 import { getPendingCountByOwner } from "@/services/rentalrequest/rentalrequestservice.js";
 import { getRentalsByOwner }     from "@/services/rental/rentalservice.js";
+import { getItemStatus, statusLabel } from "@/utils/itemStatus.js";
 
 
 export default {
@@ -60,7 +61,16 @@ export default {
       try {
         const userId = this.authStore.user.value.userID;
         const data = await getItemsByUser(userId);
-        this.itemsList = data.map((item) => ({
+        this.itemsList = data.map((item) => {
+          // Central udledning af badge-status (slug + returdato). isOwner=true,
+          // da dette er "Mine ting" – derfor må "inaktiv" gerne vises.
+          const badge = getItemStatus({
+            isActive:          item.IsActive,
+            isCurrentlyRented: item.isCurrentlyRented,
+            endDate:           item.currentRentalEndDate,
+            isOwner:           true,
+          });
+          return {
           id:          item.ItemID,
           title:       item.ItemName,
           category:
@@ -68,10 +78,11 @@ export default {
             item.category?.CategoryName ||
             String(item.CategoryID),
           brand:       item.Brand,
-          // Tre-vejs status: ejer deaktiveret → Inaktiv, aktivt udlånt → Udlånt, ellers → Tilgængelig
-          status:      !item.IsActive         ? "Inaktiv"
-                     : item.isCurrentlyRented ? "Udlånt"
-                     :                          "Tilgængelig",
+          isActive:    item.IsActive,
+          // statusKey/statusDate driver StatusBadge; status (dansk label) driver filterfanerne
+          statusKey:   badge.status,
+          statusDate:  badge.date,
+          status:      statusLabel(badge.status),
           image:       this.resolveImageUrl(item.images?.[0]?.ImageURL),
           rawImage:    item.images?.[0]?.ImageURL,
           condition:   item.Condition,
@@ -81,7 +92,8 @@ export default {
           totalLoans:  0,
           activeLoans: 0,
           rating:      null,
-        }));
+          };
+        });
 
         // Scroll til og fremhæv en specifik genstand hvis angivet via inject
         if (this.items.shownItemId) {
@@ -203,7 +215,9 @@ export default {
       :title="selectedItem.title"
       :category="selectedItem.category"
       :brand="selectedItem.brand"
-      :status="selectedItem.status"
+      :status="selectedItem.statusKey"
+      :statusDate="selectedItem.statusDate"
+      :isActive="selectedItem.isActive"
       :image="selectedItem.image"
       :imagePath="selectedItem.rawImage"
       :condition="selectedItem.condition"
@@ -277,7 +291,8 @@ export default {
             :title="item.title"
             :category="item.category"
             :brand="item.brand"
-            :status="item.status"
+            :status="item.statusKey"
+            :statusDate="item.statusDate"
             :image="item.image"
             @cardClicked="showDetails"
           />
@@ -358,7 +373,7 @@ export default {
 .ingen-resultater {
   font-family: var(--font-body);
   font-size: var(--text-label);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   text-align: center;
   margin-top: var(--space-8);
 }
@@ -430,6 +445,6 @@ export default {
 
 .status-label {
   font-size: 13px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 </style>

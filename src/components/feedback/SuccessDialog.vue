@@ -156,7 +156,7 @@ export default {
 .success-message {
     font-family: var(--font-body, 'Segoe UI', sans-serif);
     font-size: var(--text-label, 14px);
-    color: var(--color-secondary, #666666);
+    color: var(--color-text-secondary);
     margin: 0;
     line-height: 1.5;
 }

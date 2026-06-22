@@ -66,7 +66,7 @@ export default {
   font-family: var(--font-body);
   font-size: var(--text-label);
   font-weight: 600;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   background: transparent;
   border: 1.5px solid var(--color-border);
   border-radius: var(--radius-full);

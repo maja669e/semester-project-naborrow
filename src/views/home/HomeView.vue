@@ -41,11 +41,6 @@ export default {
             </v-btn>
           </v-col>
 
-          <!-- Naviger til brugerens aktive lån -->
-          <v-col cols="12">
-            <v-btn color="primary" class="navigations-knap" size="large">Dine lån</v-btn>
-          </v-col>
-
         </v-row>
       </nav>
 

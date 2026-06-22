@@ -4,6 +4,7 @@
 // Klik på et kort åbner detaljeskærmen med mulighed for at starte låneanmodning.
 import { getAllItems } from '@/services/items/itemservice.js'
 import ItemDetailCard from '@/components/items/ItemDetailCard.vue'
+import { getItemStatus } from '@/utils/itemStatus.js'
 
 
 export default {
@@ -46,6 +47,7 @@ export default {
         // Hent alle genstande og filtrer brugerens egne fra
         async fetchItems() {
 
+            this.error = null
             try {
                 const data = await getAllItems()
 
@@ -64,12 +66,22 @@ export default {
 
         // Map API-data til det format ItemDetailCard forventer og åbn detaljeskærmen
         openItem(item) {
+            // isOwner=false: "inaktiv" må aldrig vises for andre brugere (og findAll
+            // filtrerer dem helt fra). findAll leverer nu isCurrentlyRented +
+            // currentRentalEndDate, så "Udlånt indtil ..." vises korrekt i Udforsk.
+            const badge = getItemStatus({
+                isActive: item.IsActive,
+                isCurrentlyRented: item.isCurrentlyRented,
+                endDate: item.currentRentalEndDate,
+                isOwner: false,
+            })
             this.selectedItem = {
                 id: item.ItemID,
                 title: item.ItemName,
                 category: item.Category?.CategoryName,
                 brand: item.Brand,
-                status: item.IsActive ? 'Tilgængelig' : 'Inaktiv',
+                status: badge?.status ?? null,
+                statusDate: badge?.date ?? '',
                 image: item.image,
                 condition: item.Condition,
                 maxDays: item.MaxRentPeriodDays,
@@ -114,16 +126,44 @@ export default {
     <section v-else>
 
         <h1 class="page-title">
-            Forside
+            Udforsk
         </h1>
+
+        <!-- Synlig fejltilstand når hentningen fejler, med mulighed for at prøve igen -->
+        <v-alert
+            v-if="error"
+            type="error"
+            variant="tonal"
+            role="alert"
+            class="mb-4"
+        >
+            {{ error }}
+            <template #append>
+                <v-btn
+                    size="small"
+                    variant="text"
+                    prepend-icon="mdi-refresh"
+                    @click="fetchItems"
+                >
+                    Prøv igen
+                </v-btn>
+            </template>
+        </v-alert>
 
         <div class="card-grid">
 
+            <!-- role/tabindex + keydown gør kortet tastaturtilgængeligt (WCAG 2.1.1),
+                 samme mønster som PickupTimeSelector.vue -->
             <v-card
                 v-for="item in items"
                 :key="item.ItemID"
                 class="cursor-pointer"
+                role="button"
+                tabindex="0"
+                :aria-label="`${item.ItemName}${item.Brand ? ', ' + item.Brand : ''}`"
                 @click="openItem(item)"
+                @keydown.enter.prevent="openItem(item)"
+                @keydown.space.prevent="openItem(item)"
             >
 
                 <v-img
@@ -168,6 +208,12 @@ export default {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 20px;
+}
+
+/* Synlig fokusring ved tastaturnavigation (WCAG 2.4.7) */
+.cursor-pointer:focus-visible {
+    outline: 3px solid var(--color-neutral);
+    outline-offset: 3px;
 }
 
 

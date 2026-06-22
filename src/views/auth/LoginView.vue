@@ -94,6 +94,7 @@ export default {
         <v-text-field
           v-model="email"
           placeholder="Email"
+          aria-label="Email"
           variant="outlined"
           bg-color="login-field"
           prepend-inner-icon="mdi-email-outline"
@@ -114,7 +115,7 @@ export default {
           prepend-inner-icon="mdi-lock-outline"
           :type="showPassword ? 'text' : 'password'"
           :append-inner-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
-          :aria-label="showPassword ? 'Adgangskode synlig' : 'Adgangskode skjult'"
+          aria-label="Adgangskode"
           autocomplete="current-password"
           class="mb-2"
           :rules="passwordRules"

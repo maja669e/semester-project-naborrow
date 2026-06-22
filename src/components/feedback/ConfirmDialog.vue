@@ -122,7 +122,7 @@ export default {
 .confirm-dialog-tekst {
     font-family: var(--font-body);
     font-size: var(--text-label);
-    color: var(--color-secondary);
+    color: var(--color-text-secondary);
     margin: 0 0 var(--space-5) 0;
     line-height: 1.5;
 }

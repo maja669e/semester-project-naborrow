@@ -6,10 +6,11 @@
 import { deleteItem, updateItem } from "@/services/items/itemservice.js";
 import ToggleButton  from "@/components/ToggleButton.vue";
 import ConfirmDialog from "@/components/feedback/ConfirmDialog.vue";
+import StatusBadge   from "@/components/common/StatusBadge.vue";
 
 export default {
   name: "ItemDetailView",
-  components: { ToggleButton, ConfirmDialog },
+  components: { ToggleButton, ConfirmDialog, StatusBadge },
 
   props: {
     id:          { type: Number, required: true },
@@ -17,7 +18,13 @@ export default {
     category:    { type: String, required: true },
     // Mærke og stand er valgfrie – ikke alle genstande har dem
     brand:       { type: String, default: null },
+    // Kanonisk status-slug ("tilgaengelig" | "udlaant" | "inaktiv")
     status:      { type: String, required: true },
+    // Valgfri returdato til "udlaant"
+    statusDate:  { type: String, default: "" },
+    // Eksplicit aktiv-flag – en udlånt genstand er stadig aktiv, så
+    // toggle-starttilstanden må ikke udledes af status-slug'en.
+    isActive:    { type: Boolean, default: true },
     image:       { type: String, required: true },
     // imagePath er den rå server-sti (ikke base64) brugt ved opdatering
     imagePath:   { type: String, default: null },
@@ -49,14 +56,6 @@ export default {
   },
 
   computed: {
-    // Oversætter status-tekst til en CSS-modifikatorklasse for farvekodning
-    statusClass() {
-      if (this.status === "Tilgængelig") return "status-tilgaengelig";
-      if (this.status === "Udlånt")      return "status-udlaant";
-      if (this.status === "Inaktiv")     return "status-inaktiv";
-      return "";
-    },
-
     // Konvertér den kommaseparerede tilbehørsstreng til et array af tags
     accessoriesList() {
       if (!this.accessories) return [];
@@ -104,8 +103,9 @@ export default {
         rawImage:     this.imagePath,
         imageBase64:  null,   // Udfyldes kun hvis brugeren uploader et nyt billede
         imagePreview: null,
-        // IsActive: 1 = tilgængelig, 0 = inaktiv
-        isActive: this.status === "Tilgængelig" ? 1 : 0,
+        // IsActive: 1 = aktiv, 0 = inaktiv. Tages fra det eksplicitte flag, ikke
+        // fra status-slug'en (en udlånt genstand er stadig aktiv).
+        isActive: this.isActive ? 1 : 0,
       };
     },
 
@@ -289,10 +289,7 @@ export default {
       </div>
 
       <!-- Statusmærke placeret over billedet -->
-      <span class="detalje-status" :class="statusClass">
-        <span class="detalje-status-prik" aria-hidden="true"></span>
-        {{ status }}
-      </span>
+      <StatusBadge :status="status" :date="statusDate" class="detalje-status-pos" />
 
     </figure>
 
@@ -469,37 +466,11 @@ export default {
 }
 
 /* ─── Statusmærke (overlay på billedet) ──────────────────── */
-.detalje-status {
+.detalje-status-pos {
   position: absolute;
   bottom: 12px;
   right: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 600;
-  padding: 5px 11px;
-  border-radius: var(--radius-full);
-  min-height: 32px;
 }
-
-.detalje-status-prik {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-/* ─── Statusfarver ───────────────────────────────────────── */
-.status-tilgaengelig { background: var(--color-tilgaengelig-bg);  color: var(--color-tilgaengelig-text); }
-.status-tilgaengelig .detalje-status-prik { background: var(--color-tilgaengelig-dot); }
-
-.status-udlaant { background: var(--color-udlaant-bg);  color: var(--color-udlaant-text); }
-.status-udlaant .detalje-status-prik { background: var(--color-udlaant-dot); }
-
-.status-inaktiv { background: var(--color-inaktiv-bg);  color: var(--color-inaktiv-text); }
-.status-inaktiv .detalje-status-prik { background: var(--color-inaktiv-dot); }
 
 /* ─── Titel og metadata ──────────────────────────────────── */
 .detalje-titel {
@@ -513,7 +484,7 @@ export default {
 .detalje-meta {
   font-family: var(--font-body);
   font-size: var(--text-label);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   margin: 0 0 20px 0;
 }
 
@@ -592,7 +563,7 @@ export default {
   font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   margin: 0;
   white-space: nowrap;
   text-transform: uppercase;
@@ -603,7 +574,7 @@ export default {
   font-family: var(--font-body);
   font-size: var(--text-meta);
   font-weight: 500;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 .detalje-boks-tal {
@@ -618,7 +589,7 @@ export default {
   font-family: var(--font-body);
   font-size: var(--text-meta);
   font-weight: 500;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 /* ─── Tilbehørschips ─────────────────────────────────────── */
@@ -683,7 +654,7 @@ export default {
 .detalje-ejer-dato {
   font-family: var(--font-body);
   font-size: var(--text-meta);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   margin: 0;
   white-space: nowrap;
 }
@@ -718,7 +689,7 @@ export default {
 .detalje-stat-label {
   font-family: var(--font-body);
   font-size: var(--text-meta);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 /* ─── Knapnavigation i sidehovedet ───────────────────────── */

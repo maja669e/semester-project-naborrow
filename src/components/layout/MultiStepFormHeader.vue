@@ -78,7 +78,7 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 .step-circle {
