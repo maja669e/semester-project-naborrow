@@ -2,6 +2,7 @@
 // Visning af indkommende låneanmodninger for den loggede udlåner.
 // Henter kun anmodninger med status "pending" for udlånerens egne genstande.
 import AppHeader from "@/components/layout/AppHeader.vue";
+import ConfirmDialog from "@/components/feedback/ConfirmDialog.vue";
 import {
   getPendingRequestsByOwner,
   acceptRentalRequest,
@@ -11,7 +12,7 @@ import {
 export default {
   name: "RequestsView",
 
-  components: { AppHeader },
+  components: { AppHeader, ConfirmDialog },
 
   inject: ["authStore"],
 
@@ -19,7 +20,18 @@ export default {
     return {
       requests: [],
       loading: false,
+      error: false,   // true hvis seneste hentning fejlede (adskilt fra "ingen data")
+      showRejectDialog: false,  // Bekræftelsesdialog inden en afvisning gennemføres
+      rejectingId: null,        // RentalRequestID der afventer bekræftelse
+      isRejecting: false,       // Indlæsningstilstand mens afvisningen kører
     };
+  },
+
+  computed: {
+    // Den anmodning der er ved at blive afvist – bruges til dialogteksten
+    rejectTarget() {
+      return this.requests.find((r) => r.RentalRequestID === this.rejectingId) || null;
+    },
   },
 
   async mounted() {
@@ -29,10 +41,17 @@ export default {
   methods: {
     async loadRequests() {
       this.loading = true;
+      this.error = false;
 
       try {
         const userId = this.authStore.user.value.userID;
         this.requests = await getPendingRequestsByOwner(userId);
+      } catch (err) {
+        // Skeln mellem "ingen anmodninger" og "kaldet fejlede": uden dette
+        // ville en fejl vise tom-state, som om alt var fint (WCAG 4.1.3).
+        console.error("Fejl ved hentning af anmodninger:", err);
+        this.error = true;
+        this.requests = [];
       } finally {
         this.loading = false;
       }
@@ -43,9 +62,34 @@ export default {
       await this.loadRequests();
     },
 
-    async reject(id) {
-      await rejectRentalRequest(id);
-      await this.loadRequests();
+    // Åbn bekræftelsesdialog i stedet for at afvise med det samme (WCAG 3.3.4),
+    // så et fejltryk ikke uigenkaldeligt sletter anmodningen.
+    askReject(id) {
+      this.rejectingId = id;
+      this.showRejectDialog = true;
+    },
+
+    // Gennemfør afvisningen efter brugeren har bekræftet
+    async confirmReject() {
+      if (this.rejectingId == null) return;
+      this.isRejecting = true;
+      try {
+        await rejectRentalRequest(this.rejectingId);
+        this.showRejectDialog = false;
+        this.rejectingId = null;
+        await this.loadRequests();
+      } catch (err) {
+        console.error("Fejl ved afvisning af anmodning:", err);
+        this.error = true;
+      } finally {
+        this.isRejecting = false;
+      }
+    },
+
+    // Luk dialogen uden at afvise
+    cancelReject() {
+      this.showRejectDialog = false;
+      this.rejectingId = null;
     },
 
     // Oversætter backend-statuskoder til dansk.
@@ -84,6 +128,25 @@ export default {
     <v-row v-if="loading">
       <v-col cols="12" class="text-center">
         <v-progress-circular indeterminate color="primary" />
+      </v-col>
+    </v-row>
+
+    <!-- Hvis kaldet fejlede: synlig fejltilstand med mulighed for at prøve igen -->
+    <v-row v-else-if="error">
+      <v-col cols="12">
+        <v-alert type="error" variant="tonal" role="alert">
+          Kunne ikke hente anmodninger. Tjek din forbindelse og prøv igen.
+          <template #append>
+            <v-btn
+              size="small"
+              variant="text"
+              prepend-icon="mdi-refresh"
+              @click="loadRequests"
+            >
+              Prøv igen
+            </v-btn>
+          </template>
+        </v-alert>
       </v-col>
     </v-row>
 
@@ -153,7 +216,7 @@ export default {
               variant="outlined"
               size="small"
               class="action-btn reject-btn mr-3"
-              @click="reject(req.RentalRequestID)"
+              @click="askReject(req.RentalRequestID)"
             >
               Afvis
             </v-btn>
@@ -174,6 +237,19 @@ export default {
       </v-col>
     </v-row>
 
+    <!-- Bekræftelse inden en anmodning afvises -->
+    <ConfirmDialog
+      v-model="showRejectDialog"
+      title="Afvis anmodning?"
+      :message="rejectTarget
+        ? `Vil du afvise ${rejectTarget.renter?.Username}s anmodning om ${rejectTarget.item?.ItemName}? Det kan ikke fortrydes.`
+        : 'Vil du afvise denne anmodning? Det kan ikke fortrydes.'"
+      confirm-label="Afvis anmodning"
+      :loading="isRejecting"
+      @confirm="confirmReject"
+      @cancel="cancelReject"
+    />
+
   </v-container>
 
   </div>
@@ -186,7 +262,7 @@ export default {
 }
 
 .request-card {
-  border: 1px solid #d9d9d9;
+  border: 1px solid var(--color-border);
   background-color: var(--color-surface);
   padding: 18px;
 }
@@ -220,7 +296,7 @@ export default {
 
 .description-text {
   font-size: 13px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   font-style: italic;
   margin: 0;
 }

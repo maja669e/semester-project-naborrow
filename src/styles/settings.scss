@@ -31,14 +31,17 @@
 
     /* ── Tekst farver ── */
     --color-neutral: #2C2C25;
-    --color-secondary: #5D5C54;
-
-    /* ── Accent (bruges til "cancelled" i LoansOverview) ── */
-    --color-accent: #861E1E;
+    --color-text-secondary: #5D5C54;   /* Grå/dæmpet tekstfarve */
 
     /* ── Borders ── */
     --color-border: #CCCBC3;
     --color-input-border: #8E8E86;
+
+    /* ── Fejl ── */
+    --color-error: #861E1E;            /* TILFØJET: manglede i light, derfor blev error-tekst sort */
+
+    /* ── Accent (bruges til "cancelled" i LoansOverview) ── */
+    --color-accent: #861E1E;
 
     /* ── Status - Tilgængelig ── */
     --color-tilgaengelig-bg: #E6F4E6;
@@ -48,12 +51,15 @@
     /* ── Status - Udlånt ── */
     --color-udlaant-bg: #FDF4E0;
     --color-udlaant-text: #714A00;
-    --color-udlaant-dot: #714A00;
 
     /* ── Status - Inaktiv ── */
-    --color-inaktiv-bg: #E9E8E2;
+    --color-inaktiv-bg: #D6D4CA;       /* RETTET fra #E9E8E2: eget fyld, laaner ikke baggrundsfarve */
     --color-inaktiv-text: #424239;
-    --color-inaktiv-dot: #5D5C54;
+
+    /* ── Info-banner (teal accent, matcher design system §4) ── */
+    --color-info-bg: #E0F2F1;
+    --color-info-text: #004D40;
+    --color-info-border: #80CBC4;
 
     /* ── Border radius ── */
     --radius-sm: 4px;
@@ -68,7 +74,6 @@
     --space-4: 16px;
     --space-6: 24px;
     --space-8: 32px;
-    --space-12: 48px;
 
     /* ── Fonte ── */
     --font-display: Georgia, Cambria, 'Times New Roman', Times, serif;
@@ -81,6 +86,7 @@
     --text-body: 16px;
     --text-label: 14px;
     --text-meta: 12px;
+    --text-display: 32px;   /* Store tal/priser — over h1 */
 
     /* ── Touch targets - minimum størrelse for tilgængelighed ── */
     --touch-target: 44px;
@@ -100,12 +106,12 @@
     --color-primary-dark: #8FA876;
 
     /* Tekst */
-    --color-neutral:   #F6F5F0;
-    --color-secondary: #B0AFA8;
+    --color-neutral:        #F6F5F0;
+    --color-text-secondary: #B0AFA8;   /* Grå/dæmpet tekstfarve */
 
     /* Borders */
     --color-border:       #3F3F38;
-    --color-input-border: #6B6B64;
+    --color-input-border: #7E7D76;   /* RETTET fra #6B6B64: bestod ikke 3:1 mod surface i dark (1.4.11) */
 
     /* Fejl og accent */
     --color-error:  #E89898;
@@ -119,10 +125,54 @@
     /* Status - Udlaant */
     --color-udlaant-bg:   #3D2A00;
     --color-udlaant-text: #E8C770;
-    --color-udlaant-dot:  #E8C770;
 
     /* Status - Inaktiv */
     --color-inaktiv-bg:   #383835;
     --color-inaktiv-text: #A8A8A0;
-    --color-inaktiv-dot:  #6B6B64;
+
+    /* Info-banner (matcher design system §5) */
+    --color-info-bg:     rgba(128, 203, 196, 0.10);
+    --color-info-text:   #80CBC4;
+    --color-info-border: rgba(128, 203, 196, 0.28);
 }
+
+/* ─── Vuetify input-kant kobles til design-tokenet ───────────
+   Vuetifys outlined-felter bruger som standard on-surface med lav
+   opacity, der kan falde under 3:1 mod surface (WCAG 1.4.11).
+   Vi sætter HVILETILSTANDENS kant til --color-input-border (valgt
+   til at bestå 3:1 i både light og dark). Fokus/fejl/disabled
+   undtages, så Vuetify stadig styrer de tilstande. */
+.v-field--variant-outlined:not(.v-field--focused):not(.v-field--error):not(.v-field--disabled) .v-field__outline {
+  color: var(--color-input-border);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-label);
+  font-weight: 600;
+  line-height: 1;
+  border: 1.5px solid currentColor;
+}
+.status-badge .v-icon { font-size: 16px; }
+
+/* ─── Fejl-label til formularfelter ──────────────────────────
+   Global, så alle forms ser ens ud (samme tanke som .status-badge).
+   Reglerne den følger:
+   - Tema-bevidst farve via --color-error (består kontrast i light/dark).
+   - Betydningen bæres af TEKST, ikke kun farve (WCAG 1.4.1).
+   - Markup skal sætte role="alert" så fejlen annonceres når den vises,
+     og knytte sig til feltet (aria-describedby / Vuetifys :error-messages). */
+.fejltekst {
+  color: var(--color-error);
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  font-weight: 600;
+  margin-top: 8px;
+}
+.status-badge--tilgaengelig { background: var(--color-tilgaengelig-bg); color: var(--color-tilgaengelig-text); }
+.status-badge--udlaant      { background: var(--color-udlaant-bg);      color: var(--color-udlaant-text); }
+.status-badge--inaktiv      { background: var(--color-inaktiv-bg);      color: var(--color-inaktiv-text); }

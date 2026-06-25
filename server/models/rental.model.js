@@ -15,6 +15,18 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING(50),
             defaultValue: "active",
             allowNull: false
+        },
+        // Soft delete PR. BRUGER: skjuler lånet fra den ene parts historik
+        // uden at slette posten. Den anden part beholder lånet i sin historik.
+        HiddenByRenter: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            allowNull: false
+        },
+        HiddenByOwner: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            allowNull: false
         }
     }, {
         tableName: "Rental",

@@ -20,7 +20,7 @@ export default {
     SuccessDialog,
   },
 
-  inject: ["authStore"],
+  inject: ["authStore", "triggerRentalSuccess"],
 
   props: {
     // Det aktuelle trin sendt videre til MultiStepFormHeader
@@ -41,7 +41,14 @@ export default {
       showSuccessDialog: false,
     };
   },
-inject: ["authStore", "triggerRentalSuccess"],
+  // Ryd fejlbeskeden så snart brugeren sætter fluebenet, så den ikke
+  // bliver hængende efter at vilkårene er accepteret.
+  watch: {
+    acceptedTerms(accepted) {
+      if (accepted) this.error = "";
+    },
+  },
+
   methods: {
     // Validerer vilkårsaccept, bygger request-objektet og sender det til backend
 async confirmRental() {
@@ -81,15 +88,17 @@ async confirmRental() {
 
 <template>
 
-  <v-container class="pa-4 laanflow-container">
+  <div>
 
-    <!-- Formularhoved med titel og trinindikator -->
+    <!-- Formularhoved uden for containeren, så den fylder fuld bredde
+         i toppen som headeren på de øvrige sider -->
     <MultiStepFormHeader
       title="Låneanmodning"
       :currentStep="currentStep"
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
 
+    <v-container class="pa-4 laanflow-container">
     <h2>Bekræft lån</h2>
     <p>Tjek dine oplysninger før du sender låneanmodningen</p>
 
@@ -101,11 +110,18 @@ async confirmRental() {
       />
     </section>
 
-    <!-- Vilkårsaccept -->
-    <section aria-labelledby="vilkaar-overskrift">
+    <!-- Vilkårsaccept. role="group" + aria-describedby binder fejlen til gruppen,
+         og fejlen ligger lige under checkboxen så den tydeligt hører til den.
+         hide-details fjerner Vuetifys reserverede plads under feltet, der ellers
+         skubbede fejlen langt ned. -->
+    <section
+      role="group"
+      aria-labelledby="vilkaar-overskrift"
+      :aria-describedby="error ? 'vilkaar-fejl' : undefined"
+    >
       <h3 id="vilkaar-overskrift" class="sr-only">Vilkår og betingelser</h3>
 
-      <v-checkbox v-model="acceptedTerms" color="primary">
+      <v-checkbox v-model="acceptedTerms" color="primary" hide-details>
         <template #label>
           <span>
             Jeg accepterer
@@ -120,10 +136,10 @@ async confirmRental() {
         </template>
       </v-checkbox>
 
+      <p v-if="error" id="vilkaar-fejl" role="alert" class="fejltekst">{{ error }}</p>
+
       <TermsDialog v-model="showTerms" />
     </section>
-
-    <p v-if="error" role="alert" class="fejltekst">{{ error }}</p>
 
     <!-- Bundbar — "Bekræft lån" validerer og sender anmodningen -->
     <FormBottomBar
@@ -139,7 +155,8 @@ async confirmRental() {
   message="Din låneanmodning er nu sendt til udlåner"
 />
 
-  </v-container>
+    </v-container>
+  </div>
 
 </template>
 
@@ -147,12 +164,6 @@ async confirmRental() {
 /* padding-bottom sikrer at indhold ikke skjules bag den faste FormBottomBar og AppBottomNav */
 .laanflow-container {
   padding-bottom: calc(180px + env(safe-area-inset-bottom));
-}
-
-.fejltekst {
-  color: var(--color-error);
-  font-size: 14px;
-  margin-top: 4px;
 }
 
 .vilkaar-link {

@@ -38,12 +38,20 @@ export default {
 <template>
   <div class="pickup-grid">
 
+    <!-- role/tabindex + keydown gør tidsblokken tastaturtilgængelig (WCAG 2.1.1);
+         aria-pressed melder valgt-tilstand til skærmlæsere. -->
     <v-card
       v-for="option in options"
       :key="option.label"
       class="pickup-card"
       :class="{ active: modelValue?.includes(option.label) }"
+      role="button"
+      tabindex="0"
+      :aria-pressed="modelValue?.includes(option.label)"
+      :aria-label="`${option.label}, ${option.time}`"
       @click="select(option)"
+      @keydown.enter.prevent="select(option)"
+      @keydown.space.prevent="select(option)"
       rounded="xl"
       elevation="1"
     >
@@ -73,6 +81,12 @@ export default {
 .pickup-card.active {
   background-color: var(--color-primary);
   color: var(--color-surface);
+}
+
+/* Synlig fokusring ved tastaturnavigation (WCAG 2.4.7) */
+.pickup-card:focus-visible {
+  outline: 3px solid var(--color-neutral);
+  outline-offset: 3px;
 }
 
 .title {

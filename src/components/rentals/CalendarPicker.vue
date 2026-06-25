@@ -23,11 +23,12 @@ export default {
 
   mounted() {
     // Gendanner det visuelle interval fra props når brugeren vender tilbage fra trin 2.
+    // Props er ISO-strenge, så de parses til Date-objekter som datovælgeren forventer.
     // Uden dette ser v-date-picker kun range=[] og viser ingen markering.
     if (this.startDate && this.endDate) {
-      this.range = [this.startDate, this.endDate];
+      this.range = [new Date(this.startDate), new Date(this.endDate)];
     } else if (this.startDate) {
-      this.range = [this.startDate];
+      this.range = [new Date(this.startDate)];
     }
   },
 
@@ -46,9 +47,11 @@ export default {
       const start = val[0];
       const end = val[val.length - 1];
 
+      // Datoerne sendes som ISO-strenge (YYYY-MM-DD) i lokal tid, så de ikke
+      // skrider en dag pga. tidszone når de gemmes i databasen.
       if (val.length === 1) {
         this.error = "";
-        this.$emit("update:startDate", start);
+        this.$emit("update:startDate", this.toIsoDate(start));
         this.$emit("update:endDate", null);
         return;
       }
@@ -63,14 +66,14 @@ export default {
       if (this.maxDays && diffDays > this.maxDays) {
         this.error = `Maksimal låneperiode er ${this.maxDays} dage`;
         this.range = [start];
-        this.$emit("update:startDate", start);
+        this.$emit("update:startDate", this.toIsoDate(start));
         this.$emit("update:endDate", null);
         return;
       }
 
       this.error = "";
-      this.$emit("update:startDate", start);
-      this.$emit("update:endDate", end);
+      this.$emit("update:startDate", this.toIsoDate(start));
+      this.$emit("update:endDate", this.toIsoDate(end));
     },
 
     // Konverterer en Date-værdi til ISO 8601-streng (YYYY-MM-DD)

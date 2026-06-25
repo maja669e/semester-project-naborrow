@@ -3,8 +3,12 @@
 // Viser billede, titel, stand, maks låneperiode og tilbehør.
 // showRentalButton styrer om "Anmod om lån"-knappen er synlig
 // (true i ExploreView, false i egne genstande).
+import StatusBadge from "@/components/common/StatusBadge.vue";
+
 export default {
     name: 'ItemDetailCard',
+
+  components: { StatusBadge },
 
   props: {
     // Genstandsobjektet med alle felter (title, image, status m.fl.)
@@ -21,15 +25,6 @@ export default {
 emits: ['requestLoan'],
 
     computed: {
-        // Oversætter status-tekst til CSS-modifikatorklasse for farvekodning
-        statusClass() {
-            if (this.item.status === 'Tilgængelig') return 'status-tilgaengelig'
-            if (this.item.status === 'Udlånt') return 'status-udlaant'
-            if (this.item.status === 'Inaktiv') return 'status-inaktiv'
-
-            return ''
-        },
-
         // Returnerer tilbehørslisten eller et tomt array
         accessoriesList() {
         return this.item.accessories || []
@@ -51,11 +46,15 @@ emits: ['requestLoan'],
             class="detail-image"
         />
 
-        <span class="detail-status" :class="statusClass">
-            {{ item.status }}
-        </span>
-
     </figure>
+
+    <!-- Statusmærke i mellemrummet mellem billedet og titlen, højrestillet -->
+    <div v-if="item.status" class="detail-status-row">
+        <StatusBadge
+            :status="item.status"
+            :date="item.statusDate"
+        />
+    </div>
 
     <!-- Titel og metadata -->
     <section class="detail-content">
@@ -182,31 +181,11 @@ emits: ['requestLoan'],
     display: block;
 }
 
-.detail-status {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
-
-    padding: 6px 12px;
-    border-radius: 999px;
-
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.status-tilgaengelig {
-    background: var(--color-tilgaengelig-bg);
-    color: var(--color-tilgaengelig-text);
-}
-
-.status-udlaant {
-    background: var(--color-udlaant-bg);
-    color: var(--color-udlaant-text);
-}
-
-.status-inaktiv {
-    background: var(--color-inaktiv-bg);
-    color: var(--color-inaktiv-text);
+/* Statusmærke i mellemrummet mellem billede og titel, skubbet til højre */
+.detail-status-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
 }
 
 .detail-title {
@@ -216,7 +195,7 @@ emits: ['requestLoan'],
 }
 
 .detail-meta {
-    color: var(--color-secondary);
+    color: var(--color-text-secondary);
     margin-bottom: 24px;
 }
 
@@ -250,7 +229,7 @@ emits: ['requestLoan'],
 }
 
 .detail-box-label {
-    color: var(--color-secondary);
+    color: var(--color-text-secondary);
     margin-bottom: 8px;
 }
 
@@ -260,7 +239,7 @@ emits: ['requestLoan'],
 }
 
 .detail-box-unit {
-    color: var(--color-secondary);
+    color: var(--color-text-secondary);
 }
 
 .detail-box-heading {

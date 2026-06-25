@@ -67,7 +67,15 @@ export default {
     async handleCreate() {
       this.loading = true;
       this.error = null;
-      const currentUserId = authStore.user.value.userID;
+
+      // Stop pænt hvis login-tilstanden mangler, så vi ikke kalder .userID på null
+      const currentUser = authStore.user.value;
+      if (!currentUser) {
+        this.error = "Du er ikke logget ind.";
+        this.loading = false;
+        return;
+      }
+      const currentUserId = currentUser.userID;
 
       try {
         // Byg item objekt til API
@@ -118,15 +126,17 @@ export default {
 </script>
 
 <template>
-  <v-container class="pa-4 bekraeft-container">
+  <div>
 
-    <!-- Formularhoved med titel og trinindikator -->
+    <!-- Formularhoved uden for containeren, så den fylder fuld bredde
+         i toppen som headeren på de øvrige sider -->
     <MultiStepFormHeader
       title="Opret ny genstand"
       :currentStep="currentStep"
       :steps="['Grundinfo', 'Detaljer', 'Forhåndsvisning']"
     />
 
+    <v-container class="pa-4 bekraeft-container">
     <!-- Indhold: genstandsoplysninger til forhåndsvisning -->
     <v-card-text class="px-5 pt-2 pb-8 text">
       <h2 class="text-h6 font-weight-bold mb-1">Tjek og bekræft</h2>
@@ -193,7 +203,8 @@ export default {
       @next="handleCreate"
     />
 
-  </v-container>
+    </v-container>
+  </div>
 </template>
 
 <style scoped>
@@ -234,7 +245,7 @@ export default {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   font-size: 12px;
 }
 
@@ -244,7 +255,7 @@ export default {
 
 .field-label {
   font-size: 12px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 .field-value {
@@ -259,6 +270,6 @@ export default {
 }
 .text-body {
   font-family: var(--font-body);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 </style>

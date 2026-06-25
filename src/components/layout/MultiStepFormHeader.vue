@@ -22,18 +22,17 @@ export default {
   <!-- Semantisk header-landmark der omslutter toolbar og trinindikator -->
   <header>
 
-    <!-- Toolbar med centreret titel og fast-bredde spacer til højre
-         for at holde titlen visuelt centreret -->
-    <v-toolbar flat color="surface">
+    <!-- Titel-bjælke: egen fuld-bredde header øverst.
+         Spacer til højre holder titlen visuelt centreret. -->
+    <v-toolbar flat color="surface" class="form-titlebar">
       <v-toolbar-title class="text-center font-weight-bold">
         {{ title }}
       </v-toolbar-title>
       <div style="width: 40px" aria-hidden="true"></div>
     </v-toolbar>
 
-    <v-divider />
-
-    <!-- Trinindikator: markerer afsluttede trin med flueben og fremhæver det aktuelle -->
+    <!-- Trinindikator: separat blok under titlen.
+         Markerer afsluttede trin med flueben og fremhæver det aktuelle. -->
     <div class="stepper-wrapper">
       <template v-for="(step, index) in steps" :key="index">
 
@@ -64,13 +63,22 @@ export default {
 </template>
 
 <style scoped>
-/* ─── Trinindikator ──────────────────────────────────────── */
+/* ─── Titel-bjælke (egen header) ─────────────────────────────
+   Stregen under adskiller titlen fra stepperen, så titlen står som
+   sin egen header-blok. */
+.form-titlebar {
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* ─── Trinindikator (separat blok under titlen) ──────────────
+   Ligger inde i indholdets padding (ikke full-bleed), med lidt luft
+   over, så den læses som en blok adskilt fra titel-bjælken. */
 .stepper-wrapper {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 6px;
-  padding: 16px 20px 8px;
+  padding: 12px 16px;
 }
 
 .step-item {
@@ -78,7 +86,7 @@ export default {
   align-items: center;
   gap: 6px;
   font-size: 12px;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
 }
 
 .step-circle {
@@ -98,7 +106,9 @@ export default {
   color: var(--color-surface);
 }
 
-.step-item.active span {
+/* Kun det direkte label-span (fx "Grundinfo") — IKKE tal-spannet inde i
+   .step-circle, ellers overskrives det hvide tal på den aktive cirkel. */
+.step-item.active > span {
   color: var(--color-neutral);
   font-weight: 600;
 }

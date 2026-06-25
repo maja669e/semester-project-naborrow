@@ -43,25 +43,6 @@ export default {
     };
   },
 
-  computed: {
-    // Beregner om formen er gyldig uden at sætte fejlbeskeder.
-    // Spejler validate()-logikken og låser næste-knappen via :nextDisabled.
-    isFormValid() {
-      const accessoriesOk =
-        this.hasAccessories === false ||
-        (this.hasAccessories === true && this.accessoriesList.length > 0);
-      const periodOk =
-        this.maxLoanPeriod !== null &&
-        (this.maxLoanPeriod !== "Andet" || this.customPeriod.trim() !== "");
-      return (
-        this.hasAccessories !== null &&
-        accessoriesOk &&
-        this.condition !== null &&
-        periodOk
-      );
-    },
-  },
-
   methods: {
     // Gem om genstanden har tilbehør og ryd fejlbesked
     selectAccessories(value) {
@@ -170,15 +151,17 @@ export default {
 </script>
 
 <template>
-  <v-container class="detaljer-container">
+  <div>
 
-    <!-- Formularhoved med titel og trinindikator -->
+    <!-- Formularhoved uden for containeren, så den fylder fuld bredde
+         i toppen som headeren på de øvrige sider -->
     <MultiStepFormHeader
       title="Opret ny genstand"
       :currentStep="currentStep"
       :steps="['Grundinfo', 'Detaljer', 'Forhåndsvisning']"
     />
 
+    <v-container class="detaljer-container">
     <h1 class="mt-2 mb-2">Tilbehør og detaljer</h1>
     <p>
       Angiv stand, låneperiode og eventuelt tilbehør, der følger med genstanden.
@@ -186,9 +169,10 @@ export default {
 
     <!-- Ekstra tilbehør -->
     <section aria-labelledby="tilbehoer-overskrift">
-      <h4 id="tilbehoer-overskrift">
+      <!-- h2: sammenhængende niveau efter sidens h1 (WCAG 1.3.1) -->
+      <h2 id="tilbehoer-overskrift">
         Har genstanden ekstra tilbehør?<span aria-hidden="true"> *</span>
-      </h4>
+      </h2>
 
       <!-- Ja/Nej knapper som radiogruppe -->
       <div role="group" aria-labelledby="tilbehoer-overskrift" aria-required="true">
@@ -252,13 +236,15 @@ export default {
           <!-- Inputfelt til at tilføje nyt tilbehør -->
           <label for="tilbehoer-input" class="visuel-label">Tilbehørsnavn</label>
           <div class="input-wrapper">
+            <!-- Ingen aria-label: den synlige <label for="tilbehoer-input"> giver
+                 allerede det tilgængelige navn. Et aria-label ville overstyre den
+                 synlige tekst og læse noget andet op (WCAG 2.5.3 / 4.1.2). -->
             <input
               id="tilbehoer-input"
               type="text"
               placeholder="F.eks. oplader, taske..."
               v-model="accessoryName"
               class="tekst-input"
-              aria-label="Navn på tilbehør"
               @keyup.enter="addAccessory"
             />
             <v-btn
@@ -280,7 +266,7 @@ export default {
 
     <!-- Stand -->
     <section aria-labelledby="stand-overskrift">
-      <h4 id="stand-overskrift">Stand<span aria-hidden="true"> *</span></h4>
+      <h2 id="stand-overskrift">Stand<span aria-hidden="true"> *</span></h2>
       <div role="group" aria-labelledby="stand-overskrift" aria-required="true">
         <v-row>
           <v-col cols="12">
@@ -298,9 +284,9 @@ export default {
 
     <!-- Max låneperiode -->
     <section aria-labelledby="laaneperiode-overskrift">
-      <h4 id="laaneperiode-overskrift">
+      <h2 id="laaneperiode-overskrift">
         Max låneperiode<span aria-hidden="true"> *</span>
-      </h4>
+      </h2>
       <div role="group" aria-labelledby="laaneperiode-overskrift" aria-required="true">
         <v-row>
           <v-col cols="12">
@@ -322,13 +308,14 @@ export default {
         <v-col cols="12">
           <label for="periode-input" class="visuel-label">Antal dage</label>
           <div class="input-wrapper">
+            <!-- Ingen aria-label: den synlige <label for="periode-input"> "Antal dage"
+                 giver navnet. Et aria-label ville overstyre den (WCAG 2.5.3 / 4.1.2). -->
             <input
               id="periode-input"
               type="text"
               placeholder="F.eks. 10 dage, 3 måneder..."
               v-model="customPeriod"
               class="tekst-input"
-              aria-label="Angiv din låneperiode"
               aria-required="true"
             />
           </div>
@@ -340,9 +327,12 @@ export default {
     </section>
 
     <!-- Bundnavigation: tilbage til trin 1, næste til bekræftelse -->
-    <FormBottomBar :nextDisabled="!isFormValid" @back="back" @next="next" />
+    <!-- Knappen er altid aktiv: ved klik kører next() → validate(), som viser
+         fejlbeskeder ved manglende felter (error object pattern). -->
+    <FormBottomBar @back="back" @next="next" />
 
-  </v-container>
+    </v-container>
+  </div>
 </template>
 
 <style scoped>
@@ -352,19 +342,12 @@ export default {
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
 }
 
-/* ─── Valideringsfejl ────────────────────────────────────── */
-.fejltekst {
-  color: var(--color-error);
-  font-size: 14px;
-  margin-top: 4px;
-}
-
 /* ─── Synlig label over rå input-felter ─────────────────── */
 .visuel-label {
   display: block;
   font-family: var(--font-body);
   font-size: var(--text-label);
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   margin-top: var(--space-2);
   margin-bottom: var(--space-1);
 }

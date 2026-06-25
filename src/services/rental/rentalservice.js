@@ -32,6 +32,20 @@ export const completeRental = async (rentalId) => {
   return res.json();
 };
 
+// Fjern ét lån fra brugerens egen historik (soft delete pr. bruger).
+// perspective: "renter" (jeg lånte) eller "owner" (jeg udlånte).
+export const hideRental = async (rentalId, perspective) => {
+  const res = await fetch(`${BASE_URL}/api/rentals/${rentalId}/hide`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ perspective }),
+  });
+
+  if (!res.ok) throw new Error("Fejl ved fjernelse af lån");
+
+  return res.json();
+};
+
 export const getAllRentals = async () => {
   const res = await fetch(`${BASE_URL}/api/rentals`);
 

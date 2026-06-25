@@ -88,7 +88,7 @@ export default {
   background: transparent;
   border: none;
   cursor: pointer;
-  color: var(--color-secondary);
+  color: var(--color-text-secondary);
   min-height: 44px;
 }
 

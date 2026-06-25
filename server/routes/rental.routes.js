@@ -21,6 +21,9 @@ module.exports = app => {
   // Opdater en udlejning via ID
   router.put("/:id", rentals.update);
 
+  // Skjul ét lån fra én brugers historik (soft delete pr. bruger)
+  router.put("/:id/hide", rentals.hide);
+
   // Slet én udlejning via ID
   router.delete("/:id", rentals.delete);
 

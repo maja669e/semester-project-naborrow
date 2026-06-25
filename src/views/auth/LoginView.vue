@@ -94,6 +94,7 @@ export default {
         <v-text-field
           v-model="email"
           placeholder="Email"
+          aria-label="Email"
           variant="outlined"
           bg-color="login-field"
           prepend-inner-icon="mdi-email-outline"
@@ -114,7 +115,7 @@ export default {
           prepend-inner-icon="mdi-lock-outline"
           :type="showPassword ? 'text' : 'password'"
           :append-inner-icon="showPassword ? 'mdi-eye-off-outline' : 'mdi-eye-outline'"
-          :aria-label="showPassword ? 'Adgangskode synlig' : 'Adgangskode skjult'"
+          aria-label="Adgangskode"
           autocomplete="current-password"
           class="mb-2"
           :rules="passwordRules"
@@ -181,6 +182,20 @@ export default {
   font-size: var(--text-body);
   color: var(--color-on-grad);
   text-align: center;
+}
+
+/* Login-felterne er altid hvide (login-field = #FFFFFF i BEGGE temaer),
+   så tekst og placeholder skal altid være mørke. Ellers arver de temaets
+   tekstfarve (on-surface), som er næsten hvid i dark mode → hvid på hvid.
+   Faste hex-værdier her, netop fordi feltet bevidst ikke skifter med temaet. */
+:deep(.v-field__input),
+:deep(.v-field input) {
+  color: #2C2C25;
+  -webkit-text-fill-color: #2C2C25;   /* nødvendig for autofyld-tekst i WebKit */
+}
+:deep(.v-field input::placeholder) {
+  color: #5D5C54;
+  opacity: 1;
 }
 
 /* Fjern browserens native fokus-ring på input-elementet inde i feltet */

@@ -41,11 +41,6 @@ export default {
             </v-btn>
           </v-col>
 
-          <!-- Naviger til brugerens aktive lån -->
-          <v-col cols="12">
-            <v-btn color="primary" class="navigations-knap" size="large">Dine lån</v-btn>
-          </v-col>
-
         </v-row>
       </nav>
 
@@ -58,6 +53,10 @@ export default {
 .forside-baggrund {
   background-color: var(--color-bg);
   min-height: 100vh;
+  /* Gør plads til den faste AppBottomNav (64px) så "Dine genstande"-knappen
+     ikke gemmes bag den. På lave vinduer skubber det indholdet højere end
+     skærmen, så siden kan scrolles ned til knappen. */
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
 }
 
 /* ─── Velkomstbillede ────────────────────────────────────── */

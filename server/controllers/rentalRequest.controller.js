@@ -39,20 +39,24 @@ exports.findAll = async (req, res) => {
 exports.getPendingCountByOwner = async (req, res) => {
   const userId = req.params.userId;
 
-  const count = await RentalRequest.count({
-    where: {
-      Status: "pending"
-    },
-    include: [
-      {
-        model: db.items,
-        as: "item",
-        where: { UserID: userId }
-      }
-    ]
-  });
+  try {
+    const count = await RentalRequest.count({
+      where: {
+        Status: "pending"
+      },
+      include: [
+        {
+          model: db.items,
+          as: "item",
+          where: { UserID: userId }
+        }
+      ]
+    });
 
-  res.send({ count });
+    res.send({ count });
+  } catch (err) {
+    res.status(500).send({ message: err.message });
+  }
 };
  
 

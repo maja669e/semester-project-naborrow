@@ -35,11 +35,16 @@ exports.create = async (req, res) => {
   }
 };
 
-// GET all items (with images)
+// GET all items (with images + active rental status).
+// Driver Udforsk-siden (ikke-ejer-visning), så her gælder to ting modsat findByUser:
+//   1. IsActive: true i WHERE — inaktive genstande er taget ned af ejeren og må
+//      ikke optræde for andre brugere overhovedet.
+//   2. Samme isCurrentlyRented/currentRentalEndDate-beregning som findByUser, så
+//      "Udlånt indtil ..." kan vises korrekt i Udforsk.
 exports.findAll = async (req, res) => {
   try {
     const items = await Item.findAll({
-      where: { IsDeleted: false },
+      where: { IsDeleted: false, IsActive: true },
       include: [
         {
           model: ItemImage,
@@ -52,11 +57,37 @@ exports.findAll = async (req, res) => {
         {
           model: ItemAccessory,
           as: "accessories"
+        },
+        {
+          model: RentalRequest,
+          as: "rentalRequests",
+          required: false,
+          include: [
+            {
+              model: Rental,
+              as: "rental",
+              required: false
+            }
+          ]
         }
       ]
     });
 
-    res.send(items);
+    // Identisk status-logik som findByUser: en godkendt anmodning med et aktivt lån
+    // betyder udlånt, og returdatoen (EndDate) hentes fra RentalRequest.
+    const result = items.map(item => {
+      const data = item.toJSON();
+      const activeRequest = data.rentalRequests?.find(
+        req => req.Status === "approved" && req.rental?.Status === "active"
+      );
+      return {
+        ...data,
+        isCurrentlyRented: !!activeRequest,
+        currentRentalEndDate: activeRequest?.EndDate ?? null,
+      };
+    });
+
+    res.send(result);
 
   } catch (err) {
     res.status(500).send({
@@ -104,14 +135,19 @@ exports.findByUser = async (req, res) => {
       ]
     });
 
-    // Beregn isCurrentlyRented for hver genstand:
-    // true hvis der findes en godkendt anmodning med et aktivt lån
+    // Beregn isCurrentlyRented + returdato for hver genstand:
+    // find en godkendt anmodning med et aktivt lån. Returdatoen (EndDate) ligger
+    // på RentalRequest, ikke på Rental, så den hentes derfra til "Udlånt indtil ...".
     const result = items.map(item => {
       const data = item.toJSON();
-      const isCurrentlyRented = data.rentalRequests?.some(
+      const activeRequest = data.rentalRequests?.find(
         req => req.Status === "approved" && req.rental?.Status === "active"
       );
-      return { ...data, isCurrentlyRented };
+      return {
+        ...data,
+        isCurrentlyRented: !!activeRequest,
+        currentRentalEndDate: activeRequest?.EndDate ?? null,
+      };
     });
 
     res.send(result);
@@ -209,7 +245,7 @@ exports.update = async (req, res) => {
         message: "Item was updated successfully."
       });
     } else {
-      res.send({
+      res.status(404).send({
         message: `Cannot update Item with id=${id}. Maybe not found or empty body`
       });
     }
@@ -236,7 +272,7 @@ exports.delete = async (req, res) => {
         message: "Item deleted successfully!"
       });
     } else {
-      res.send({
+      res.status(404).send({
         message: `Cannot delete Item with id=${id}`
       });
     }

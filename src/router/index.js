@@ -1,6 +1,6 @@
 // Routerkonfiguration for naborrow SPA.
-// Alle ruter bruger hash-historik (#) så serveren aldrig modtager
-// under-stier direkte, og appen altid kan deployes statisk.
+// Bruger createWebHistory, så URL'erne er rene (uden #). Det kræver at
+// serveren sender alle stier til index.html, så reload virker på alle ruter.
 import { createRouter, createWebHistory } from "vue-router";
 import { authStore } from "@/stores/auth.js";
 
@@ -27,6 +27,11 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  // Start hver ny navigation i toppen, så fx låne-flowet ikke åbner midt på
+  // siden. Gendan i stedet positionen ved frem/tilbage (savedPosition).
+  scrollBehavior(to, from, savedPosition) {
+    return savedPosition || { top: 0 };
+  },
 });
 
 router.beforeEach((to, from) => {
