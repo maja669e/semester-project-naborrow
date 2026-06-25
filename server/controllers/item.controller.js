@@ -245,7 +245,7 @@ exports.update = async (req, res) => {
         message: "Item was updated successfully."
       });
     } else {
-      res.send({
+      res.status(404).send({
         message: `Cannot update Item with id=${id}. Maybe not found or empty body`
       });
     }
@@ -272,7 +272,7 @@ exports.delete = async (req, res) => {
         message: "Item deleted successfully!"
       });
     } else {
-      res.send({
+      res.status(404).send({
         message: `Cannot delete Item with id=${id}`
       });
     }

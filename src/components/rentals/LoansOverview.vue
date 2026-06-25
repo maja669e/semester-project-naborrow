@@ -2,7 +2,7 @@
 // Viser aktive og tidligere lån i to sektioner.
 // sections-computed samler begge sektioner i ét array — undgår dobbelt template-kode.
 // showRenter: viser lånerens navn, slåes til i udlåner-perspektiv (owner-tab).
-import { completeRental } from "@/services/rental/rentalservice.js";
+import { completeRental, hideRental } from "@/services/rental/rentalservice.js";
 import ConfirmDialog from "@/components/feedback/ConfirmDialog.vue";
 
 export default {
@@ -10,13 +10,19 @@ export default {
 
   components: { ConfirmDialog },
 
-  emits: ["loan-completed"],
+  emits: ["loan-completed", "loan-removed"],
 
   data() {
     return {
       showCompleteDialog: false,  // Bekræftelsesdialog inden et lån afsluttes
       completingLoan: null,       // Lånet der afventer bekræftelse
       isCompleting: false,        // Indlæsningstilstand mens afslutningen kører
+
+      showDeleteDialog: false,    // Bekræftelsesdialog inden et lån fjernes fra historik
+      deletingLoan: null,         // Lånet der afventer bekræftelse på fjernelse
+      isDeleting: false,          // Indlæsningstilstand mens fjernelsen kører
+
+      actionError: "",            // Fejlbesked hvis afslut eller fjern fejler
     };
   },
 
@@ -37,8 +43,15 @@ export default {
   },
 
   computed: {
+    // Perspektivet bestemmer hvilket flag backend skal sætte ved fjernelse:
+    // udlåner-fanen sender showRenter=true, ellers er det låner-perspektivet.
+    perspective() {
+      return this.showRenter ? "owner" : "renter";
+    },
+
     // Samler begge sektioner i ét array så templaten ikke gentages.
-    // canComplete styrer om afslut-knappen vises på kortene i sektionen.
+    // canComplete styrer afslut-knappen (aktive lån); canDelete styrer
+    // fjern-knappen (kun tidligere lån).
     sections() {
       return [
         {
@@ -46,12 +59,14 @@ export default {
           emptyText:   "Ingen aktive lån",
           loans:       this.activeLoans,
           canComplete: true,
+          canDelete:   false,
         },
         {
           label:       "Tidligere lån",
           emptyText:   "Ingen tidligere lån",
           loans:       this.completedLoans,
           canComplete: false,
+          canDelete:   true,
         },
       ];
     },
@@ -90,6 +105,7 @@ export default {
     // Åbn bekræftelsesdialog i stedet for at afslutte med det samme,
     // så et fejltryk ikke utilsigtet afslutter lånet
     askComplete(loan) {
+      this.actionError = "";
       this.completingLoan = loan;
       this.showCompleteDialog = true;
     },
@@ -102,6 +118,10 @@ export default {
         await this.completeLoan(this.completingLoan.RentalID);
         this.showCompleteDialog = false;
         this.completingLoan = null;
+      } catch (err) {
+        // Hvis kaldet fejler, lukkes dialogen og brugeren får en besked
+        this.actionError = "Kunne ikke afslutte lånet. Prøv igen.";
+        this.showCompleteDialog = false;
       } finally {
         this.isCompleting = false;
       }
@@ -112,12 +132,51 @@ export default {
       this.showCompleteDialog = false;
       this.completingLoan = null;
     },
+
+    // Åbn bekræftelsesdialog inden et lån fjernes fra historikken
+    askDelete(loan) {
+      this.actionError = "";
+      this.deletingLoan = loan;
+      this.showDeleteDialog = true;
+    },
+
+    // Fjern lånet fra DENNE brugers historik (soft delete) og genindlæs listen.
+    // Den anden part beholder lånet i sin historik.
+    async confirmDelete() {
+      if (!this.deletingLoan) return;
+      this.isDeleting = true;
+      try {
+        await hideRental(this.deletingLoan.RentalID, this.perspective);
+        this.showDeleteDialog = false;
+        this.deletingLoan = null;
+        this.$emit("loan-removed");
+      } catch (err) {
+        // Hvis kaldet fejler, lukkes dialogen og brugeren får en besked
+        this.actionError = "Kunne ikke fjerne lånet. Prøv igen.";
+        this.showDeleteDialog = false;
+      } finally {
+        this.isDeleting = false;
+      }
+    },
+
+    // Luk dialogen uden at fjerne
+    cancelDelete() {
+      this.showDeleteDialog = false;
+      this.deletingLoan = null;
+    },
   },
 };
 </script>
 
 <template>
   <div class="laan-oversigt">
+
+    <!-- Fejlbesked hvis en handling (afslut eller fjern) fejler.
+         Stylet med vores egne tokens, så den matcher resten af appen. -->
+    <p v-if="actionError" class="handling-fejl" role="alert">
+      <v-icon size="18" icon="mdi-alert-circle" aria-hidden="true" />
+      {{ actionError }}
+    </p>
 
     <div
       v-for="section in sections"
@@ -190,6 +249,16 @@ export default {
             Afslut
           </button>
 
+          <!-- Fjern ét tidligere lån fra egen historik (soft delete) -->
+          <button
+            v-if="section.canDelete"
+            class="laankort__slet"
+            :aria-label="`Fjern lån fra historik: ${loan.rentalRequest?.item?.ItemName}`"
+            @click="askDelete(loan)"
+          >
+            Fjern
+          </button>
+
         </div>
 
       </div>
@@ -210,6 +279,19 @@ export default {
       @cancel="cancelComplete"
     />
 
+    <!-- Bekræftelse inden et tidligere lån fjernes fra egen historik -->
+    <ConfirmDialog
+      v-model="showDeleteDialog"
+      title="Fjern lån fra din historik?"
+      :message="deletingLoan
+        ? `Vil du fjerne lånet af ${deletingLoan.rentalRequest?.item?.ItemName} fra din historik? Det fjernes kun for dig, og den anden part beholder det i sin historik.`
+        : 'Vil du fjerne dette lån fra din historik?'"
+      confirm-label="Fjern"
+      :loading="isDeleting"
+      @confirm="confirmDelete"
+      @cancel="cancelDelete"
+    />
+
   </div>
 </template>
 
@@ -218,6 +300,21 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 32px;
+}
+
+/* Fejlbesked ved fejlet handling (matcher fejl-farven i appen) */
+.handling-fejl {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--color-error);
+  background: var(--color-surface);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
 }
 
 /* ── Sektion ──────────────────────────────────────────────────── */
@@ -317,6 +414,20 @@ export default {
   font-size: var(--text-meta);
   font-weight: 600;
   color: var(--color-text-secondary);
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* Fjern-knap på tidligere lån (soft delete fra egen historik) */
+.laankort__slet {
+  font-family: var(--font-body);
+  font-size: var(--text-meta);
+  font-weight: 600;
+  color: var(--color-error);
   background: none;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);

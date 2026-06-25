@@ -404,7 +404,7 @@ export default {
 
 /* ─── Fejltekst ──────────────────────────────────────────── */
 .fejltekst {
-  color: red;
+  color: var(--color-error);
   font-family: var(--font-body);
   font-size: var(--text-label);
   text-align: center;

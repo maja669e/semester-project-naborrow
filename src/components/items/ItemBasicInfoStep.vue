@@ -48,21 +48,6 @@ export default {
     };
   },
 
-  computed: {
-    // Beregner om formen er gyldig uden at sætte fejlbeskeder.
-    // Spejler validate()-logikken og låser næste-knappen via :nextDisabled.
-    isFormValid() {
-      const categoryOk =
-        this.selectedCategory !== null &&
-        (this.selectedCategory !== "Andet" || this.customCategory.trim() !== "");
-      return (
-        this.uploadedImages.length > 0 &&
-        categoryOk &&
-        this.itemName.trim() !== ""
-      );
-    },
-  },
-
   watch: {
     // Ryd det brugerdefinerede kategori-felt når en standardkategori vælges
     selectedCategory(newValue) {
@@ -192,15 +177,17 @@ hasEnteredData() {
 </script>
 
 <template>
-  <v-container class="pa-4 grundinfo-container" max-width="600">
+  <div>
 
-    <!-- Formularhoved med titel og trinindikator -->
+    <!-- Formularhoved uden for containeren, så den fylder fuld bredde
+         i toppen som headeren på de øvrige sider -->
     <MultiStepFormHeader
       title="Opret ny genstand"
       :currentStep="currentStep"
       :steps="['Grundinfo', 'Detaljer', 'Forhåndsvisning']"
     />
 
+    <v-container class="pa-4 grundinfo-container" max-width="600">
     <h2>Beskriv din genstand</h2>
     <p>
       Tilføj billeder, vælg kategori og giv din genstand et navn, så andre kan
@@ -335,7 +322,9 @@ hasEnteredData() {
     </section>
 
     <!-- Bundnavigation: tilbage annullerer, næste validerer og går videre -->
-    <FormBottomBar :nextDisabled="!isFormValid" @back="cancel" @next="next" />
+    <!-- Knappen er altid aktiv: ved klik kører next() → validate(), som viser
+         fejlbeskeder ved manglende felter (error object pattern). -->
+    <FormBottomBar @back="cancel" @next="next" />
 
 
     <ConfirmDialog
@@ -345,7 +334,8 @@ hasEnteredData() {
   confirm-label="Ja, annuller"
   @confirm="confirmCancel"
 />
-  </v-container>
+    </v-container>
+  </div>
 </template>
 
 <style scoped>
@@ -405,12 +395,5 @@ hasEnteredData() {
   background-color: var(--color-tilgaengelig-bg);
   border-radius: 20px;
   padding: 16px;
-}
-
-/* ─── Valideringsfejl ────────────────────────────────────── */
-.fejltekst {
-  color: var(--color-error);
-  font-size: 14px;
-  margin-top: 4px;
 }
 </style>

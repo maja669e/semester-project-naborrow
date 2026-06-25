@@ -113,6 +113,10 @@ export default {
       triggerRentalSuccess() {
     this.showRentalSuccess = true;
 
+    // Ryd den gemte genstand, så Udforsk viser oversigten efter en sendt
+    // anmodning i stedet for at genåbne detaljekortet.
+    this.rental.item = null;
+
     // immediate background redirect (same as item flow)
     this.$router.push({ name: "community" });
   },
@@ -238,6 +242,14 @@ h1, h2, h3, h4 {
   font-family: var(--font-display);
   line-height: 1.2;
 }
+
+/* Global type-skala: kobler skriftstørrelse-tokens til elementerne ÉT sted,
+   så overskrifter får korrekt hierarki overalt uden at hver komponent skal
+   gentage en font-size. Komponenter med egen scoped font-size vinder stadig. */
+h1 { font-size: var(--text-h1); }
+h2 { font-size: var(--text-h2); }
+h3 { font-size: var(--text-h3); }
+p  { font-size: var(--text-body); }
 
 /* Synlig fokus-ring (WCAG 2.2 SC 2.4.11) — kun ved tastaturnavigation */
 :focus-visible {

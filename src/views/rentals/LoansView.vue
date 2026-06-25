@@ -33,6 +33,8 @@ export default {
 
       loading: false,
       error: false,   // true hvis seneste hentning fejlede (adskilt fra "ingen lån")
+
+      removedMessage: false,  // viser en kort bekræftelse når et lån er fjernet
     };
   },
 
@@ -67,6 +69,13 @@ export default {
       } finally {
         this.loading = false;
       }
+    },
+
+    // Viser en kort bekræftelse og genindlæser listen når et lån er fjernet
+    onLoanRemoved() {
+      this.removedMessage = true;
+      this.loadRentals();
+      setTimeout(() => { this.removedMessage = false; }, 3000);
     },
   },
 };
@@ -111,31 +120,30 @@ export default {
 
       </div>
 
+      <!-- Kort bekræftelse når et lån er fjernet fra historikken.
+           Styles med vores egne design-tokens, så den matcher resten af appen. -->
+      <p v-if="removedMessage" class="fjernet-besked" role="status">
+        <v-icon size="18" icon="mdi-check-circle" aria-hidden="true" />
+        Lånet er fjernet fra din historik.
+      </p>
+
       <!-- Indlæsningsindikator -->
       <div v-if="loading" class="laan-side__loader">
         <v-progress-circular indeterminate color="primary" />
       </div>
 
-      <!-- Hvis kaldet fejlede: synlig fejltilstand med mulighed for at prøve igen -->
-      <v-alert
-        v-else-if="error"
-        type="error"
-        variant="tonal"
-        role="alert"
-        class="mt-4"
-      >
-        Kunne ikke hente dine lån. Tjek din forbindelse og prøv igen.
-        <template #append>
-          <v-btn
-            size="small"
-            variant="text"
-            prepend-icon="mdi-refresh"
-            @click="loadRentals"
-          >
-            Prøv igen
-          </v-btn>
-        </template>
-      </v-alert>
+      <!-- Hvis kaldet fejlede: synlig fejltilstand med mulighed for at prøve igen.
+           Stylet med vores egne tokens, så den matcher resten af appen. -->
+      <div v-else-if="error" class="hent-fejl" role="alert">
+        <p class="hent-fejl__tekst">
+          <v-icon size="18" icon="mdi-alert-circle" aria-hidden="true" />
+          Kunne ikke hente dine lån. Tjek din forbindelse og prøv igen.
+        </p>
+        <button class="hent-fejl__knap" @click="loadRentals">
+          <v-icon size="16" icon="mdi-refresh" aria-hidden="true" />
+          Prøv igen
+        </button>
+      </div>
 
       <!-- Lån-oversigt skifter med perspektiv -->
       <template v-else>
@@ -147,6 +155,7 @@ export default {
           :completed-loans="myCompletedLoans"
           :show-renter="false"
           @loan-completed="loadRentals"
+          @loan-removed="onLoanRemoved"
         />
 
         <!-- Lån andre har lavet på brugerens egne genstande -->
@@ -156,6 +165,7 @@ export default {
           :completed-loans="lentCompletedLoans"
           :show-renter="true"
           @loan-completed="loadRentals"
+          @loan-removed="onLoanRemoved"
         />
 
       </template>
@@ -170,6 +180,60 @@ export default {
   max-width: 700px;
   margin: 0 auto;
   padding: 24px 16px 100px;
+}
+
+/* Kort bekræftelse når et lån er fjernet (matcher status-farverne i appen) */
+.fjernet-besked {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--color-tilgaengelig-text);
+  background: var(--color-tilgaengelig-bg);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-bottom: 20px;
+}
+
+/* Fejl ved hentning af lån (matcher fejl-farven i appen) */
+.hent-fejl {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--color-error);
+  background: var(--color-surface);
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.hent-fejl__tekst {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  font-weight: 600;
+  margin: 0;
+}
+
+.hent-fejl__knap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  font-weight: 600;
+  color: var(--color-error);
+  background: none;
+  border: 1px solid var(--color-error);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  cursor: pointer;
 }
 
 /* ── Perspektiv-skifter: to kortknapper side om side ──────────── */

@@ -46,14 +46,15 @@ emits: ['requestLoan'],
             class="detail-image"
         />
 
+    </figure>
+
+    <!-- Statusmærke i mellemrummet mellem billedet og titlen, højrestillet -->
+    <div v-if="item.status" class="detail-status-row">
         <StatusBadge
-            v-if="item.status"
             :status="item.status"
             :date="item.statusDate"
-            class="detail-status-pos"
         />
-
-    </figure>
+    </div>
 
     <!-- Titel og metadata -->
     <section class="detail-content">
@@ -180,11 +181,11 @@ emits: ['requestLoan'],
     display: block;
 }
 
-/* Placerer statusmærket som overlay nederst til højre på billedet */
-.detail-status-pos {
-    position: absolute;
-    bottom: 12px;
-    right: 12px;
+/* Statusmærke i mellemrummet mellem billede og titel, skubbet til højre */
+.detail-status-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
 }
 
 .detail-title {

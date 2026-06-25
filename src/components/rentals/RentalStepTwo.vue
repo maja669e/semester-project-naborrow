@@ -51,15 +51,17 @@ export default {
 
 <template>
 
-  <v-container class="pa-4 laanflow-container">
+  <div>
 
-    <!-- Formularhoved med titel og trinindikator -->
+    <!-- Formularhoved uden for containeren, så den fylder fuld bredde
+         i toppen som headeren på de øvrige sider -->
     <MultiStepFormHeader
       title="Låneanmodning"
       :currentStep="currentStep"
       :steps="['Periode', 'Afhentning', 'Bekræft']"
     />
 
+    <v-container class="pa-4 laanflow-container">
     <h2>Afhentning</h2>
 
     <!-- Tilbehørsvalg -->
@@ -94,13 +96,14 @@ export default {
       @next="next"
     />
 
-  </v-container>
+    </v-container>
+  </div>
 
 </template>
 
 <style scoped>
 /* padding-bottom sikrer at indhold ikke skjules bag den faste FormBottomBar og AppBottomNav */
 .laanflow-container {
-  padding-bottom: calc(128px + env(safe-area-inset-bottom));
+  padding-bottom: calc(180px + env(safe-area-inset-bottom));
 }
 </style>

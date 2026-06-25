@@ -202,7 +202,7 @@ export default {
         this.errors.title = "";
       }
 
-      if (!this.editedItem.condition.trim()) {
+      if (!this.editedItem.condition || !this.editedItem.condition.trim()) {
         this.errors.condition = "Udfyld stand på din genstand";
         valid = false;
       } else {

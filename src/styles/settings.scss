@@ -86,6 +86,7 @@
     --text-body: 16px;
     --text-label: 14px;
     --text-meta: 12px;
+    --text-display: 32px;   /* Store tal/priser — over h1 */
 
     /* ── Touch targets - minimum størrelse for tilgængelighed ── */
     --touch-target: 44px;
@@ -157,6 +158,21 @@
   border: 1.5px solid currentColor;
 }
 .status-badge .v-icon { font-size: 16px; }
+
+/* ─── Fejl-label til formularfelter ──────────────────────────
+   Global, så alle forms ser ens ud (samme tanke som .status-badge).
+   Reglerne den følger:
+   - Tema-bevidst farve via --color-error (består kontrast i light/dark).
+   - Betydningen bæres af TEKST, ikke kun farve (WCAG 1.4.1).
+   - Markup skal sætte role="alert" så fejlen annonceres når den vises,
+     og knytte sig til feltet (aria-describedby / Vuetifys :error-messages). */
+.fejltekst {
+  color: var(--color-error);
+  font-family: var(--font-body);
+  font-size: var(--text-label);
+  font-weight: 600;
+  margin-top: 8px;
+}
 .status-badge--tilgaengelig { background: var(--color-tilgaengelig-bg); color: var(--color-tilgaengelig-text); }
 .status-badge--udlaant      { background: var(--color-udlaant-bg);      color: var(--color-udlaant-text); }
 .status-badge--inaktiv      { background: var(--color-inaktiv-bg);      color: var(--color-inaktiv-text); }

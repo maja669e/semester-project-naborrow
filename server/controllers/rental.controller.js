@@ -115,10 +115,42 @@ exports.update = async (req, res) => {
         if (num === 1) {
             res.send({ message: "Udlejningen blev opdateret." });
         } else {
-            res.send({ message: `Kunne ikke opdatere udlejning med id=${id}. Tjek om den eksisterer.` });
+            res.status(404).send({ message: `Kunne ikke opdatere udlejning med id=${id}. Tjek om den eksisterer.` });
         }
     } catch (err) {
         res.status(500).send({ message: "Fejl ved opdatering af udlejning med id=" + id });
+    }
+};
+
+// SKJUL ét lån fra ÉN brugers historik (soft delete pr. bruger).
+// perspective: "renter" (jeg lånte) eller "owner" (jeg udlånte). Sætter kun
+// den ene parts flag, så lånet stadig findes i den anden parts historik.
+exports.hide = async (req, res) => {
+    const id = req.params.id;
+    const perspective = req.body.perspective;
+
+    try {
+        // Byg opdateringen ud fra perspektivet, så kun den ene parts flag sættes
+        let updateData;
+        if (perspective === "renter") {
+            updateData = { HiddenByRenter: true };
+        } else if (perspective === "owner") {
+            updateData = { HiddenByOwner: true };
+        } else {
+            return res.status(400).send({ message: "Ugyldigt perspektiv. Brug 'renter' eller 'owner'." });
+        }
+
+        const [num] = await Rental.update(updateData, {
+            where: { RentalID: id }
+        });
+
+        if (num === 1) {
+            res.send({ message: "Lånet blev fjernet fra din historik." });
+        } else {
+            res.status(404).send({ message: `Kunne ikke fjerne lån med id=${id}. Tjek om det eksisterer.` });
+        }
+    } catch (err) {
+        res.status(500).send({ message: "Fejl ved fjernelse af lån med id=" + id });
     }
 };
 
@@ -133,7 +165,7 @@ exports.delete = async (req, res) => {
         if (num === 1) {
             res.send({ message: "Udlejningen blev slettet." });
         } else {
-            res.send({ message: `Kunne ikke slette udlejning med id=${id}. Tjek om den eksisterer.` });
+            res.status(404).send({ message: `Kunne ikke slette udlejning med id=${id}. Tjek om den eksisterer.` });
         }
     } catch (err) {
         res.status(500).send({ message: "Fejl ved sletning af udlejning med id=" + id });
@@ -190,6 +222,8 @@ exports.getByUser = async (req, res) => {
     const userId = req.params.userId;
 
     const rentals = await Rental.findAll({
+      // Skjul lån som låneren selv har fjernet fra sin historik (soft delete)
+      where: { HiddenByRenter: false },
       include: [
         {
           model: RentalRequest,
@@ -225,6 +259,8 @@ exports.getByOwner = async (req, res) => {
     const userId = req.params.userId;
 
     const rentals = await Rental.findAll({
+      // Skjul lån som udlåneren selv har fjernet fra sin historik (soft delete)
+      where: { HiddenByOwner: false },
       include: [
         {
           model: RentalRequest,

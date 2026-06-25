@@ -43,25 +43,6 @@ export default {
     };
   },
 
-  computed: {
-    // Beregner om formen er gyldig uden at sætte fejlbeskeder.
-    // Spejler validate()-logikken og låser næste-knappen via :nextDisabled.
-    isFormValid() {
-      const accessoriesOk =
-        this.hasAccessories === false ||
-        (this.hasAccessories === true && this.accessoriesList.length > 0);
-      const periodOk =
-        this.maxLoanPeriod !== null &&
-        (this.maxLoanPeriod !== "Andet" || this.customPeriod.trim() !== "");
-      return (
-        this.hasAccessories !== null &&
-        accessoriesOk &&
-        this.condition !== null &&
-        periodOk
-      );
-    },
-  },
-
   methods: {
     // Gem om genstanden har tilbehør og ryd fejlbesked
     selectAccessories(value) {
@@ -170,15 +151,17 @@ export default {
 </script>
 
 <template>
-  <v-container class="detaljer-container">
+  <div>
 
-    <!-- Formularhoved med titel og trinindikator -->
+    <!-- Formularhoved uden for containeren, så den fylder fuld bredde
+         i toppen som headeren på de øvrige sider -->
     <MultiStepFormHeader
       title="Opret ny genstand"
       :currentStep="currentStep"
       :steps="['Grundinfo', 'Detaljer', 'Forhåndsvisning']"
     />
 
+    <v-container class="detaljer-container">
     <h1 class="mt-2 mb-2">Tilbehør og detaljer</h1>
     <p>
       Angiv stand, låneperiode og eventuelt tilbehør, der følger med genstanden.
@@ -344,9 +327,12 @@ export default {
     </section>
 
     <!-- Bundnavigation: tilbage til trin 1, næste til bekræftelse -->
-    <FormBottomBar :nextDisabled="!isFormValid" @back="back" @next="next" />
+    <!-- Knappen er altid aktiv: ved klik kører next() → validate(), som viser
+         fejlbeskeder ved manglende felter (error object pattern). -->
+    <FormBottomBar @back="back" @next="next" />
 
-  </v-container>
+    </v-container>
+  </div>
 </template>
 
 <style scoped>
@@ -354,13 +340,6 @@ export default {
 /* padding-bottom sikrer at indhold ikke skjules bag den faste FormBottomBar */
 .detaljer-container {
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
-}
-
-/* ─── Valideringsfejl ────────────────────────────────────── */
-.fejltekst {
-  color: var(--color-error);
-  font-size: 14px;
-  margin-top: 4px;
 }
 
 /* ─── Synlig label over rå input-felter ─────────────────── */
